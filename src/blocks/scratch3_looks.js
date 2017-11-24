@@ -23,10 +23,14 @@ class Scratch3LooksBlocks {
         this._onTargetMoved = this._onTargetMoved.bind(this);
         this._onResetBubbles = this._onResetBubbles.bind(this);
         this._onTargetWillExit = this._onTargetWillExit.bind(this);
+        this._updateBubble = this._updateBubble.bind(this);
 
         // Reset all bubbles on start/stop
         this.runtime.on('PROJECT_STOP_ALL', this._onResetBubbles);
         this.runtime.on('targetWasRemoved', this._onTargetWillExit);
+
+        // Enable other blocks to use bubbles like ask/answer
+        this.runtime.on('SAY', this._updateBubble);
     }
 
     /**
@@ -238,34 +242,45 @@ class Scratch3LooksBlocks {
         };
     }
 
+    getMonitored () {
+        return {
+            looks_size: {isSpriteSpecific: true},
+            looks_costumeorder: {isSpriteSpecific: true},
+            looks_backdroporder: {},
+            looks_backdropname: {}
+        };
+    }
+
     say (args, util) {
         // @TODO in 2.0 calling say/think resets the right/left bias of the bubble
-        this._updateBubble(util.target, 'say', args.MESSAGE);
+        this._updateBubble(util.target, 'say', String(args.MESSAGE));
     }
 
     sayforsecs (args, util) {
         this.say(args, util);
+        const _target = util.target;
         return new Promise(resolve => {
             this._bubbleTimeout = setTimeout(() => {
                 this._bubbleTimeout = null;
                 // Clear say bubble and proceed.
-                this._updateBubble(util.target, 'say', '');
+                this._updateBubble(_target, 'say', '');
                 resolve();
             }, 1000 * args.SECS);
         });
     }
 
     think (args, util) {
-        this._updateBubble(util.target, 'think', args.MESSAGE);
+        this._updateBubble(util.target, 'think', String(args.MESSAGE));
     }
 
     thinkforsecs (args, util) {
         this.think(args, util);
+        const _target = util.target;
         return new Promise(resolve => {
             this._bubbleTimeout = setTimeout(() => {
                 this._bubbleTimeout = null;
                 // Clear say bubble and proceed.
-                this._updateBubble(util.target, 'think', '');
+                this._updateBubble(_target, 'think', '');
                 resolve();
             }, 1000 * args.SECS);
         });

@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 58);
+/******/ 	return __webpack_require__(__webpack_require__.s = 57);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -129,23 +129,11 @@ if (typeof Object.create === 'function') {
 "use strict";
 
 
-var minilog = __webpack_require__(129);
-minilog.enable();
-
-module.exports = minilog('vm');
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Color = __webpack_require__(21);
+var Color = __webpack_require__(24);
 
 /**
  * @fileoverview
@@ -374,6 +362,18 @@ var Cast = function () {
 module.exports = Cast;
 
 /***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var minilog = __webpack_require__(131);
+minilog.enable();
+
+module.exports = minilog('vm');
+
+/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -388,9 +388,9 @@ module.exports = Cast;
 
 
 
-var base64 = __webpack_require__(87)
-var ieee754 = __webpack_require__(116)
-var isArray = __webpack_require__(47)
+var base64 = __webpack_require__(89)
+var ieee754 = __webpack_require__(118)
+var isArray = __webpack_require__(46)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2482,7 +2482,7 @@ function isUndefined(arg) {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var microee = __webpack_require__(122);
+var microee = __webpack_require__(124);
 
 // Implements a subset of Node's stream.Transform - in a cross-platform manner.
 function Transform() {}
@@ -2560,17 +2560,118 @@ module.exports = Transform;
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(50);
+exports = module.exports = __webpack_require__(49);
 exports.Stream = exports;
 exports.Readable = exports;
 exports.Writable = __webpack_require__(34);
-exports.Duplex = __webpack_require__(9);
-exports.Transform = __webpack_require__(51);
-exports.PassThrough = __webpack_require__(144);
+exports.Duplex = __webpack_require__(10);
+exports.Transform = __webpack_require__(50);
+exports.PassThrough = __webpack_require__(146);
 
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var MathUtil = function () {
+    function MathUtil() {
+        _classCallCheck(this, MathUtil);
+    }
+
+    _createClass(MathUtil, null, [{
+        key: "degToRad",
+
+        /**
+         * Convert a value from degrees to radians.
+         * @param {!number} deg Value in degrees.
+         * @return {!number} Equivalent value in radians.
+         */
+        value: function degToRad(deg) {
+            return deg * Math.PI / 180;
+        }
+
+        /**
+         * Convert a value from radians to degrees.
+         * @param {!number} rad Value in radians.
+         * @return {!number} Equivalent value in degrees.
+         */
+
+    }, {
+        key: "radToDeg",
+        value: function radToDeg(rad) {
+            return rad * 180 / Math.PI;
+        }
+
+        /**
+         * Clamp a number between two limits.
+         * If n < min, return min. If n > max, return max. Else, return n.
+         * @param {!number} n Number to clamp.
+         * @param {!number} min Minimum limit.
+         * @param {!number} max Maximum limit.
+         * @return {!number} Value of n clamped to min and max.
+         */
+
+    }, {
+        key: "clamp",
+        value: function clamp(n, min, max) {
+            return Math.min(Math.max(n, min), max);
+        }
+
+        /**
+         * Keep a number between two limits, wrapping "extra" into the range.
+         * e.g., wrapClamp(7, 1, 5) == 2
+         * wrapClamp(0, 1, 5) == 5
+         * wrapClamp(-11, -10, 6) == 6, etc.
+         * @param {!number} n Number to wrap.
+         * @param {!number} min Minimum limit.
+         * @param {!number} max Maximum limit.
+         * @return {!number} Value of n wrapped between min and max.
+         */
+
+    }, {
+        key: "wrapClamp",
+        value: function wrapClamp(n, min, max) {
+            var range = max - min + 1;
+            return n - Math.floor((n - min) / range) * range;
+        }
+
+        /**
+         * Convert a value from tan function in degrees.
+         * @param {!number} angle in degrees
+         * @return {!number} Correct tan value
+         */
+
+    }, {
+        key: "tan",
+        value: function tan(angle) {
+            angle = angle % 360;
+            switch (angle) {
+                case -270:
+                case 90:
+                    return Infinity;
+                case -90:
+                case 270:
+                    return -Infinity;
+                default:
+                    return parseFloat(Math.tan(Math.PI * angle / 180).toFixed(10));
+            }
+        }
+    }]);
+
+    return MathUtil;
+}();
+
+module.exports = MathUtil;
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -2760,7 +2861,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2794,7 +2895,7 @@ process.umask = function() { return 0; };
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(23);
+var processNextTick = __webpack_require__(27);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -2809,11 +2910,11 @@ var objectKeys = Object.keys || function (obj) {
 module.exports = Duplex;
 
 /*<replacement>*/
-var util = __webpack_require__(14);
+var util = __webpack_require__(16);
 util.inherits = __webpack_require__(1);
 /*</replacement>*/
 
-var Readable = __webpack_require__(50);
+var Readable = __webpack_require__(49);
 var Writable = __webpack_require__(34);
 
 util.inherits(Duplex, Readable);
@@ -2890,112 +2991,11 @@ function forEach(xs, f) {
 }
 
 /***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var MathUtil = function () {
-    function MathUtil() {
-        _classCallCheck(this, MathUtil);
-    }
-
-    _createClass(MathUtil, null, [{
-        key: "degToRad",
-
-        /**
-         * Convert a value from degrees to radians.
-         * @param {!number} deg Value in degrees.
-         * @return {!number} Equivalent value in radians.
-         */
-        value: function degToRad(deg) {
-            return deg * Math.PI / 180;
-        }
-
-        /**
-         * Convert a value from radians to degrees.
-         * @param {!number} rad Value in radians.
-         * @return {!number} Equivalent value in degrees.
-         */
-
-    }, {
-        key: "radToDeg",
-        value: function radToDeg(rad) {
-            return rad * 180 / Math.PI;
-        }
-
-        /**
-         * Clamp a number between two limits.
-         * If n < min, return min. If n > max, return max. Else, return n.
-         * @param {!number} n Number to clamp.
-         * @param {!number} min Minimum limit.
-         * @param {!number} max Maximum limit.
-         * @return {!number} Value of n clamped to min and max.
-         */
-
-    }, {
-        key: "clamp",
-        value: function clamp(n, min, max) {
-            return Math.min(Math.max(n, min), max);
-        }
-
-        /**
-         * Keep a number between two limits, wrapping "extra" into the range.
-         * e.g., wrapClamp(7, 1, 5) == 2
-         * wrapClamp(0, 1, 5) == 5
-         * wrapClamp(-11, -10, 6) == 6, etc.
-         * @param {!number} n Number to wrap.
-         * @param {!number} min Minimum limit.
-         * @param {!number} max Maximum limit.
-         * @return {!number} Value of n wrapped between min and max.
-         */
-
-    }, {
-        key: "wrapClamp",
-        value: function wrapClamp(n, min, max) {
-            var range = max - min + 1;
-            return n - Math.floor((n - min) / range) * range;
-        }
-
-        /**
-         * Convert a value from tan function in degrees.
-         * @param {!number} angle in degrees
-         * @return {!number} Correct tan value
-         */
-
-    }, {
-        key: "tan",
-        value: function tan(angle) {
-            angle = angle % 360;
-            switch (angle) {
-                case -270:
-                case 90:
-                    return Infinity;
-                case -90:
-                case 270:
-                    return -Infinity;
-                default:
-                    return parseFloat(Math.tan(Math.PI * angle / 180).toFixed(10));
-            }
-        }
-    }]);
-
-    return MathUtil;
-}();
-
-module.exports = MathUtil;
-
-/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Parser = __webpack_require__(44),
-    DomHandler = __webpack_require__(93);
+var Parser = __webpack_require__(43),
+    DomHandler = __webpack_require__(95);
 
 function defineProp(name, value){
 	delete module.exports[name];
@@ -3005,26 +3005,26 @@ function defineProp(name, value){
 
 module.exports = {
 	Parser: Parser,
-	Tokenizer: __webpack_require__(45),
-	ElementType: __webpack_require__(15),
+	Tokenizer: __webpack_require__(44),
+	ElementType: __webpack_require__(17),
 	DomHandler: DomHandler,
 	get FeedHandler(){
-		return defineProp("FeedHandler", __webpack_require__(112));
+		return defineProp("FeedHandler", __webpack_require__(114));
 	},
 	get Stream(){
-		return defineProp("Stream", __webpack_require__(114));
+		return defineProp("Stream", __webpack_require__(116));
 	},
 	get WritableStream(){
-		return defineProp("WritableStream", __webpack_require__(46));
+		return defineProp("WritableStream", __webpack_require__(45));
 	},
 	get ProxyHandler(){
-		return defineProp("ProxyHandler", __webpack_require__(113));
+		return defineProp("ProxyHandler", __webpack_require__(115));
 	},
 	get DomUtils(){
-		return defineProp("DomUtils", __webpack_require__(95));
+		return defineProp("DomUtils", __webpack_require__(97));
 	},
 	get CollectingHandler(){
-		return defineProp("CollectingHandler", __webpack_require__(111));
+		return defineProp("CollectingHandler", __webpack_require__(113));
 	},
 	// For legacy support
 	DefaultHandler: DomHandler,
@@ -3077,11 +3077,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var adapter = __webpack_require__(71);
-var mutationAdapter = __webpack_require__(39);
-var xmlEscape = __webpack_require__(85);
+var adapter = __webpack_require__(70);
+var mutationAdapter = __webpack_require__(38);
+var xmlEscape = __webpack_require__(87);
 var MonitorRecord = __webpack_require__(73);
-var Clone = __webpack_require__(20);
+var Clone = __webpack_require__(14);
 
 /**
  * @fileoverview
@@ -3106,6 +3106,29 @@ var Blocks = function () {
          * @type {Array.<String>}
          */
         this._scripts = [];
+
+        /**
+         * Runtime Cache
+         * @type {{inputs: {}, procedureParamNames: {}, procedureDefinitions: {}}}
+         * @private
+         */
+        this._cache = {
+            /**
+             * Cache block inputs by block id
+             * @type {object.<string, !Array.<object>>}
+             */
+            inputs: {},
+            /**
+             * Cache procedure Param Names by block id
+             * @type {object.<string, ?Array.<string>>}
+             */
+            procedureParamNames: {},
+            /**
+             * Cache procedure definitions by block id
+             * @type {object.<string, ?string>}
+             */
+            procedureDefinitions: {}
+        };
     }
 
     /**
@@ -3203,20 +3226,27 @@ var Blocks = function () {
         /**
          * Get all non-branch inputs for a block.
          * @param {?object} block the block to query.
-         * @return {!object} All non-branch inputs and their associated blocks.
+         * @return {?Array.<object>} All non-branch inputs and their associated blocks.
          */
 
     }, {
         key: 'getInputs',
         value: function getInputs(block) {
             if (typeof block === 'undefined') return null;
-            var inputs = {};
+            var inputs = this._cache.inputs[block.id];
+            if (typeof inputs !== 'undefined') {
+                return inputs;
+            }
+
+            inputs = {};
             for (var input in block.inputs) {
                 // Ignore blocks prefixed with branch prefix.
                 if (input.substring(0, Blocks.BRANCH_INPUT_PREFIX.length) !== Blocks.BRANCH_INPUT_PREFIX) {
                     inputs[input] = block.inputs[input];
                 }
             }
+
+            this._cache.inputs[block.id] = inputs;
             return inputs;
         }
 
@@ -3258,35 +3288,52 @@ var Blocks = function () {
     }, {
         key: 'getProcedureDefinition',
         value: function getProcedureDefinition(name) {
+            var blockID = this._cache.procedureDefinitions[name];
+            if (typeof blockID !== 'undefined') {
+                return blockID;
+            }
+
             for (var id in this._blocks) {
                 if (!this._blocks.hasOwnProperty(id)) continue;
                 var block = this._blocks[id];
-                if (block.opcode === 'procedures_defnoreturn' || block.opcode === 'procedures_defreturn') {
+                if (block.opcode === 'procedures_definition') {
                     var internal = this._getCustomBlockInternal(block);
                     if (internal && internal.mutation.proccode === name) {
-                        return id; // The outer define block id
+                        this._cache.procedureDefinitions[name] = id; // The outer define block id
+                        return id;
                     }
                 }
             }
+
+            this._cache.procedureDefinitions[name] = null;
             return null;
         }
 
         /**
-         * Get the procedure definition for a given name.
+         * Get names of parameters for the given procedure.
          * @param {?string} name Name of procedure to query.
-         * @return {?string} ID of procedure definition.
+         * @return {?Array.<string>} List of param names for a procedure.
          */
 
     }, {
         key: 'getProcedureParamNames',
         value: function getProcedureParamNames(name) {
+            var cachedNames = this._cache.procedureParamNames[name];
+            if (typeof cachedNames !== 'undefined') {
+                return cachedNames;
+            }
+
             for (var id in this._blocks) {
                 if (!this._blocks.hasOwnProperty(id)) continue;
                 var block = this._blocks[id];
-                if (block.opcode === 'procedures_callnoreturn_internal' && block.mutation.proccode === name) {
-                    return JSON.parse(block.mutation.argumentnames);
+                if (block.opcode === 'procedures_prototype' && block.mutation.proccode === name) {
+                    var paramNames = JSON.parse(block.mutation.argumentnames);
+                    this._cache.procedureParamNames[name] = paramNames;
+                    return paramNames;
                 }
             }
+
+            this._cache.procedureParamNames[name] = null;
             return null;
         }
     }, {
@@ -3364,9 +3411,7 @@ var Blocks = function () {
                     if (optRuntime && this._blocks[e.blockId].topLevel) {
                         optRuntime.quietGlow(e.blockId);
                     }
-                    this.deleteBlock({
-                        id: e.blockId
-                    });
+                    this.deleteBlock(e.blockId);
                     break;
                 case 'var_create':
                     // New variables being created by the user are all global.
@@ -3404,6 +3449,18 @@ var Blocks = function () {
         // ---------------------------------------------------------------------
 
         /**
+         * Reset all runtime caches.
+         */
+
+    }, {
+        key: 'resetCache',
+        value: function resetCache() {
+            this._cache.inputs = {};
+            this._cache.procedureParamNames = {};
+            this._cache.procedureDefinitions = {};
+        }
+
+        /**
          * Block management: create blocks and scripts from a `create` event
          * @param {!object} block Blockly create event to be processed
          */
@@ -3424,6 +3481,8 @@ var Blocks = function () {
             if (block.topLevel) {
                 this._addScript(block.id);
             }
+
+            this.resetCache();
         }
 
         /**
@@ -3439,13 +3498,12 @@ var Blocks = function () {
             if (['field', 'mutation', 'checkbox'].indexOf(args.element) === -1) return;
             var block = this._blocks[args.id];
             if (typeof block === 'undefined') return;
-
             var wasMonitored = block.isMonitored;
             switch (args.element) {
                 case 'field':
                     // Update block value
                     if (!block.fields[args.name]) return;
-                    if (args.name === 'VARIABLE') {
+                    if (args.name === 'VARIABLE' || args.name === 'LIST') {
                         // Get variable name using the id in args.value.
                         var variable = optRuntime.getEditingTarget().lookupVariableById(args.value);
                         var targets = optRuntime.targets;
@@ -3473,12 +3531,18 @@ var Blocks = function () {
                     break;
                 case 'checkbox':
                     block.isMonitored = args.value;
+                    if (optRuntime) {
+                        var isSpriteSpecific = optRuntime.monitorBlockInfo.hasOwnProperty(block.opcode) && optRuntime.monitorBlockInfo[block.opcode].isSpriteSpecific;
+                        block.targetId = isSpriteSpecific ? optRuntime.getEditingTarget().id : null;
+                    }
                     if (optRuntime && wasMonitored && !block.isMonitored) {
                         optRuntime.requestRemoveMonitor(block.id);
                     } else if (optRuntime && !wasMonitored && block.isMonitored) {
                         optRuntime.requestAddMonitor(MonitorRecord({
                             // @todo(vm#564) this will collide if multiple sprites use same block
                             id: block.id,
+                            targetId: block.targetId,
+                            spriteName: block.targetId ? optRuntime.getTargetById(block.targetId).getName() : null,
                             opcode: block.opcode,
                             params: this._getBlockParams(block),
                             // @todo(vm#565) for numerical values with decimals, some countries use comma
@@ -3487,6 +3551,8 @@ var Blocks = function () {
                     }
                     break;
             }
+
+            this.resetCache();
         }
 
         /**
@@ -3545,6 +3611,7 @@ var Blocks = function () {
                 }
                 this._blocks[e.id].parent = e.newParent;
             }
+            this.resetCache();
         }
 
         /**
@@ -3559,24 +3626,29 @@ var Blocks = function () {
 
             Object.keys(this._blocks).forEach(function (blockId) {
                 if (_this.getBlock(blockId).isMonitored) {
-                    // @todo handle specific targets (e.g. apple x position)
-                    runtime.addMonitorScript(blockId);
+                    var targetId = _this.getBlock(blockId).targetId;
+                    runtime.addMonitorScript(blockId, targetId ? runtime.getTargetById(targetId) : null);
                 }
             });
         }
 
         /**
-         * Block management: delete blocks and their associated scripts.
-         * @param {!object} e Blockly delete event to be processed.
+         * Block management: delete blocks and their associated scripts. Does nothing if a block
+         * with the given ID does not exist.
+         * @param {!string} blockId Id of block to delete
          */
 
     }, {
         key: 'deleteBlock',
-        value: function deleteBlock(e) {
+        value: function deleteBlock(blockId) {
             // @todo In runtime, stop threads running on this script.
 
             // Get block
-            var block = this._blocks[e.id];
+            var block = this._blocks[blockId];
+            if (!block) {
+                // No block with the given ID exists
+                return;
+            }
 
             // TODO: 未知块处理
             if (!block) {
@@ -3584,26 +3656,28 @@ var Blocks = function () {
             }
             // Delete children
             if (block.next !== null) {
-                this.deleteBlock({ id: block.next });
+                this.deleteBlock(block.next);
             }
 
             // Delete inputs (including branches)
             for (var input in block.inputs) {
                 // If it's null, the block in this input moved away.
                 if (block.inputs[input].block !== null) {
-                    this.deleteBlock({ id: block.inputs[input].block });
+                    this.deleteBlock(block.inputs[input].block);
                 }
                 // Delete obscured shadow blocks.
                 if (block.inputs[input].shadow !== null && block.inputs[input].shadow !== block.inputs[input].block) {
-                    this.deleteBlock({ id: block.inputs[input].shadow });
+                    this.deleteBlock(block.inputs[input].shadow);
                 }
             }
 
             // Delete any script starting with this block.
-            this._deleteScript(e.id);
+            this._deleteScript(blockId);
 
             // Delete block itself.
-            delete this._blocks[e.id];
+            delete this._blocks[blockId];
+
+            this.resetCache();
         }
 
         // ---------------------------------------------------------------------
@@ -3672,11 +3746,20 @@ var Blocks = function () {
             for (var field in block.fields) {
                 if (!block.fields.hasOwnProperty(field)) continue;
                 var blockField = block.fields[field];
+                xmlString += '<field name="' + blockField.name + '"';
+                var fieldId = blockField.id;
+                if (fieldId) {
+                    xmlString += ' id="' + fieldId + '"';
+                }
+                var varType = blockField.variableType;
+                if (typeof varType === 'string') {
+                    xmlString += ' variabletype="' + varType + '"';
+                }
                 var value = blockField.value;
                 if (typeof value === 'string') {
                     value = xmlEscape(blockField.value);
                 }
-                xmlString += '<field variableType="' + blockField.variabletype + '" name="' + blockField.name + '">' + value + '</field>';
+                xmlString += '>' + value + '</field>';
             }
             // Add blocks connected to the next connection.
             if (block.next) {
@@ -3793,6 +3876,62 @@ module.exports = Blocks;
 "use strict";
 
 
+var BlockType = {
+    BOOLEAN: 'Boolean',
+    COMMAND: 'command',
+    CONDITIONAL: 'conditional',
+    HAT: 'hat',
+    REPORTER: 'reporter'
+};
+
+module.exports = BlockType;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Methods for cloning JavaScript objects.
+ * @type {object}
+ */
+var Clone = function () {
+  function Clone() {
+    _classCallCheck(this, Clone);
+  }
+
+  _createClass(Clone, null, [{
+    key: "simple",
+
+    /**
+     * Deep-clone a "simple" object: one which can be fully expressed with JSON.
+     * Non-JSON values, such as functions, will be stripped from the clone.
+     * @param {object} original - the object to be cloned.
+     * @returns {object} a deep clone of the original object.
+     */
+    value: function simple(original) {
+      return JSON.parse(JSON.stringify(original));
+    }
+  }]);
+
+  return Clone;
+}();
+
+module.exports = Clone;
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3854,7 +3993,7 @@ var StringUtil = function () {
 module.exports = StringUtil;
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
@@ -3968,7 +4107,7 @@ function objectToString(o) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4).Buffer))
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports) {
 
 //Types of elements found in the DOM
@@ -3989,31 +4128,465 @@ module.exports = {
 
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var BlockType = {
-    BOOLEAN: 'Boolean',
-    COMMAND: 'command',
-    CONDITIONAL: 'conditional',
-    HAT: 'hat',
-    REPORTER: 'reporter'
-};
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-module.exports = BlockType;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * A thread is a running stack context and all the metadata needed.
+ * @param {?string} firstBlock First block to execute in the thread.
+ * @constructor
+ */
+var Thread = function () {
+    function Thread(firstBlock) {
+        _classCallCheck(this, Thread);
+
+        /**
+         * ID of top block of the thread
+         * @type {!string}
+         */
+        this.topBlock = firstBlock;
+
+        /**
+         * Stack for the thread. When the sequencer enters a control structure,
+         * the block is pushed onto the stack so we know where to exit.
+         * @type {Array.<string>}
+         */
+        this.stack = [];
+
+        /**
+         * Stack frames for the thread. Store metadata for the executing blocks.
+         * @type {Array.<Object>}
+         */
+        this.stackFrames = [];
+
+        /**
+         * Status of the thread, one of three states (below)
+         * @type {number}
+         */
+        this.status = 0; /* Thread.STATUS_RUNNING */
+
+        /**
+         * Whether the thread is killed in the middle of execution.
+         * @type {boolean}
+         */
+        this.isKilled = false;
+
+        /**
+         * Target of this thread.
+         * @type {?Target}
+         */
+        this.target = null;
+
+        /**
+         * Whether the thread requests its script to glow during this frame.
+         * @type {boolean}
+         */
+        this.requestScriptGlowInFrame = false;
+
+        /**
+         * Which block ID should glow during this frame, if any.
+         * @type {?string}
+         */
+        this.blockGlowInFrame = null;
+
+        /**
+         * A timer for when the thread enters warp mode.
+         * Substitutes the sequencer's count toward WORK_TIME on a per-thread basis.
+         * @type {?Timer}
+         */
+        this.warpTimer = null;
+    }
+
+    /**
+     * Thread status for initialized or running thread.
+     * This is the default state for a thread - execution should run normally,
+     * stepping from block to block.
+     * @const
+     */
+
+
+    _createClass(Thread, [{
+        key: 'pushStack',
+
+
+        /**
+         * Push stack and update stack frames appropriately.
+         * @param {string} blockId Block ID to push to stack.
+         */
+        value: function pushStack(blockId) {
+            this.stack.push(blockId);
+            // Push an empty stack frame, if we need one.
+            // Might not, if we just popped the stack.
+            if (this.stack.length > this.stackFrames.length) {
+                // Copy warp mode from any higher level.
+                var warpMode = false;
+                if (this.stackFrames.length > 0 && this.stackFrames[this.stackFrames.length - 1]) {
+                    warpMode = this.stackFrames[this.stackFrames.length - 1].warpMode;
+                }
+                this.stackFrames.push({
+                    isLoop: false, // Whether this level of the stack is a loop.
+                    warpMode: warpMode, // Whether this level is in warp mode.
+                    reported: {}, // Collects reported input values.
+                    waitingReporter: null, // Name of waiting reporter.
+                    params: {}, // Procedure parameters.
+                    executionContext: {} // A context passed to block implementations.
+                });
+            }
+        }
+
+        /**
+         * Reset the stack frame for use by the next block.
+         * (avoids popping and re-pushing a new stack frame - keeps the warpmode the same
+         * @param {string} blockId Block ID to push to stack.
+         */
+
+    }, {
+        key: 'reuseStackForNextBlock',
+        value: function reuseStackForNextBlock(blockId) {
+            this.stack[this.stack.length - 1] = blockId;
+            var frame = this.stackFrames[this.stackFrames.length - 1];
+            frame.isLoop = false;
+            // frame.warpMode = warpMode;   // warp mode stays the same when reusing the stack frame.
+            frame.reported = {};
+            frame.waitingReporter = null;
+            frame.params = {};
+            frame.executionContext = {};
+        }
+
+        /**
+         * Pop last block on the stack and its stack frame.
+         * @return {string} Block ID popped from the stack.
+         */
+
+    }, {
+        key: 'popStack',
+        value: function popStack() {
+            this.stackFrames.pop();
+            return this.stack.pop();
+        }
+
+        /**
+         * Pop back down the stack frame until we hit a procedure call or the stack frame is emptied
+         */
+
+    }, {
+        key: 'stopThisScript',
+        value: function stopThisScript() {
+            var blockID = this.peekStack();
+            while (blockID !== null) {
+                var block = this.target.blocks.getBlock(blockID);
+                if (typeof block !== 'undefined' && block.opcode === 'procedures_call') {
+                    break;
+                }
+                this.popStack();
+                blockID = this.peekStack();
+            }
+
+            if (this.stack.length === 0) {
+                // Clean up!
+                this.requestScriptGlowInFrame = false;
+                this.status = Thread.STATUS_DONE;
+            }
+        }
+
+        /**
+         * Get top stack item.
+         * @return {?string} Block ID on top of stack.
+         */
+
+    }, {
+        key: 'peekStack',
+        value: function peekStack() {
+            return this.stack.length > 0 ? this.stack[this.stack.length - 1] : null;
+        }
+
+        /**
+         * Get top stack frame.
+         * @return {?object} Last stack frame stored on this thread.
+         */
+
+    }, {
+        key: 'peekStackFrame',
+        value: function peekStackFrame() {
+            return this.stackFrames.length > 0 ? this.stackFrames[this.stackFrames.length - 1] : null;
+        }
+
+        /**
+         * Get stack frame above the current top.
+         * @return {?object} Second to last stack frame stored on this thread.
+         */
+
+    }, {
+        key: 'peekParentStackFrame',
+        value: function peekParentStackFrame() {
+            return this.stackFrames.length > 1 ? this.stackFrames[this.stackFrames.length - 2] : null;
+        }
+
+        /**
+         * Push a reported value to the parent of the current stack frame.
+         * @param {*} value Reported value to push.
+         */
+
+    }, {
+        key: 'pushReportedValue',
+        value: function pushReportedValue(value) {
+            var parentStackFrame = this.peekParentStackFrame();
+            if (parentStackFrame) {
+                var waitingReporter = parentStackFrame.waitingReporter;
+                parentStackFrame.reported[waitingReporter] = value;
+            }
+        }
+
+        /**
+         * Add a parameter to the stack frame.
+         * Use when calling a procedure with parameter values.
+         * @param {!string} paramName Name of parameter.
+         * @param {*} value Value to set for parameter.
+         */
+
+    }, {
+        key: 'pushParam',
+        value: function pushParam(paramName, value) {
+            var stackFrame = this.peekStackFrame();
+            stackFrame.params[paramName] = value;
+        }
+
+        /**
+         * Get a parameter at the lowest possible level of the stack.
+         * @param {!string} paramName Name of parameter.
+         * @return {*} value Value for parameter.
+         */
+
+    }, {
+        key: 'getParam',
+        value: function getParam(paramName) {
+            for (var i = this.stackFrames.length - 1; i >= 0; i--) {
+                var frame = this.stackFrames[i];
+                if (frame.params.hasOwnProperty(paramName)) {
+                    return frame.params[paramName];
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Whether the current execution of a thread is at the top of the stack.
+         * @return {boolean} True if execution is at top of the stack.
+         */
+
+    }, {
+        key: 'atStackTop',
+        value: function atStackTop() {
+            return this.peekStack() === this.topBlock;
+        }
+
+        /**
+         * Switch the thread to the next block at the current level of the stack.
+         * For example, this is used in a standard sequence of blocks,
+         * where execution proceeds from one block to the next.
+         */
+
+    }, {
+        key: 'goToNextBlock',
+        value: function goToNextBlock() {
+            var nextBlockId = this.target.blocks.getNextBlock(this.peekStack());
+            this.reuseStackForNextBlock(nextBlockId);
+        }
+
+        /**
+         * Attempt to determine whether a procedure call is recursive,
+         * by examining the stack.
+         * @param {!string} procedureCode Procedure code of procedure being called.
+         * @return {boolean} True if the call appears recursive.
+         */
+
+    }, {
+        key: 'isRecursiveCall',
+        value: function isRecursiveCall(procedureCode) {
+            var callCount = 5; // Max number of enclosing procedure calls to examine.
+            var sp = this.stack.length - 1;
+            for (var i = sp - 1; i >= 0; i--) {
+                var block = this.target.blocks.getBlock(this.stack[i]);
+                if (block.opcode === 'procedures_call' && block.mutation.proccode === procedureCode) {
+                    return true;
+                }
+                if (--callCount < 0) return false;
+            }
+            return false;
+        }
+    }], [{
+        key: 'STATUS_RUNNING',
+        get: function get() {
+            return 0;
+        }
+
+        /**
+         * Threads are in this state when a primitive is waiting on a promise;
+         * execution is paused until the promise changes thread status.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_PROMISE_WAIT',
+        get: function get() {
+            return 1;
+        }
+
+        /**
+         * Thread status for yield.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_YIELD',
+        get: function get() {
+            return 2;
+        }
+
+        /**
+         * Thread status for a single-tick yield. This will be cleared when the
+         * thread is resumed.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_YIELD_TICK',
+        get: function get() {
+            return 3;
+        }
+
+        /**
+         * Thread status for a finished/done thread.
+         * Thread is in this state when there are no more blocks to execute.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_DONE',
+        get: function get() {
+            return 4;
+        }
+    }]);
+
+    return Thread;
+}();
+
+module.exports = Thread;
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var StringUtil = __webpack_require__(13);
-var log = __webpack_require__(2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @fileoverview
+ * Object representing a Scratch variable.
+ */
+
+var uid = __webpack_require__(30);
+
+var Variable = function () {
+    /**
+     * @param {string} id Id of the variable.
+     * @param {string} name Name of the variable.
+     * @param {string} type Type of the variable, one of '' or 'list'
+     * @param {boolean} isCloud Whether the variable is stored in the cloud.
+     * @constructor
+     */
+    function Variable(id, name, type, isCloud) {
+        _classCallCheck(this, Variable);
+
+        this.id = id || uid();
+        this.name = name;
+        this.type = type;
+        this.isCloud = isCloud;
+        switch (this.type) {
+            case Variable.SCALAR_TYPE:
+                this.value = 0;
+                break;
+            case Variable.LIST_TYPE:
+                this.value = [];
+                break;
+            default:
+                throw new Error('Invalid variable type: ' + this.type);
+        }
+    }
+
+    _createClass(Variable, [{
+        key: 'toXML',
+        value: function toXML() {
+            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
+        }
+
+        /**
+         * Type representation for scalar variables.
+         * This is currently represented as ''
+         * for compatibility with blockly.
+         * @const {string}
+         */
+
+    }], [{
+        key: 'SCALAR_TYPE',
+        get: function get() {
+            return '';
+        }
+
+        /**
+         * Type representation for list variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'LIST_TYPE',
+        get: function get() {
+            return 'list';
+        }
+    }]);
+
+    return Variable;
+}();
+
+module.exports = Variable;
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var ArgumentType = {
+    ANGLE: 'angle',
+    BOOLEAN: 'Boolean',
+    COLOR: 'color',
+    NUMBER: 'number',
+    STRING: 'string'
+};
+
+module.exports = ArgumentType;
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var StringUtil = __webpack_require__(15);
+var log = __webpack_require__(3);
 
 /**
  * Initialize a costume from an asset asynchronously.
@@ -4101,14 +4674,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 18 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var StringUtil = __webpack_require__(13);
-var log = __webpack_require__(2);
+var StringUtil = __webpack_require__(15);
+var log = __webpack_require__(3);
 
 /**
  * Initialize a sound from an asset asynchronously.
@@ -4159,7 +4732,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 19 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4173,10 +4746,10 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var log = __webpack_require__(2);
-var MathUtil = __webpack_require__(10);
-var StringUtil = __webpack_require__(13);
-var Target = __webpack_require__(76);
+var log = __webpack_require__(3);
+var MathUtil = __webpack_require__(8);
+var StringUtil = __webpack_require__(15);
+var Target = __webpack_require__(77);
 
 /**
  * Rendered target: instance of a sprite (clone), or the stage.
@@ -5231,46 +5804,7 @@ var RenderedTarget = function (_Target) {
 module.exports = RenderedTarget;
 
 /***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Methods for cloning JavaScript objects.
- * @type {object}
- */
-var Clone = function () {
-  function Clone() {
-    _classCallCheck(this, Clone);
-  }
-
-  _createClass(Clone, null, [{
-    key: "simple",
-
-    /**
-     * Deep-clone a "simple" object: one which can be fully expressed with JSON.
-     * Non-JSON values, such as functions, will be stripped from the clone.
-     * @param {object} original - the object to be cloned.
-     * @returns {object} a deep clone of the original object.
-     */
-    value: function simple(original) {
-      return JSON.parse(JSON.stringify(original));
-    }
-  }]);
-
-  return Clone;
-}();
-
-module.exports = Clone;
-
-/***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5528,7 +6062,133 @@ var Color = function () {
 module.exports = Color;
 
 /***/ }),
-/* 22 */
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @fileoverview
+ * A utility for accurately measuring time.
+ * To use:
+ * ---
+ * var timer = new Timer();
+ * timer.start();
+ * ... pass some time ...
+ * var timeDifference = timer.timeElapsed();
+ * ---
+ * Or, you can use the `time` and `relativeTime`
+ * to do some measurement yourself.
+ */
+
+var Timer = function () {
+    function Timer() {
+        _classCallCheck(this, Timer);
+
+        /**
+         * Used to store the start time of a timer action.
+         * Updated when calling `timer.start`.
+         */
+        this.startTime = 0;
+    }
+
+    /**
+     * Disable use of self.performance for now as it results in lower performance
+     * However, instancing it like below (caching the self.performance to a local variable) negates most of the issues.
+     * @type {boolean}
+     */
+
+
+    _createClass(Timer, [{
+        key: 'time',
+
+
+        /**
+         * Return the currently known absolute time, in ms precision.
+         * @returns {number} ms elapsed since 1 January 1970 00:00:00 UTC.
+         */
+        value: function time() {
+            return Timer.nowObj.now();
+        }
+
+        /**
+         * Returns a time accurate relative to other times produced by this function.
+         * If possible, will use sub-millisecond precision.
+         * If not, will use millisecond precision.
+         * Not guaranteed to produce the same absolute values per-system.
+         * @returns {number} ms-scale accurate time relative to other relative times.
+         */
+
+    }, {
+        key: 'relativeTime',
+        value: function relativeTime() {
+            return Timer.nowObj.now();
+        }
+
+        /**
+         * Start a timer for measuring elapsed time,
+         * at the most accurate precision possible.
+         */
+
+    }, {
+        key: 'start',
+        value: function start() {
+            this.startTime = Timer.nowObj.now();
+        }
+    }, {
+        key: 'timeElapsed',
+        value: function timeElapsed() {
+            return Timer.nowObj.now() - this.startTime;
+        }
+    }], [{
+        key: 'USE_PERFORMANCE',
+        get: function get() {
+            return false;
+        }
+
+        /**
+         * Legacy object to allow for us to call now to get the old style date time (for backwards compatibility)
+         * @deprecated This is only called via the nowObj.now() if no other means is possible...
+         */
+
+    }, {
+        key: 'legacyDateCode',
+        get: function get() {
+            return {
+                now: function now() {
+                    return new Date().getTime();
+                }
+            };
+        }
+
+        /**
+         * Use this object to route all time functions through single access points.
+         */
+
+    }, {
+        key: 'nowObj',
+        get: function get() {
+            if (Timer.USE_PERFORMANCE && typeof self !== 'undefined' && self.performance && 'now' in self.performance) {
+                return self.performance;
+            } else if (Date.now) {
+                return Date;
+            }
+            return Timer.legacyDateCode;
+        }
+    }]);
+
+    return Timer;
+}();
+
+module.exports = Timer;
+
+/***/ }),
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -10512,7 +11172,7 @@ module.exports = Color;
 }));
 
 /***/ }),
-/* 23 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10560,1539 +11220,10 @@ function nextTick(fn, arg1, arg2, arg3) {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @fileoverview
- * Object representing a Scratch list.
- */
-
-/**
-  * @param {!string} name Name of the list.
-  * @param {Array} contents Contents of the list, as an array.
-  * @constructor
-  */
-var List = function List(name, contents) {
-    _classCallCheck(this, List);
-
-    this.name = name;
-    this.contents = contents;
-};
-
-module.exports = List;
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * A thread is a running stack context and all the metadata needed.
- * @param {?string} firstBlock First block to execute in the thread.
- * @constructor
- */
-var Thread = function () {
-    function Thread(firstBlock) {
-        _classCallCheck(this, Thread);
-
-        /**
-         * ID of top block of the thread
-         * @type {!string}
-         */
-        this.topBlock = firstBlock;
-
-        /**
-         * Stack for the thread. When the sequencer enters a control structure,
-         * the block is pushed onto the stack so we know where to exit.
-         * @type {Array.<string>}
-         */
-        this.stack = [];
-
-        /**
-         * Stack frames for the thread. Store metadata for the executing blocks.
-         * @type {Array.<Object>}
-         */
-        this.stackFrames = [];
-
-        /**
-         * Status of the thread, one of three states (below)
-         * @type {number}
-         */
-        this.status = 0; /* Thread.STATUS_RUNNING */
-
-        /**
-         * Whether the thread is killed in the middle of execution.
-         * @type {boolean}
-         */
-        this.isKilled = false;
-
-        /**
-         * Target of this thread.
-         * @type {?Target}
-         */
-        this.target = null;
-
-        /**
-         * Whether the thread requests its script to glow during this frame.
-         * @type {boolean}
-         */
-        this.requestScriptGlowInFrame = false;
-
-        /**
-         * Which block ID should glow during this frame, if any.
-         * @type {?string}
-         */
-        this.blockGlowInFrame = null;
-
-        /**
-         * A timer for when the thread enters warp mode.
-         * Substitutes the sequencer's count toward WORK_TIME on a per-thread basis.
-         * @type {?Timer}
-         */
-        this.warpTimer = null;
-    }
-
-    /**
-     * Thread status for initialized or running thread.
-     * This is the default state for a thread - execution should run normally,
-     * stepping from block to block.
-     * @const
-     */
-
-
-    _createClass(Thread, [{
-        key: 'pushStack',
-
-
-        /**
-         * Push stack and update stack frames appropriately.
-         * @param {string} blockId Block ID to push to stack.
-         */
-        value: function pushStack(blockId) {
-            this.stack.push(blockId);
-            // Push an empty stack frame, if we need one.
-            // Might not, if we just popped the stack.
-            if (this.stack.length > this.stackFrames.length) {
-                // Copy warp mode from any higher level.
-                var warpMode = false;
-                if (this.stackFrames.length > 0 && this.stackFrames[this.stackFrames.length - 1]) {
-                    warpMode = this.stackFrames[this.stackFrames.length - 1].warpMode;
-                }
-                this.stackFrames.push({
-                    isLoop: false, // Whether this level of the stack is a loop.
-                    warpMode: warpMode, // Whether this level is in warp mode.
-                    reported: {}, // Collects reported input values.
-                    waitingReporter: null, // Name of waiting reporter.
-                    params: {}, // Procedure parameters.
-                    executionContext: {} // A context passed to block implementations.
-                });
-            }
-        }
-
-        /**
-         * Reset the stack frame for use by the next block.
-         * (avoids popping and re-pushing a new stack frame - keeps the warpmode the same
-         * @param {string} blockId Block ID to push to stack.
-         */
-
-    }, {
-        key: 'reuseStackForNextBlock',
-        value: function reuseStackForNextBlock(blockId) {
-            this.stack[this.stack.length - 1] = blockId;
-            var frame = this.stackFrames[this.stackFrames.length - 1];
-            frame.isLoop = false;
-            // frame.warpMode = warpMode;   // warp mode stays the same when reusing the stack frame.
-            frame.reported = {};
-            frame.waitingReporter = null;
-            frame.params = {};
-            frame.executionContext = {};
-        }
-
-        /**
-         * Pop last block on the stack and its stack frame.
-         * @return {string} Block ID popped from the stack.
-         */
-
-    }, {
-        key: 'popStack',
-        value: function popStack() {
-            this.stackFrames.pop();
-            return this.stack.pop();
-        }
-
-        /**
-         * Pop back down the stack frame until we hit a procedure call or the stack frame is emptied
-         */
-
-    }, {
-        key: 'stopThisScript',
-        value: function stopThisScript() {
-            var blockID = this.peekStack();
-            while (blockID !== null) {
-                var block = this.target.blocks.getBlock(blockID);
-                if (typeof block !== 'undefined' && block.opcode === 'procedures_callnoreturn') {
-                    break;
-                }
-                this.popStack();
-                blockID = this.peekStack();
-            }
-
-            if (this.stack.length === 0) {
-                // Clean up!
-                this.requestScriptGlowInFrame = false;
-                this.status = Thread.STATUS_DONE;
-            }
-        }
-
-        /**
-         * Get top stack item.
-         * @return {?string} Block ID on top of stack.
-         */
-
-    }, {
-        key: 'peekStack',
-        value: function peekStack() {
-            return this.stack.length > 0 ? this.stack[this.stack.length - 1] : null;
-        }
-
-        /**
-         * Get top stack frame.
-         * @return {?object} Last stack frame stored on this thread.
-         */
-
-    }, {
-        key: 'peekStackFrame',
-        value: function peekStackFrame() {
-            return this.stackFrames.length > 0 ? this.stackFrames[this.stackFrames.length - 1] : null;
-        }
-
-        /**
-         * Get stack frame above the current top.
-         * @return {?object} Second to last stack frame stored on this thread.
-         */
-
-    }, {
-        key: 'peekParentStackFrame',
-        value: function peekParentStackFrame() {
-            return this.stackFrames.length > 1 ? this.stackFrames[this.stackFrames.length - 2] : null;
-        }
-
-        /**
-         * Push a reported value to the parent of the current stack frame.
-         * @param {*} value Reported value to push.
-         */
-
-    }, {
-        key: 'pushReportedValue',
-        value: function pushReportedValue(value) {
-            var parentStackFrame = this.peekParentStackFrame();
-            if (parentStackFrame) {
-                var waitingReporter = parentStackFrame.waitingReporter;
-                parentStackFrame.reported[waitingReporter] = value;
-            }
-        }
-
-        /**
-         * Add a parameter to the stack frame.
-         * Use when calling a procedure with parameter values.
-         * @param {!string} paramName Name of parameter.
-         * @param {*} value Value to set for parameter.
-         */
-
-    }, {
-        key: 'pushParam',
-        value: function pushParam(paramName, value) {
-            var stackFrame = this.peekStackFrame();
-            stackFrame.params[paramName] = value;
-        }
-
-        /**
-         * Get a parameter at the lowest possible level of the stack.
-         * @param {!string} paramName Name of parameter.
-         * @return {*} value Value for parameter.
-         */
-
-    }, {
-        key: 'getParam',
-        value: function getParam(paramName) {
-            for (var i = this.stackFrames.length - 1; i >= 0; i--) {
-                var frame = this.stackFrames[i];
-                if (frame.params.hasOwnProperty(paramName)) {
-                    return frame.params[paramName];
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Whether the current execution of a thread is at the top of the stack.
-         * @return {boolean} True if execution is at top of the stack.
-         */
-
-    }, {
-        key: 'atStackTop',
-        value: function atStackTop() {
-            return this.peekStack() === this.topBlock;
-        }
-
-        /**
-         * Switch the thread to the next block at the current level of the stack.
-         * For example, this is used in a standard sequence of blocks,
-         * where execution proceeds from one block to the next.
-         */
-
-    }, {
-        key: 'goToNextBlock',
-        value: function goToNextBlock() {
-            var nextBlockId = this.target.blocks.getNextBlock(this.peekStack());
-            this.reuseStackForNextBlock(nextBlockId);
-        }
-
-        /**
-         * Attempt to determine whether a procedure call is recursive,
-         * by examining the stack.
-         * @param {!string} procedureCode Procedure code of procedure being called.
-         * @return {boolean} True if the call appears recursive.
-         */
-
-    }, {
-        key: 'isRecursiveCall',
-        value: function isRecursiveCall(procedureCode) {
-            var callCount = 5; // Max number of enclosing procedure calls to examine.
-            var sp = this.stack.length - 1;
-            for (var i = sp - 1; i >= 0; i--) {
-                var block = this.target.blocks.getBlock(this.stack[i]);
-                if (block.opcode === 'procedures_callnoreturn' && block.mutation.proccode === procedureCode) {
-                    return true;
-                }
-                if (--callCount < 0) return false;
-            }
-            return false;
-        }
-    }], [{
-        key: 'STATUS_RUNNING',
-        get: function get() {
-            return 0;
-        }
-
-        /**
-         * Threads are in this state when a primitive is waiting on a promise;
-         * execution is paused until the promise changes thread status.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_PROMISE_WAIT',
-        get: function get() {
-            return 1;
-        }
-
-        /**
-         * Thread status for yield.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_YIELD',
-        get: function get() {
-            return 2;
-        }
-
-        /**
-         * Thread status for a single-tick yield. This will be cleared when the
-         * thread is resumed.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_YIELD_TICK',
-        get: function get() {
-            return 3;
-        }
-
-        /**
-         * Thread status for a finished/done thread.
-         * Thread is in this state when there are no more blocks to execute.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_DONE',
-        get: function get() {
-            return 4;
-        }
-    }]);
-
-    return Thread;
-}();
-
-module.exports = Thread;
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @fileoverview
- * Object representing a Scratch variable.
- */
-
-var uid = __webpack_require__(29);
-
-var Variable = function () {
-    /**
-     * @param {string} id Id of the variable.
-     * @param {string} name Name of the variable.
-     * @param {(string|number)} value Value of the variable.
-     * @param {boolean} isCloud Whether the variable is stored in the cloud.
-     * @constructor
-     */
-    function Variable(id, name, value, isCloud, type) {
-        _classCallCheck(this, Variable);
-
-        this.id = id || uid();
-        this.name = name;
-        this.value = value;
-        this.isCloud = isCloud;
-        this.type = type || '';
-    }
-
-    _createClass(Variable, [{
-        key: 'toXML',
-        value: function toXML() {
-            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
-        }
-    }]);
-
-    return Variable;
-}();
-
-module.exports = Variable;
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var ArgumentType = {
-    ANGLE: 'angle',
-    BOOLEAN: 'Boolean',
-    COLOR: 'color',
-    NUMBER: 'number',
-    STRING: 'string'
-};
-
-module.exports = ArgumentType;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ }),
 /* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @fileoverview
- * A utility for accurately measuring time.
- * To use:
- * ---
- * var timer = new Timer();
- * timer.start();
- * ... pass some time ...
- * var timeDifference = timer.timeElapsed();
- * ---
- * Or, you can use the `time` and `relativeTime`
- * to do some measurement yourself.
- */
-
-var Timer = function () {
-    function Timer() {
-        _classCallCheck(this, Timer);
-
-        /**
-         * Used to store the start time of a timer action.
-         * Updated when calling `timer.start`.
-         */
-        this.startTime = 0;
-    }
-
-    /**
-     * Disable use of self.performance for now as it results in lower performance
-     * However, instancing it like below (caching the self.performance to a local variable) negates most of the issues.
-     * @type {boolean}
-     */
-
-
-    _createClass(Timer, [{
-        key: 'time',
-
-
-        /**
-         * Return the currently known absolute time, in ms precision.
-         * @returns {number} ms elapsed since 1 January 1970 00:00:00 UTC.
-         */
-        value: function time() {
-            return Timer.nowObj.now();
-        }
-
-        /**
-         * Returns a time accurate relative to other times produced by this function.
-         * If possible, will use sub-millisecond precision.
-         * If not, will use millisecond precision.
-         * Not guaranteed to produce the same absolute values per-system.
-         * @returns {number} ms-scale accurate time relative to other relative times.
-         */
-
-    }, {
-        key: 'relativeTime',
-        value: function relativeTime() {
-            return Timer.nowObj.now();
-        }
-
-        /**
-         * Start a timer for measuring elapsed time,
-         * at the most accurate precision possible.
-         */
-
-    }, {
-        key: 'start',
-        value: function start() {
-            this.startTime = Timer.nowObj.now();
-        }
-    }, {
-        key: 'timeElapsed',
-        value: function timeElapsed() {
-            return Timer.nowObj.now() - this.startTime;
-        }
-    }], [{
-        key: 'USE_PERFORMANCE',
-        get: function get() {
-            return false;
-        }
-
-        /**
-         * Legacy object to allow for us to call now to get the old style date time (for backwards compatibility)
-         * @deprecated This is only called via the nowObj.now() if no other means is possible...
-         */
-
-    }, {
-        key: 'legacyDateCode',
-        get: function get() {
-            return {
-                now: function now() {
-                    return new Date().getTime();
-                }
-            };
-        }
-
-        /**
-         * Use this object to route all time functions through single access points.
-         */
-
-    }, {
-        key: 'nowObj',
-        get: function get() {
-            if (Timer.USE_PERFORMANCE && typeof self !== 'undefined' && self.performance && 'now' in self.performance) {
-                return self.performance;
-            } else if (Date.now) {
-                return Date;
-            }
-            return Timer.legacyDateCode;
-        }
-    }]);
-
-    return Timer;
-}();
-
-module.exports = Timer;
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/**
- * @fileoverview UID generator, from Blockly.
- */
-
-/**
- * Legal characters for the unique ID.
- * Should be all on a US keyboard.  No XML special characters or control codes.
- * Removed $ due to issue 251.
- * @private
- */
-var soup_ = '!#%()*+,-./:;=?@[]^_`{|}~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-/**
- * Generate a unique ID, from Blockly.  This should be globally unique.
- * 87 characters ^ 20 length > 128 bits (better than a UUID).
- * @return {string} A globally unique ID string.
- */
-var uid = function uid() {
-  var length = 20;
-  var soupLength = soup_.length;
-  var id = [];
-  for (var i = 0; i < length; i++) {
-    id[i] = soup_.charAt(Math.random() * soupLength);
-  }
-  return id.join('');
-};
-
-module.exports = uid;
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports) {
-
-module.exports = {"Aacute":"Á","aacute":"á","Abreve":"Ă","abreve":"ă","ac":"∾","acd":"∿","acE":"∾̳","Acirc":"Â","acirc":"â","acute":"´","Acy":"А","acy":"а","AElig":"Æ","aelig":"æ","af":"⁡","Afr":"𝔄","afr":"𝔞","Agrave":"À","agrave":"à","alefsym":"ℵ","aleph":"ℵ","Alpha":"Α","alpha":"α","Amacr":"Ā","amacr":"ā","amalg":"⨿","amp":"&","AMP":"&","andand":"⩕","And":"⩓","and":"∧","andd":"⩜","andslope":"⩘","andv":"⩚","ang":"∠","ange":"⦤","angle":"∠","angmsdaa":"⦨","angmsdab":"⦩","angmsdac":"⦪","angmsdad":"⦫","angmsdae":"⦬","angmsdaf":"⦭","angmsdag":"⦮","angmsdah":"⦯","angmsd":"∡","angrt":"∟","angrtvb":"⊾","angrtvbd":"⦝","angsph":"∢","angst":"Å","angzarr":"⍼","Aogon":"Ą","aogon":"ą","Aopf":"𝔸","aopf":"𝕒","apacir":"⩯","ap":"≈","apE":"⩰","ape":"≊","apid":"≋","apos":"'","ApplyFunction":"⁡","approx":"≈","approxeq":"≊","Aring":"Å","aring":"å","Ascr":"𝒜","ascr":"𝒶","Assign":"≔","ast":"*","asymp":"≈","asympeq":"≍","Atilde":"Ã","atilde":"ã","Auml":"Ä","auml":"ä","awconint":"∳","awint":"⨑","backcong":"≌","backepsilon":"϶","backprime":"‵","backsim":"∽","backsimeq":"⋍","Backslash":"∖","Barv":"⫧","barvee":"⊽","barwed":"⌅","Barwed":"⌆","barwedge":"⌅","bbrk":"⎵","bbrktbrk":"⎶","bcong":"≌","Bcy":"Б","bcy":"б","bdquo":"„","becaus":"∵","because":"∵","Because":"∵","bemptyv":"⦰","bepsi":"϶","bernou":"ℬ","Bernoullis":"ℬ","Beta":"Β","beta":"β","beth":"ℶ","between":"≬","Bfr":"𝔅","bfr":"𝔟","bigcap":"⋂","bigcirc":"◯","bigcup":"⋃","bigodot":"⨀","bigoplus":"⨁","bigotimes":"⨂","bigsqcup":"⨆","bigstar":"★","bigtriangledown":"▽","bigtriangleup":"△","biguplus":"⨄","bigvee":"⋁","bigwedge":"⋀","bkarow":"⤍","blacklozenge":"⧫","blacksquare":"▪","blacktriangle":"▴","blacktriangledown":"▾","blacktriangleleft":"◂","blacktriangleright":"▸","blank":"␣","blk12":"▒","blk14":"░","blk34":"▓","block":"█","bne":"=⃥","bnequiv":"≡⃥","bNot":"⫭","bnot":"⌐","Bopf":"𝔹","bopf":"𝕓","bot":"⊥","bottom":"⊥","bowtie":"⋈","boxbox":"⧉","boxdl":"┐","boxdL":"╕","boxDl":"╖","boxDL":"╗","boxdr":"┌","boxdR":"╒","boxDr":"╓","boxDR":"╔","boxh":"─","boxH":"═","boxhd":"┬","boxHd":"╤","boxhD":"╥","boxHD":"╦","boxhu":"┴","boxHu":"╧","boxhU":"╨","boxHU":"╩","boxminus":"⊟","boxplus":"⊞","boxtimes":"⊠","boxul":"┘","boxuL":"╛","boxUl":"╜","boxUL":"╝","boxur":"└","boxuR":"╘","boxUr":"╙","boxUR":"╚","boxv":"│","boxV":"║","boxvh":"┼","boxvH":"╪","boxVh":"╫","boxVH":"╬","boxvl":"┤","boxvL":"╡","boxVl":"╢","boxVL":"╣","boxvr":"├","boxvR":"╞","boxVr":"╟","boxVR":"╠","bprime":"‵","breve":"˘","Breve":"˘","brvbar":"¦","bscr":"𝒷","Bscr":"ℬ","bsemi":"⁏","bsim":"∽","bsime":"⋍","bsolb":"⧅","bsol":"\\","bsolhsub":"⟈","bull":"•","bullet":"•","bump":"≎","bumpE":"⪮","bumpe":"≏","Bumpeq":"≎","bumpeq":"≏","Cacute":"Ć","cacute":"ć","capand":"⩄","capbrcup":"⩉","capcap":"⩋","cap":"∩","Cap":"⋒","capcup":"⩇","capdot":"⩀","CapitalDifferentialD":"ⅅ","caps":"∩︀","caret":"⁁","caron":"ˇ","Cayleys":"ℭ","ccaps":"⩍","Ccaron":"Č","ccaron":"č","Ccedil":"Ç","ccedil":"ç","Ccirc":"Ĉ","ccirc":"ĉ","Cconint":"∰","ccups":"⩌","ccupssm":"⩐","Cdot":"Ċ","cdot":"ċ","cedil":"¸","Cedilla":"¸","cemptyv":"⦲","cent":"¢","centerdot":"·","CenterDot":"·","cfr":"𝔠","Cfr":"ℭ","CHcy":"Ч","chcy":"ч","check":"✓","checkmark":"✓","Chi":"Χ","chi":"χ","circ":"ˆ","circeq":"≗","circlearrowleft":"↺","circlearrowright":"↻","circledast":"⊛","circledcirc":"⊚","circleddash":"⊝","CircleDot":"⊙","circledR":"®","circledS":"Ⓢ","CircleMinus":"⊖","CirclePlus":"⊕","CircleTimes":"⊗","cir":"○","cirE":"⧃","cire":"≗","cirfnint":"⨐","cirmid":"⫯","cirscir":"⧂","ClockwiseContourIntegral":"∲","CloseCurlyDoubleQuote":"”","CloseCurlyQuote":"’","clubs":"♣","clubsuit":"♣","colon":":","Colon":"∷","Colone":"⩴","colone":"≔","coloneq":"≔","comma":",","commat":"@","comp":"∁","compfn":"∘","complement":"∁","complexes":"ℂ","cong":"≅","congdot":"⩭","Congruent":"≡","conint":"∮","Conint":"∯","ContourIntegral":"∮","copf":"𝕔","Copf":"ℂ","coprod":"∐","Coproduct":"∐","copy":"©","COPY":"©","copysr":"℗","CounterClockwiseContourIntegral":"∳","crarr":"↵","cross":"✗","Cross":"⨯","Cscr":"𝒞","cscr":"𝒸","csub":"⫏","csube":"⫑","csup":"⫐","csupe":"⫒","ctdot":"⋯","cudarrl":"⤸","cudarrr":"⤵","cuepr":"⋞","cuesc":"⋟","cularr":"↶","cularrp":"⤽","cupbrcap":"⩈","cupcap":"⩆","CupCap":"≍","cup":"∪","Cup":"⋓","cupcup":"⩊","cupdot":"⊍","cupor":"⩅","cups":"∪︀","curarr":"↷","curarrm":"⤼","curlyeqprec":"⋞","curlyeqsucc":"⋟","curlyvee":"⋎","curlywedge":"⋏","curren":"¤","curvearrowleft":"↶","curvearrowright":"↷","cuvee":"⋎","cuwed":"⋏","cwconint":"∲","cwint":"∱","cylcty":"⌭","dagger":"†","Dagger":"‡","daleth":"ℸ","darr":"↓","Darr":"↡","dArr":"⇓","dash":"‐","Dashv":"⫤","dashv":"⊣","dbkarow":"⤏","dblac":"˝","Dcaron":"Ď","dcaron":"ď","Dcy":"Д","dcy":"д","ddagger":"‡","ddarr":"⇊","DD":"ⅅ","dd":"ⅆ","DDotrahd":"⤑","ddotseq":"⩷","deg":"°","Del":"∇","Delta":"Δ","delta":"δ","demptyv":"⦱","dfisht":"⥿","Dfr":"𝔇","dfr":"𝔡","dHar":"⥥","dharl":"⇃","dharr":"⇂","DiacriticalAcute":"´","DiacriticalDot":"˙","DiacriticalDoubleAcute":"˝","DiacriticalGrave":"`","DiacriticalTilde":"˜","diam":"⋄","diamond":"⋄","Diamond":"⋄","diamondsuit":"♦","diams":"♦","die":"¨","DifferentialD":"ⅆ","digamma":"ϝ","disin":"⋲","div":"÷","divide":"÷","divideontimes":"⋇","divonx":"⋇","DJcy":"Ђ","djcy":"ђ","dlcorn":"⌞","dlcrop":"⌍","dollar":"$","Dopf":"𝔻","dopf":"𝕕","Dot":"¨","dot":"˙","DotDot":"⃜","doteq":"≐","doteqdot":"≑","DotEqual":"≐","dotminus":"∸","dotplus":"∔","dotsquare":"⊡","doublebarwedge":"⌆","DoubleContourIntegral":"∯","DoubleDot":"¨","DoubleDownArrow":"⇓","DoubleLeftArrow":"⇐","DoubleLeftRightArrow":"⇔","DoubleLeftTee":"⫤","DoubleLongLeftArrow":"⟸","DoubleLongLeftRightArrow":"⟺","DoubleLongRightArrow":"⟹","DoubleRightArrow":"⇒","DoubleRightTee":"⊨","DoubleUpArrow":"⇑","DoubleUpDownArrow":"⇕","DoubleVerticalBar":"∥","DownArrowBar":"⤓","downarrow":"↓","DownArrow":"↓","Downarrow":"⇓","DownArrowUpArrow":"⇵","DownBreve":"̑","downdownarrows":"⇊","downharpoonleft":"⇃","downharpoonright":"⇂","DownLeftRightVector":"⥐","DownLeftTeeVector":"⥞","DownLeftVectorBar":"⥖","DownLeftVector":"↽","DownRightTeeVector":"⥟","DownRightVectorBar":"⥗","DownRightVector":"⇁","DownTeeArrow":"↧","DownTee":"⊤","drbkarow":"⤐","drcorn":"⌟","drcrop":"⌌","Dscr":"𝒟","dscr":"𝒹","DScy":"Ѕ","dscy":"ѕ","dsol":"⧶","Dstrok":"Đ","dstrok":"đ","dtdot":"⋱","dtri":"▿","dtrif":"▾","duarr":"⇵","duhar":"⥯","dwangle":"⦦","DZcy":"Џ","dzcy":"џ","dzigrarr":"⟿","Eacute":"É","eacute":"é","easter":"⩮","Ecaron":"Ě","ecaron":"ě","Ecirc":"Ê","ecirc":"ê","ecir":"≖","ecolon":"≕","Ecy":"Э","ecy":"э","eDDot":"⩷","Edot":"Ė","edot":"ė","eDot":"≑","ee":"ⅇ","efDot":"≒","Efr":"𝔈","efr":"𝔢","eg":"⪚","Egrave":"È","egrave":"è","egs":"⪖","egsdot":"⪘","el":"⪙","Element":"∈","elinters":"⏧","ell":"ℓ","els":"⪕","elsdot":"⪗","Emacr":"Ē","emacr":"ē","empty":"∅","emptyset":"∅","EmptySmallSquare":"◻","emptyv":"∅","EmptyVerySmallSquare":"▫","emsp13":" ","emsp14":" ","emsp":" ","ENG":"Ŋ","eng":"ŋ","ensp":" ","Eogon":"Ę","eogon":"ę","Eopf":"𝔼","eopf":"𝕖","epar":"⋕","eparsl":"⧣","eplus":"⩱","epsi":"ε","Epsilon":"Ε","epsilon":"ε","epsiv":"ϵ","eqcirc":"≖","eqcolon":"≕","eqsim":"≂","eqslantgtr":"⪖","eqslantless":"⪕","Equal":"⩵","equals":"=","EqualTilde":"≂","equest":"≟","Equilibrium":"⇌","equiv":"≡","equivDD":"⩸","eqvparsl":"⧥","erarr":"⥱","erDot":"≓","escr":"ℯ","Escr":"ℰ","esdot":"≐","Esim":"⩳","esim":"≂","Eta":"Η","eta":"η","ETH":"Ð","eth":"ð","Euml":"Ë","euml":"ë","euro":"€","excl":"!","exist":"∃","Exists":"∃","expectation":"ℰ","exponentiale":"ⅇ","ExponentialE":"ⅇ","fallingdotseq":"≒","Fcy":"Ф","fcy":"ф","female":"♀","ffilig":"ﬃ","fflig":"ﬀ","ffllig":"ﬄ","Ffr":"𝔉","ffr":"𝔣","filig":"ﬁ","FilledSmallSquare":"◼","FilledVerySmallSquare":"▪","fjlig":"fj","flat":"♭","fllig":"ﬂ","fltns":"▱","fnof":"ƒ","Fopf":"𝔽","fopf":"𝕗","forall":"∀","ForAll":"∀","fork":"⋔","forkv":"⫙","Fouriertrf":"ℱ","fpartint":"⨍","frac12":"½","frac13":"⅓","frac14":"¼","frac15":"⅕","frac16":"⅙","frac18":"⅛","frac23":"⅔","frac25":"⅖","frac34":"¾","frac35":"⅗","frac38":"⅜","frac45":"⅘","frac56":"⅚","frac58":"⅝","frac78":"⅞","frasl":"⁄","frown":"⌢","fscr":"𝒻","Fscr":"ℱ","gacute":"ǵ","Gamma":"Γ","gamma":"γ","Gammad":"Ϝ","gammad":"ϝ","gap":"⪆","Gbreve":"Ğ","gbreve":"ğ","Gcedil":"Ģ","Gcirc":"Ĝ","gcirc":"ĝ","Gcy":"Г","gcy":"г","Gdot":"Ġ","gdot":"ġ","ge":"≥","gE":"≧","gEl":"⪌","gel":"⋛","geq":"≥","geqq":"≧","geqslant":"⩾","gescc":"⪩","ges":"⩾","gesdot":"⪀","gesdoto":"⪂","gesdotol":"⪄","gesl":"⋛︀","gesles":"⪔","Gfr":"𝔊","gfr":"𝔤","gg":"≫","Gg":"⋙","ggg":"⋙","gimel":"ℷ","GJcy":"Ѓ","gjcy":"ѓ","gla":"⪥","gl":"≷","glE":"⪒","glj":"⪤","gnap":"⪊","gnapprox":"⪊","gne":"⪈","gnE":"≩","gneq":"⪈","gneqq":"≩","gnsim":"⋧","Gopf":"𝔾","gopf":"𝕘","grave":"`","GreaterEqual":"≥","GreaterEqualLess":"⋛","GreaterFullEqual":"≧","GreaterGreater":"⪢","GreaterLess":"≷","GreaterSlantEqual":"⩾","GreaterTilde":"≳","Gscr":"𝒢","gscr":"ℊ","gsim":"≳","gsime":"⪎","gsiml":"⪐","gtcc":"⪧","gtcir":"⩺","gt":">","GT":">","Gt":"≫","gtdot":"⋗","gtlPar":"⦕","gtquest":"⩼","gtrapprox":"⪆","gtrarr":"⥸","gtrdot":"⋗","gtreqless":"⋛","gtreqqless":"⪌","gtrless":"≷","gtrsim":"≳","gvertneqq":"≩︀","gvnE":"≩︀","Hacek":"ˇ","hairsp":" ","half":"½","hamilt":"ℋ","HARDcy":"Ъ","hardcy":"ъ","harrcir":"⥈","harr":"↔","hArr":"⇔","harrw":"↭","Hat":"^","hbar":"ℏ","Hcirc":"Ĥ","hcirc":"ĥ","hearts":"♥","heartsuit":"♥","hellip":"…","hercon":"⊹","hfr":"𝔥","Hfr":"ℌ","HilbertSpace":"ℋ","hksearow":"⤥","hkswarow":"⤦","hoarr":"⇿","homtht":"∻","hookleftarrow":"↩","hookrightarrow":"↪","hopf":"𝕙","Hopf":"ℍ","horbar":"―","HorizontalLine":"─","hscr":"𝒽","Hscr":"ℋ","hslash":"ℏ","Hstrok":"Ħ","hstrok":"ħ","HumpDownHump":"≎","HumpEqual":"≏","hybull":"⁃","hyphen":"‐","Iacute":"Í","iacute":"í","ic":"⁣","Icirc":"Î","icirc":"î","Icy":"И","icy":"и","Idot":"İ","IEcy":"Е","iecy":"е","iexcl":"¡","iff":"⇔","ifr":"𝔦","Ifr":"ℑ","Igrave":"Ì","igrave":"ì","ii":"ⅈ","iiiint":"⨌","iiint":"∭","iinfin":"⧜","iiota":"℩","IJlig":"Ĳ","ijlig":"ĳ","Imacr":"Ī","imacr":"ī","image":"ℑ","ImaginaryI":"ⅈ","imagline":"ℐ","imagpart":"ℑ","imath":"ı","Im":"ℑ","imof":"⊷","imped":"Ƶ","Implies":"⇒","incare":"℅","in":"∈","infin":"∞","infintie":"⧝","inodot":"ı","intcal":"⊺","int":"∫","Int":"∬","integers":"ℤ","Integral":"∫","intercal":"⊺","Intersection":"⋂","intlarhk":"⨗","intprod":"⨼","InvisibleComma":"⁣","InvisibleTimes":"⁢","IOcy":"Ё","iocy":"ё","Iogon":"Į","iogon":"į","Iopf":"𝕀","iopf":"𝕚","Iota":"Ι","iota":"ι","iprod":"⨼","iquest":"¿","iscr":"𝒾","Iscr":"ℐ","isin":"∈","isindot":"⋵","isinE":"⋹","isins":"⋴","isinsv":"⋳","isinv":"∈","it":"⁢","Itilde":"Ĩ","itilde":"ĩ","Iukcy":"І","iukcy":"і","Iuml":"Ï","iuml":"ï","Jcirc":"Ĵ","jcirc":"ĵ","Jcy":"Й","jcy":"й","Jfr":"𝔍","jfr":"𝔧","jmath":"ȷ","Jopf":"𝕁","jopf":"𝕛","Jscr":"𝒥","jscr":"𝒿","Jsercy":"Ј","jsercy":"ј","Jukcy":"Є","jukcy":"є","Kappa":"Κ","kappa":"κ","kappav":"ϰ","Kcedil":"Ķ","kcedil":"ķ","Kcy":"К","kcy":"к","Kfr":"𝔎","kfr":"𝔨","kgreen":"ĸ","KHcy":"Х","khcy":"х","KJcy":"Ќ","kjcy":"ќ","Kopf":"𝕂","kopf":"𝕜","Kscr":"𝒦","kscr":"𝓀","lAarr":"⇚","Lacute":"Ĺ","lacute":"ĺ","laemptyv":"⦴","lagran":"ℒ","Lambda":"Λ","lambda":"λ","lang":"⟨","Lang":"⟪","langd":"⦑","langle":"⟨","lap":"⪅","Laplacetrf":"ℒ","laquo":"«","larrb":"⇤","larrbfs":"⤟","larr":"←","Larr":"↞","lArr":"⇐","larrfs":"⤝","larrhk":"↩","larrlp":"↫","larrpl":"⤹","larrsim":"⥳","larrtl":"↢","latail":"⤙","lAtail":"⤛","lat":"⪫","late":"⪭","lates":"⪭︀","lbarr":"⤌","lBarr":"⤎","lbbrk":"❲","lbrace":"{","lbrack":"[","lbrke":"⦋","lbrksld":"⦏","lbrkslu":"⦍","Lcaron":"Ľ","lcaron":"ľ","Lcedil":"Ļ","lcedil":"ļ","lceil":"⌈","lcub":"{","Lcy":"Л","lcy":"л","ldca":"⤶","ldquo":"“","ldquor":"„","ldrdhar":"⥧","ldrushar":"⥋","ldsh":"↲","le":"≤","lE":"≦","LeftAngleBracket":"⟨","LeftArrowBar":"⇤","leftarrow":"←","LeftArrow":"←","Leftarrow":"⇐","LeftArrowRightArrow":"⇆","leftarrowtail":"↢","LeftCeiling":"⌈","LeftDoubleBracket":"⟦","LeftDownTeeVector":"⥡","LeftDownVectorBar":"⥙","LeftDownVector":"⇃","LeftFloor":"⌊","leftharpoondown":"↽","leftharpoonup":"↼","leftleftarrows":"⇇","leftrightarrow":"↔","LeftRightArrow":"↔","Leftrightarrow":"⇔","leftrightarrows":"⇆","leftrightharpoons":"⇋","leftrightsquigarrow":"↭","LeftRightVector":"⥎","LeftTeeArrow":"↤","LeftTee":"⊣","LeftTeeVector":"⥚","leftthreetimes":"⋋","LeftTriangleBar":"⧏","LeftTriangle":"⊲","LeftTriangleEqual":"⊴","LeftUpDownVector":"⥑","LeftUpTeeVector":"⥠","LeftUpVectorBar":"⥘","LeftUpVector":"↿","LeftVectorBar":"⥒","LeftVector":"↼","lEg":"⪋","leg":"⋚","leq":"≤","leqq":"≦","leqslant":"⩽","lescc":"⪨","les":"⩽","lesdot":"⩿","lesdoto":"⪁","lesdotor":"⪃","lesg":"⋚︀","lesges":"⪓","lessapprox":"⪅","lessdot":"⋖","lesseqgtr":"⋚","lesseqqgtr":"⪋","LessEqualGreater":"⋚","LessFullEqual":"≦","LessGreater":"≶","lessgtr":"≶","LessLess":"⪡","lesssim":"≲","LessSlantEqual":"⩽","LessTilde":"≲","lfisht":"⥼","lfloor":"⌊","Lfr":"𝔏","lfr":"𝔩","lg":"≶","lgE":"⪑","lHar":"⥢","lhard":"↽","lharu":"↼","lharul":"⥪","lhblk":"▄","LJcy":"Љ","ljcy":"љ","llarr":"⇇","ll":"≪","Ll":"⋘","llcorner":"⌞","Lleftarrow":"⇚","llhard":"⥫","lltri":"◺","Lmidot":"Ŀ","lmidot":"ŀ","lmoustache":"⎰","lmoust":"⎰","lnap":"⪉","lnapprox":"⪉","lne":"⪇","lnE":"≨","lneq":"⪇","lneqq":"≨","lnsim":"⋦","loang":"⟬","loarr":"⇽","lobrk":"⟦","longleftarrow":"⟵","LongLeftArrow":"⟵","Longleftarrow":"⟸","longleftrightarrow":"⟷","LongLeftRightArrow":"⟷","Longleftrightarrow":"⟺","longmapsto":"⟼","longrightarrow":"⟶","LongRightArrow":"⟶","Longrightarrow":"⟹","looparrowleft":"↫","looparrowright":"↬","lopar":"⦅","Lopf":"𝕃","lopf":"𝕝","loplus":"⨭","lotimes":"⨴","lowast":"∗","lowbar":"_","LowerLeftArrow":"↙","LowerRightArrow":"↘","loz":"◊","lozenge":"◊","lozf":"⧫","lpar":"(","lparlt":"⦓","lrarr":"⇆","lrcorner":"⌟","lrhar":"⇋","lrhard":"⥭","lrm":"‎","lrtri":"⊿","lsaquo":"‹","lscr":"𝓁","Lscr":"ℒ","lsh":"↰","Lsh":"↰","lsim":"≲","lsime":"⪍","lsimg":"⪏","lsqb":"[","lsquo":"‘","lsquor":"‚","Lstrok":"Ł","lstrok":"ł","ltcc":"⪦","ltcir":"⩹","lt":"<","LT":"<","Lt":"≪","ltdot":"⋖","lthree":"⋋","ltimes":"⋉","ltlarr":"⥶","ltquest":"⩻","ltri":"◃","ltrie":"⊴","ltrif":"◂","ltrPar":"⦖","lurdshar":"⥊","luruhar":"⥦","lvertneqq":"≨︀","lvnE":"≨︀","macr":"¯","male":"♂","malt":"✠","maltese":"✠","Map":"⤅","map":"↦","mapsto":"↦","mapstodown":"↧","mapstoleft":"↤","mapstoup":"↥","marker":"▮","mcomma":"⨩","Mcy":"М","mcy":"м","mdash":"—","mDDot":"∺","measuredangle":"∡","MediumSpace":" ","Mellintrf":"ℳ","Mfr":"𝔐","mfr":"𝔪","mho":"℧","micro":"µ","midast":"*","midcir":"⫰","mid":"∣","middot":"·","minusb":"⊟","minus":"−","minusd":"∸","minusdu":"⨪","MinusPlus":"∓","mlcp":"⫛","mldr":"…","mnplus":"∓","models":"⊧","Mopf":"𝕄","mopf":"𝕞","mp":"∓","mscr":"𝓂","Mscr":"ℳ","mstpos":"∾","Mu":"Μ","mu":"μ","multimap":"⊸","mumap":"⊸","nabla":"∇","Nacute":"Ń","nacute":"ń","nang":"∠⃒","nap":"≉","napE":"⩰̸","napid":"≋̸","napos":"ŉ","napprox":"≉","natural":"♮","naturals":"ℕ","natur":"♮","nbsp":" ","nbump":"≎̸","nbumpe":"≏̸","ncap":"⩃","Ncaron":"Ň","ncaron":"ň","Ncedil":"Ņ","ncedil":"ņ","ncong":"≇","ncongdot":"⩭̸","ncup":"⩂","Ncy":"Н","ncy":"н","ndash":"–","nearhk":"⤤","nearr":"↗","neArr":"⇗","nearrow":"↗","ne":"≠","nedot":"≐̸","NegativeMediumSpace":"​","NegativeThickSpace":"​","NegativeThinSpace":"​","NegativeVeryThinSpace":"​","nequiv":"≢","nesear":"⤨","nesim":"≂̸","NestedGreaterGreater":"≫","NestedLessLess":"≪","NewLine":"\n","nexist":"∄","nexists":"∄","Nfr":"𝔑","nfr":"𝔫","ngE":"≧̸","nge":"≱","ngeq":"≱","ngeqq":"≧̸","ngeqslant":"⩾̸","nges":"⩾̸","nGg":"⋙̸","ngsim":"≵","nGt":"≫⃒","ngt":"≯","ngtr":"≯","nGtv":"≫̸","nharr":"↮","nhArr":"⇎","nhpar":"⫲","ni":"∋","nis":"⋼","nisd":"⋺","niv":"∋","NJcy":"Њ","njcy":"њ","nlarr":"↚","nlArr":"⇍","nldr":"‥","nlE":"≦̸","nle":"≰","nleftarrow":"↚","nLeftarrow":"⇍","nleftrightarrow":"↮","nLeftrightarrow":"⇎","nleq":"≰","nleqq":"≦̸","nleqslant":"⩽̸","nles":"⩽̸","nless":"≮","nLl":"⋘̸","nlsim":"≴","nLt":"≪⃒","nlt":"≮","nltri":"⋪","nltrie":"⋬","nLtv":"≪̸","nmid":"∤","NoBreak":"⁠","NonBreakingSpace":" ","nopf":"𝕟","Nopf":"ℕ","Not":"⫬","not":"¬","NotCongruent":"≢","NotCupCap":"≭","NotDoubleVerticalBar":"∦","NotElement":"∉","NotEqual":"≠","NotEqualTilde":"≂̸","NotExists":"∄","NotGreater":"≯","NotGreaterEqual":"≱","NotGreaterFullEqual":"≧̸","NotGreaterGreater":"≫̸","NotGreaterLess":"≹","NotGreaterSlantEqual":"⩾̸","NotGreaterTilde":"≵","NotHumpDownHump":"≎̸","NotHumpEqual":"≏̸","notin":"∉","notindot":"⋵̸","notinE":"⋹̸","notinva":"∉","notinvb":"⋷","notinvc":"⋶","NotLeftTriangleBar":"⧏̸","NotLeftTriangle":"⋪","NotLeftTriangleEqual":"⋬","NotLess":"≮","NotLessEqual":"≰","NotLessGreater":"≸","NotLessLess":"≪̸","NotLessSlantEqual":"⩽̸","NotLessTilde":"≴","NotNestedGreaterGreater":"⪢̸","NotNestedLessLess":"⪡̸","notni":"∌","notniva":"∌","notnivb":"⋾","notnivc":"⋽","NotPrecedes":"⊀","NotPrecedesEqual":"⪯̸","NotPrecedesSlantEqual":"⋠","NotReverseElement":"∌","NotRightTriangleBar":"⧐̸","NotRightTriangle":"⋫","NotRightTriangleEqual":"⋭","NotSquareSubset":"⊏̸","NotSquareSubsetEqual":"⋢","NotSquareSuperset":"⊐̸","NotSquareSupersetEqual":"⋣","NotSubset":"⊂⃒","NotSubsetEqual":"⊈","NotSucceeds":"⊁","NotSucceedsEqual":"⪰̸","NotSucceedsSlantEqual":"⋡","NotSucceedsTilde":"≿̸","NotSuperset":"⊃⃒","NotSupersetEqual":"⊉","NotTilde":"≁","NotTildeEqual":"≄","NotTildeFullEqual":"≇","NotTildeTilde":"≉","NotVerticalBar":"∤","nparallel":"∦","npar":"∦","nparsl":"⫽⃥","npart":"∂̸","npolint":"⨔","npr":"⊀","nprcue":"⋠","nprec":"⊀","npreceq":"⪯̸","npre":"⪯̸","nrarrc":"⤳̸","nrarr":"↛","nrArr":"⇏","nrarrw":"↝̸","nrightarrow":"↛","nRightarrow":"⇏","nrtri":"⋫","nrtrie":"⋭","nsc":"⊁","nsccue":"⋡","nsce":"⪰̸","Nscr":"𝒩","nscr":"𝓃","nshortmid":"∤","nshortparallel":"∦","nsim":"≁","nsime":"≄","nsimeq":"≄","nsmid":"∤","nspar":"∦","nsqsube":"⋢","nsqsupe":"⋣","nsub":"⊄","nsubE":"⫅̸","nsube":"⊈","nsubset":"⊂⃒","nsubseteq":"⊈","nsubseteqq":"⫅̸","nsucc":"⊁","nsucceq":"⪰̸","nsup":"⊅","nsupE":"⫆̸","nsupe":"⊉","nsupset":"⊃⃒","nsupseteq":"⊉","nsupseteqq":"⫆̸","ntgl":"≹","Ntilde":"Ñ","ntilde":"ñ","ntlg":"≸","ntriangleleft":"⋪","ntrianglelefteq":"⋬","ntriangleright":"⋫","ntrianglerighteq":"⋭","Nu":"Ν","nu":"ν","num":"#","numero":"№","numsp":" ","nvap":"≍⃒","nvdash":"⊬","nvDash":"⊭","nVdash":"⊮","nVDash":"⊯","nvge":"≥⃒","nvgt":">⃒","nvHarr":"⤄","nvinfin":"⧞","nvlArr":"⤂","nvle":"≤⃒","nvlt":"<⃒","nvltrie":"⊴⃒","nvrArr":"⤃","nvrtrie":"⊵⃒","nvsim":"∼⃒","nwarhk":"⤣","nwarr":"↖","nwArr":"⇖","nwarrow":"↖","nwnear":"⤧","Oacute":"Ó","oacute":"ó","oast":"⊛","Ocirc":"Ô","ocirc":"ô","ocir":"⊚","Ocy":"О","ocy":"о","odash":"⊝","Odblac":"Ő","odblac":"ő","odiv":"⨸","odot":"⊙","odsold":"⦼","OElig":"Œ","oelig":"œ","ofcir":"⦿","Ofr":"𝔒","ofr":"𝔬","ogon":"˛","Ograve":"Ò","ograve":"ò","ogt":"⧁","ohbar":"⦵","ohm":"Ω","oint":"∮","olarr":"↺","olcir":"⦾","olcross":"⦻","oline":"‾","olt":"⧀","Omacr":"Ō","omacr":"ō","Omega":"Ω","omega":"ω","Omicron":"Ο","omicron":"ο","omid":"⦶","ominus":"⊖","Oopf":"𝕆","oopf":"𝕠","opar":"⦷","OpenCurlyDoubleQuote":"“","OpenCurlyQuote":"‘","operp":"⦹","oplus":"⊕","orarr":"↻","Or":"⩔","or":"∨","ord":"⩝","order":"ℴ","orderof":"ℴ","ordf":"ª","ordm":"º","origof":"⊶","oror":"⩖","orslope":"⩗","orv":"⩛","oS":"Ⓢ","Oscr":"𝒪","oscr":"ℴ","Oslash":"Ø","oslash":"ø","osol":"⊘","Otilde":"Õ","otilde":"õ","otimesas":"⨶","Otimes":"⨷","otimes":"⊗","Ouml":"Ö","ouml":"ö","ovbar":"⌽","OverBar":"‾","OverBrace":"⏞","OverBracket":"⎴","OverParenthesis":"⏜","para":"¶","parallel":"∥","par":"∥","parsim":"⫳","parsl":"⫽","part":"∂","PartialD":"∂","Pcy":"П","pcy":"п","percnt":"%","period":".","permil":"‰","perp":"⊥","pertenk":"‱","Pfr":"𝔓","pfr":"𝔭","Phi":"Φ","phi":"φ","phiv":"ϕ","phmmat":"ℳ","phone":"☎","Pi":"Π","pi":"π","pitchfork":"⋔","piv":"ϖ","planck":"ℏ","planckh":"ℎ","plankv":"ℏ","plusacir":"⨣","plusb":"⊞","pluscir":"⨢","plus":"+","plusdo":"∔","plusdu":"⨥","pluse":"⩲","PlusMinus":"±","plusmn":"±","plussim":"⨦","plustwo":"⨧","pm":"±","Poincareplane":"ℌ","pointint":"⨕","popf":"𝕡","Popf":"ℙ","pound":"£","prap":"⪷","Pr":"⪻","pr":"≺","prcue":"≼","precapprox":"⪷","prec":"≺","preccurlyeq":"≼","Precedes":"≺","PrecedesEqual":"⪯","PrecedesSlantEqual":"≼","PrecedesTilde":"≾","preceq":"⪯","precnapprox":"⪹","precneqq":"⪵","precnsim":"⋨","pre":"⪯","prE":"⪳","precsim":"≾","prime":"′","Prime":"″","primes":"ℙ","prnap":"⪹","prnE":"⪵","prnsim":"⋨","prod":"∏","Product":"∏","profalar":"⌮","profline":"⌒","profsurf":"⌓","prop":"∝","Proportional":"∝","Proportion":"∷","propto":"∝","prsim":"≾","prurel":"⊰","Pscr":"𝒫","pscr":"𝓅","Psi":"Ψ","psi":"ψ","puncsp":" ","Qfr":"𝔔","qfr":"𝔮","qint":"⨌","qopf":"𝕢","Qopf":"ℚ","qprime":"⁗","Qscr":"𝒬","qscr":"𝓆","quaternions":"ℍ","quatint":"⨖","quest":"?","questeq":"≟","quot":"\"","QUOT":"\"","rAarr":"⇛","race":"∽̱","Racute":"Ŕ","racute":"ŕ","radic":"√","raemptyv":"⦳","rang":"⟩","Rang":"⟫","rangd":"⦒","range":"⦥","rangle":"⟩","raquo":"»","rarrap":"⥵","rarrb":"⇥","rarrbfs":"⤠","rarrc":"⤳","rarr":"→","Rarr":"↠","rArr":"⇒","rarrfs":"⤞","rarrhk":"↪","rarrlp":"↬","rarrpl":"⥅","rarrsim":"⥴","Rarrtl":"⤖","rarrtl":"↣","rarrw":"↝","ratail":"⤚","rAtail":"⤜","ratio":"∶","rationals":"ℚ","rbarr":"⤍","rBarr":"⤏","RBarr":"⤐","rbbrk":"❳","rbrace":"}","rbrack":"]","rbrke":"⦌","rbrksld":"⦎","rbrkslu":"⦐","Rcaron":"Ř","rcaron":"ř","Rcedil":"Ŗ","rcedil":"ŗ","rceil":"⌉","rcub":"}","Rcy":"Р","rcy":"р","rdca":"⤷","rdldhar":"⥩","rdquo":"”","rdquor":"”","rdsh":"↳","real":"ℜ","realine":"ℛ","realpart":"ℜ","reals":"ℝ","Re":"ℜ","rect":"▭","reg":"®","REG":"®","ReverseElement":"∋","ReverseEquilibrium":"⇋","ReverseUpEquilibrium":"⥯","rfisht":"⥽","rfloor":"⌋","rfr":"𝔯","Rfr":"ℜ","rHar":"⥤","rhard":"⇁","rharu":"⇀","rharul":"⥬","Rho":"Ρ","rho":"ρ","rhov":"ϱ","RightAngleBracket":"⟩","RightArrowBar":"⇥","rightarrow":"→","RightArrow":"→","Rightarrow":"⇒","RightArrowLeftArrow":"⇄","rightarrowtail":"↣","RightCeiling":"⌉","RightDoubleBracket":"⟧","RightDownTeeVector":"⥝","RightDownVectorBar":"⥕","RightDownVector":"⇂","RightFloor":"⌋","rightharpoondown":"⇁","rightharpoonup":"⇀","rightleftarrows":"⇄","rightleftharpoons":"⇌","rightrightarrows":"⇉","rightsquigarrow":"↝","RightTeeArrow":"↦","RightTee":"⊢","RightTeeVector":"⥛","rightthreetimes":"⋌","RightTriangleBar":"⧐","RightTriangle":"⊳","RightTriangleEqual":"⊵","RightUpDownVector":"⥏","RightUpTeeVector":"⥜","RightUpVectorBar":"⥔","RightUpVector":"↾","RightVectorBar":"⥓","RightVector":"⇀","ring":"˚","risingdotseq":"≓","rlarr":"⇄","rlhar":"⇌","rlm":"‏","rmoustache":"⎱","rmoust":"⎱","rnmid":"⫮","roang":"⟭","roarr":"⇾","robrk":"⟧","ropar":"⦆","ropf":"𝕣","Ropf":"ℝ","roplus":"⨮","rotimes":"⨵","RoundImplies":"⥰","rpar":")","rpargt":"⦔","rppolint":"⨒","rrarr":"⇉","Rrightarrow":"⇛","rsaquo":"›","rscr":"𝓇","Rscr":"ℛ","rsh":"↱","Rsh":"↱","rsqb":"]","rsquo":"’","rsquor":"’","rthree":"⋌","rtimes":"⋊","rtri":"▹","rtrie":"⊵","rtrif":"▸","rtriltri":"⧎","RuleDelayed":"⧴","ruluhar":"⥨","rx":"℞","Sacute":"Ś","sacute":"ś","sbquo":"‚","scap":"⪸","Scaron":"Š","scaron":"š","Sc":"⪼","sc":"≻","sccue":"≽","sce":"⪰","scE":"⪴","Scedil":"Ş","scedil":"ş","Scirc":"Ŝ","scirc":"ŝ","scnap":"⪺","scnE":"⪶","scnsim":"⋩","scpolint":"⨓","scsim":"≿","Scy":"С","scy":"с","sdotb":"⊡","sdot":"⋅","sdote":"⩦","searhk":"⤥","searr":"↘","seArr":"⇘","searrow":"↘","sect":"§","semi":";","seswar":"⤩","setminus":"∖","setmn":"∖","sext":"✶","Sfr":"𝔖","sfr":"𝔰","sfrown":"⌢","sharp":"♯","SHCHcy":"Щ","shchcy":"щ","SHcy":"Ш","shcy":"ш","ShortDownArrow":"↓","ShortLeftArrow":"←","shortmid":"∣","shortparallel":"∥","ShortRightArrow":"→","ShortUpArrow":"↑","shy":"­","Sigma":"Σ","sigma":"σ","sigmaf":"ς","sigmav":"ς","sim":"∼","simdot":"⩪","sime":"≃","simeq":"≃","simg":"⪞","simgE":"⪠","siml":"⪝","simlE":"⪟","simne":"≆","simplus":"⨤","simrarr":"⥲","slarr":"←","SmallCircle":"∘","smallsetminus":"∖","smashp":"⨳","smeparsl":"⧤","smid":"∣","smile":"⌣","smt":"⪪","smte":"⪬","smtes":"⪬︀","SOFTcy":"Ь","softcy":"ь","solbar":"⌿","solb":"⧄","sol":"/","Sopf":"𝕊","sopf":"𝕤","spades":"♠","spadesuit":"♠","spar":"∥","sqcap":"⊓","sqcaps":"⊓︀","sqcup":"⊔","sqcups":"⊔︀","Sqrt":"√","sqsub":"⊏","sqsube":"⊑","sqsubset":"⊏","sqsubseteq":"⊑","sqsup":"⊐","sqsupe":"⊒","sqsupset":"⊐","sqsupseteq":"⊒","square":"□","Square":"□","SquareIntersection":"⊓","SquareSubset":"⊏","SquareSubsetEqual":"⊑","SquareSuperset":"⊐","SquareSupersetEqual":"⊒","SquareUnion":"⊔","squarf":"▪","squ":"□","squf":"▪","srarr":"→","Sscr":"𝒮","sscr":"𝓈","ssetmn":"∖","ssmile":"⌣","sstarf":"⋆","Star":"⋆","star":"☆","starf":"★","straightepsilon":"ϵ","straightphi":"ϕ","strns":"¯","sub":"⊂","Sub":"⋐","subdot":"⪽","subE":"⫅","sube":"⊆","subedot":"⫃","submult":"⫁","subnE":"⫋","subne":"⊊","subplus":"⪿","subrarr":"⥹","subset":"⊂","Subset":"⋐","subseteq":"⊆","subseteqq":"⫅","SubsetEqual":"⊆","subsetneq":"⊊","subsetneqq":"⫋","subsim":"⫇","subsub":"⫕","subsup":"⫓","succapprox":"⪸","succ":"≻","succcurlyeq":"≽","Succeeds":"≻","SucceedsEqual":"⪰","SucceedsSlantEqual":"≽","SucceedsTilde":"≿","succeq":"⪰","succnapprox":"⪺","succneqq":"⪶","succnsim":"⋩","succsim":"≿","SuchThat":"∋","sum":"∑","Sum":"∑","sung":"♪","sup1":"¹","sup2":"²","sup3":"³","sup":"⊃","Sup":"⋑","supdot":"⪾","supdsub":"⫘","supE":"⫆","supe":"⊇","supedot":"⫄","Superset":"⊃","SupersetEqual":"⊇","suphsol":"⟉","suphsub":"⫗","suplarr":"⥻","supmult":"⫂","supnE":"⫌","supne":"⊋","supplus":"⫀","supset":"⊃","Supset":"⋑","supseteq":"⊇","supseteqq":"⫆","supsetneq":"⊋","supsetneqq":"⫌","supsim":"⫈","supsub":"⫔","supsup":"⫖","swarhk":"⤦","swarr":"↙","swArr":"⇙","swarrow":"↙","swnwar":"⤪","szlig":"ß","Tab":"\t","target":"⌖","Tau":"Τ","tau":"τ","tbrk":"⎴","Tcaron":"Ť","tcaron":"ť","Tcedil":"Ţ","tcedil":"ţ","Tcy":"Т","tcy":"т","tdot":"⃛","telrec":"⌕","Tfr":"𝔗","tfr":"𝔱","there4":"∴","therefore":"∴","Therefore":"∴","Theta":"Θ","theta":"θ","thetasym":"ϑ","thetav":"ϑ","thickapprox":"≈","thicksim":"∼","ThickSpace":"  ","ThinSpace":" ","thinsp":" ","thkap":"≈","thksim":"∼","THORN":"Þ","thorn":"þ","tilde":"˜","Tilde":"∼","TildeEqual":"≃","TildeFullEqual":"≅","TildeTilde":"≈","timesbar":"⨱","timesb":"⊠","times":"×","timesd":"⨰","tint":"∭","toea":"⤨","topbot":"⌶","topcir":"⫱","top":"⊤","Topf":"𝕋","topf":"𝕥","topfork":"⫚","tosa":"⤩","tprime":"‴","trade":"™","TRADE":"™","triangle":"▵","triangledown":"▿","triangleleft":"◃","trianglelefteq":"⊴","triangleq":"≜","triangleright":"▹","trianglerighteq":"⊵","tridot":"◬","trie":"≜","triminus":"⨺","TripleDot":"⃛","triplus":"⨹","trisb":"⧍","tritime":"⨻","trpezium":"⏢","Tscr":"𝒯","tscr":"𝓉","TScy":"Ц","tscy":"ц","TSHcy":"Ћ","tshcy":"ћ","Tstrok":"Ŧ","tstrok":"ŧ","twixt":"≬","twoheadleftarrow":"↞","twoheadrightarrow":"↠","Uacute":"Ú","uacute":"ú","uarr":"↑","Uarr":"↟","uArr":"⇑","Uarrocir":"⥉","Ubrcy":"Ў","ubrcy":"ў","Ubreve":"Ŭ","ubreve":"ŭ","Ucirc":"Û","ucirc":"û","Ucy":"У","ucy":"у","udarr":"⇅","Udblac":"Ű","udblac":"ű","udhar":"⥮","ufisht":"⥾","Ufr":"𝔘","ufr":"𝔲","Ugrave":"Ù","ugrave":"ù","uHar":"⥣","uharl":"↿","uharr":"↾","uhblk":"▀","ulcorn":"⌜","ulcorner":"⌜","ulcrop":"⌏","ultri":"◸","Umacr":"Ū","umacr":"ū","uml":"¨","UnderBar":"_","UnderBrace":"⏟","UnderBracket":"⎵","UnderParenthesis":"⏝","Union":"⋃","UnionPlus":"⊎","Uogon":"Ų","uogon":"ų","Uopf":"𝕌","uopf":"𝕦","UpArrowBar":"⤒","uparrow":"↑","UpArrow":"↑","Uparrow":"⇑","UpArrowDownArrow":"⇅","updownarrow":"↕","UpDownArrow":"↕","Updownarrow":"⇕","UpEquilibrium":"⥮","upharpoonleft":"↿","upharpoonright":"↾","uplus":"⊎","UpperLeftArrow":"↖","UpperRightArrow":"↗","upsi":"υ","Upsi":"ϒ","upsih":"ϒ","Upsilon":"Υ","upsilon":"υ","UpTeeArrow":"↥","UpTee":"⊥","upuparrows":"⇈","urcorn":"⌝","urcorner":"⌝","urcrop":"⌎","Uring":"Ů","uring":"ů","urtri":"◹","Uscr":"𝒰","uscr":"𝓊","utdot":"⋰","Utilde":"Ũ","utilde":"ũ","utri":"▵","utrif":"▴","uuarr":"⇈","Uuml":"Ü","uuml":"ü","uwangle":"⦧","vangrt":"⦜","varepsilon":"ϵ","varkappa":"ϰ","varnothing":"∅","varphi":"ϕ","varpi":"ϖ","varpropto":"∝","varr":"↕","vArr":"⇕","varrho":"ϱ","varsigma":"ς","varsubsetneq":"⊊︀","varsubsetneqq":"⫋︀","varsupsetneq":"⊋︀","varsupsetneqq":"⫌︀","vartheta":"ϑ","vartriangleleft":"⊲","vartriangleright":"⊳","vBar":"⫨","Vbar":"⫫","vBarv":"⫩","Vcy":"В","vcy":"в","vdash":"⊢","vDash":"⊨","Vdash":"⊩","VDash":"⊫","Vdashl":"⫦","veebar":"⊻","vee":"∨","Vee":"⋁","veeeq":"≚","vellip":"⋮","verbar":"|","Verbar":"‖","vert":"|","Vert":"‖","VerticalBar":"∣","VerticalLine":"|","VerticalSeparator":"❘","VerticalTilde":"≀","VeryThinSpace":" ","Vfr":"𝔙","vfr":"𝔳","vltri":"⊲","vnsub":"⊂⃒","vnsup":"⊃⃒","Vopf":"𝕍","vopf":"𝕧","vprop":"∝","vrtri":"⊳","Vscr":"𝒱","vscr":"𝓋","vsubnE":"⫋︀","vsubne":"⊊︀","vsupnE":"⫌︀","vsupne":"⊋︀","Vvdash":"⊪","vzigzag":"⦚","Wcirc":"Ŵ","wcirc":"ŵ","wedbar":"⩟","wedge":"∧","Wedge":"⋀","wedgeq":"≙","weierp":"℘","Wfr":"𝔚","wfr":"𝔴","Wopf":"𝕎","wopf":"𝕨","wp":"℘","wr":"≀","wreath":"≀","Wscr":"𝒲","wscr":"𝓌","xcap":"⋂","xcirc":"◯","xcup":"⋃","xdtri":"▽","Xfr":"𝔛","xfr":"𝔵","xharr":"⟷","xhArr":"⟺","Xi":"Ξ","xi":"ξ","xlarr":"⟵","xlArr":"⟸","xmap":"⟼","xnis":"⋻","xodot":"⨀","Xopf":"𝕏","xopf":"𝕩","xoplus":"⨁","xotime":"⨂","xrarr":"⟶","xrArr":"⟹","Xscr":"𝒳","xscr":"𝓍","xsqcup":"⨆","xuplus":"⨄","xutri":"△","xvee":"⋁","xwedge":"⋀","Yacute":"Ý","yacute":"ý","YAcy":"Я","yacy":"я","Ycirc":"Ŷ","ycirc":"ŷ","Ycy":"Ы","ycy":"ы","yen":"¥","Yfr":"𝔜","yfr":"𝔶","YIcy":"Ї","yicy":"ї","Yopf":"𝕐","yopf":"𝕪","Yscr":"𝒴","yscr":"𝓎","YUcy":"Ю","yucy":"ю","yuml":"ÿ","Yuml":"Ÿ","Zacute":"Ź","zacute":"ź","Zcaron":"Ž","zcaron":"ž","Zcy":"З","zcy":"з","Zdot":"Ż","zdot":"ż","zeetrf":"ℨ","ZeroWidthSpace":"​","Zeta":"Ζ","zeta":"ζ","zfr":"𝔷","Zfr":"ℨ","ZHcy":"Ж","zhcy":"ж","zigrarr":"⇝","zopf":"𝕫","Zopf":"ℤ","Zscr":"𝒵","zscr":"𝓏","zwj":"‍","zwnj":"‌"}
-
-/***/ }),
-/* 31 */
-/***/ (function(module, exports) {
-
-module.exports = {"amp":"&","apos":"'","gt":">","lt":"<","quot":"\""}
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var Buffer = __webpack_require__(4).Buffer;
-
-var isBufferEncoding = Buffer.isEncoding
-  || function(encoding) {
-       switch (encoding && encoding.toLowerCase()) {
-         case 'hex': case 'utf8': case 'utf-8': case 'ascii': case 'binary': case 'base64': case 'ucs2': case 'ucs-2': case 'utf16le': case 'utf-16le': case 'raw': return true;
-         default: return false;
-       }
-     }
-
-
-function assertEncoding(encoding) {
-  if (encoding && !isBufferEncoding(encoding)) {
-    throw new Error('Unknown encoding: ' + encoding);
-  }
-}
-
-// StringDecoder provides an interface for efficiently splitting a series of
-// buffers into a series of JS strings without breaking apart multi-byte
-// characters. CESU-8 is handled as part of the UTF-8 encoding.
-//
-// @TODO Handling all encodings inside a single object makes it very difficult
-// to reason about this code, so it should be split up in the future.
-// @TODO There should be a utf8-strict encoding that rejects invalid UTF-8 code
-// points as used by CESU-8.
-var StringDecoder = exports.StringDecoder = function(encoding) {
-  this.encoding = (encoding || 'utf8').toLowerCase().replace(/[-_]/, '');
-  assertEncoding(encoding);
-  switch (this.encoding) {
-    case 'utf8':
-      // CESU-8 represents each of Surrogate Pair by 3-bytes
-      this.surrogateSize = 3;
-      break;
-    case 'ucs2':
-    case 'utf16le':
-      // UTF-16 represents each of Surrogate Pair by 2-bytes
-      this.surrogateSize = 2;
-      this.detectIncompleteChar = utf16DetectIncompleteChar;
-      break;
-    case 'base64':
-      // Base-64 stores 3 bytes in 4 chars, and pads the remainder.
-      this.surrogateSize = 3;
-      this.detectIncompleteChar = base64DetectIncompleteChar;
-      break;
-    default:
-      this.write = passThroughWrite;
-      return;
-  }
-
-  // Enough space to store all bytes of a single character. UTF-8 needs 4
-  // bytes, but CESU-8 may require up to 6 (3 bytes per surrogate).
-  this.charBuffer = new Buffer(6);
-  // Number of bytes received for the current incomplete multi-byte character.
-  this.charReceived = 0;
-  // Number of bytes expected for the current incomplete multi-byte character.
-  this.charLength = 0;
-};
-
-
-// write decodes the given buffer and returns it as JS string that is
-// guaranteed to not contain any partial multi-byte characters. Any partial
-// character found at the end of the buffer is buffered up, and will be
-// returned when calling write again with the remaining bytes.
-//
-// Note: Converting a Buffer containing an orphan surrogate to a String
-// currently works, but converting a String to a Buffer (via `new Buffer`, or
-// Buffer#write) will replace incomplete surrogates with the unicode
-// replacement character. See https://codereview.chromium.org/121173009/ .
-StringDecoder.prototype.write = function(buffer) {
-  var charStr = '';
-  // if our last write ended with an incomplete multibyte character
-  while (this.charLength) {
-    // determine how many remaining bytes this buffer has to offer for this char
-    var available = (buffer.length >= this.charLength - this.charReceived) ?
-        this.charLength - this.charReceived :
-        buffer.length;
-
-    // add the new bytes to the char buffer
-    buffer.copy(this.charBuffer, this.charReceived, 0, available);
-    this.charReceived += available;
-
-    if (this.charReceived < this.charLength) {
-      // still not enough chars in this buffer? wait for more ...
-      return '';
-    }
-
-    // remove bytes belonging to the current character from the buffer
-    buffer = buffer.slice(available, buffer.length);
-
-    // get the character that was split
-    charStr = this.charBuffer.slice(0, this.charLength).toString(this.encoding);
-
-    // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
-    var charCode = charStr.charCodeAt(charStr.length - 1);
-    if (charCode >= 0xD800 && charCode <= 0xDBFF) {
-      this.charLength += this.surrogateSize;
-      charStr = '';
-      continue;
-    }
-    this.charReceived = this.charLength = 0;
-
-    // if there are no more bytes in this buffer, just emit our char
-    if (buffer.length === 0) {
-      return charStr;
-    }
-    break;
-  }
-
-  // determine and set charLength / charReceived
-  this.detectIncompleteChar(buffer);
-
-  var end = buffer.length;
-  if (this.charLength) {
-    // buffer the incomplete character bytes we got
-    buffer.copy(this.charBuffer, 0, buffer.length - this.charReceived, end);
-    end -= this.charReceived;
-  }
-
-  charStr += buffer.toString(this.encoding, 0, end);
-
-  var end = charStr.length - 1;
-  var charCode = charStr.charCodeAt(end);
-  // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
-  if (charCode >= 0xD800 && charCode <= 0xDBFF) {
-    var size = this.surrogateSize;
-    this.charLength += size;
-    this.charReceived += size;
-    this.charBuffer.copy(this.charBuffer, size, 0, size);
-    buffer.copy(this.charBuffer, 0, 0, size);
-    return charStr.substring(0, end);
-  }
-
-  // or just emit the charStr
-  return charStr;
-};
-
-// detectIncompleteChar determines if there is an incomplete UTF-8 character at
-// the end of the given buffer. If so, it sets this.charLength to the byte
-// length that character, and sets this.charReceived to the number of bytes
-// that are available for this character.
-StringDecoder.prototype.detectIncompleteChar = function(buffer) {
-  // determine how many bytes we have to check at the end of this buffer
-  var i = (buffer.length >= 3) ? 3 : buffer.length;
-
-  // Figure out if one of the last i bytes of our buffer announces an
-  // incomplete char.
-  for (; i > 0; i--) {
-    var c = buffer[buffer.length - i];
-
-    // See http://en.wikipedia.org/wiki/UTF-8#Description
-
-    // 110XXXXX
-    if (i == 1 && c >> 5 == 0x06) {
-      this.charLength = 2;
-      break;
-    }
-
-    // 1110XXXX
-    if (i <= 2 && c >> 4 == 0x0E) {
-      this.charLength = 3;
-      break;
-    }
-
-    // 11110XXX
-    if (i <= 3 && c >> 3 == 0x1E) {
-      this.charLength = 4;
-      break;
-    }
-  }
-  this.charReceived = i;
-};
-
-StringDecoder.prototype.end = function(buffer) {
-  var res = '';
-  if (buffer && buffer.length)
-    res = this.write(buffer);
-
-  if (this.charReceived) {
-    var cr = this.charReceived;
-    var buf = this.charBuffer;
-    var enc = this.encoding;
-    res += buf.slice(0, cr).toString(enc);
-  }
-
-  return res;
-};
-
-function passThroughWrite(buffer) {
-  return buffer.toString(this.encoding);
-}
-
-function utf16DetectIncompleteChar(buffer) {
-  this.charReceived = buffer.length % 2;
-  this.charLength = this.charReceived ? 2 : 0;
-}
-
-function base64DetectIncompleteChar(buffer) {
-  this.charReceived = buffer.length % 3;
-  this.charLength = this.charReceived ? 3 : 0;
-}
-
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.decode = exports.parse = __webpack_require__(140);
-exports.encode = exports.stringify = __webpack_require__(141);
-
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process, setImmediate, global) {// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// A bit simpler than readable streams.
-// Implement an async ._write(chunk, encoding, cb), and it'll handle all
-// the drain event emission and buffering.
-
-
-
-/*<replacement>*/
-
-var processNextTick = __webpack_require__(23);
-/*</replacement>*/
-
-module.exports = Writable;
-
-/* <replacement> */
-function WriteReq(chunk, encoding, cb) {
-  this.chunk = chunk;
-  this.encoding = encoding;
-  this.callback = cb;
-  this.next = null;
-}
-
-// It seems a linked list but it is not
-// there will be only 2 of these for each stream
-function CorkedRequest(state) {
-  var _this = this;
-
-  this.next = null;
-  this.entry = null;
-  this.finish = function () {
-    onCorkedFinish(_this, state);
-  };
-}
-/* </replacement> */
-
-/*<replacement>*/
-var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
-/*</replacement>*/
-
-/*<replacement>*/
-var Duplex;
-/*</replacement>*/
-
-Writable.WritableState = WritableState;
-
-/*<replacement>*/
-var util = __webpack_require__(14);
-util.inherits = __webpack_require__(1);
-/*</replacement>*/
-
-/*<replacement>*/
-var internalUtil = {
-  deprecate: __webpack_require__(158)
-};
-/*</replacement>*/
-
-/*<replacement>*/
-var Stream = __webpack_require__(53);
-/*</replacement>*/
-
-/*<replacement>*/
-var Buffer = __webpack_require__(35).Buffer;
-var OurUint8Array = global.Uint8Array || function () {};
-function _uint8ArrayToBuffer(chunk) {
-  return Buffer.from(chunk);
-}
-function _isUint8Array(obj) {
-  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
-}
-/*</replacement>*/
-
-var destroyImpl = __webpack_require__(52);
-
-util.inherits(Writable, Stream);
-
-function nop() {}
-
-function WritableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(9);
-
-  options = options || {};
-
-  // object stream flag to indicate whether or not this stream
-  // contains buffers or objects.
-  this.objectMode = !!options.objectMode;
-
-  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
-
-  // the point at which write() starts returning false
-  // Note: 0 is a valid value, means that we always return false if
-  // the entire buffer is not flushed immediately on write()
-  var hwm = options.highWaterMark;
-  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
-  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
-
-  // cast to ints.
-  this.highWaterMark = Math.floor(this.highWaterMark);
-
-  // if _final has been called
-  this.finalCalled = false;
-
-  // drain event flag.
-  this.needDrain = false;
-  // at the start of calling end()
-  this.ending = false;
-  // when end() has been called, and returned
-  this.ended = false;
-  // when 'finish' is emitted
-  this.finished = false;
-
-  // has it been destroyed
-  this.destroyed = false;
-
-  // should we decode strings into buffers before passing to _write?
-  // this is here so that some node-core streams can optimize string
-  // handling at a lower level.
-  var noDecode = options.decodeStrings === false;
-  this.decodeStrings = !noDecode;
-
-  // Crypto is kind of old and crusty.  Historically, its default string
-  // encoding is 'binary' so we have to make this configurable.
-  // Everything else in the universe uses 'utf8', though.
-  this.defaultEncoding = options.defaultEncoding || 'utf8';
-
-  // not an actual buffer we keep track of, but a measurement
-  // of how much we're waiting to get pushed to some underlying
-  // socket or file.
-  this.length = 0;
-
-  // a flag to see when we're in the middle of a write.
-  this.writing = false;
-
-  // when true all writes will be buffered until .uncork() call
-  this.corked = 0;
-
-  // a flag to be able to tell if the onwrite cb is called immediately,
-  // or on a later tick.  We set this to true at first, because any
-  // actions that shouldn't happen until "later" should generally also
-  // not happen before the first write call.
-  this.sync = true;
-
-  // a flag to know if we're processing previously buffered items, which
-  // may call the _write() callback in the same tick, so that we don't
-  // end up in an overlapped onwrite situation.
-  this.bufferProcessing = false;
-
-  // the callback that's passed to _write(chunk,cb)
-  this.onwrite = function (er) {
-    onwrite(stream, er);
-  };
-
-  // the callback that the user supplies to write(chunk,encoding,cb)
-  this.writecb = null;
-
-  // the amount that is being written when _write is called.
-  this.writelen = 0;
-
-  this.bufferedRequest = null;
-  this.lastBufferedRequest = null;
-
-  // number of pending user-supplied write callbacks
-  // this must be 0 before 'finish' can be emitted
-  this.pendingcb = 0;
-
-  // emit prefinish if the only thing we're waiting for is _write cbs
-  // This is relevant for synchronous Transform streams
-  this.prefinished = false;
-
-  // True if the error was already emitted and should not be thrown again
-  this.errorEmitted = false;
-
-  // count buffered requests
-  this.bufferedRequestCount = 0;
-
-  // allocate the first CorkedRequest, there is always
-  // one allocated and free to use, and we maintain at most two
-  this.corkedRequestsFree = new CorkedRequest(this);
-}
-
-WritableState.prototype.getBuffer = function getBuffer() {
-  var current = this.bufferedRequest;
-  var out = [];
-  while (current) {
-    out.push(current);
-    current = current.next;
-  }
-  return out;
-};
-
-(function () {
-  try {
-    Object.defineProperty(WritableState.prototype, 'buffer', {
-      get: internalUtil.deprecate(function () {
-        return this.getBuffer();
-      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
-    });
-  } catch (_) {}
-})();
-
-// Test _writableState for inheritance to account for Duplex streams,
-// whose prototype chain only points to Readable.
-var realHasInstance;
-if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
-  realHasInstance = Function.prototype[Symbol.hasInstance];
-  Object.defineProperty(Writable, Symbol.hasInstance, {
-    value: function (object) {
-      if (realHasInstance.call(this, object)) return true;
-
-      return object && object._writableState instanceof WritableState;
-    }
-  });
-} else {
-  realHasInstance = function (object) {
-    return object instanceof this;
-  };
-}
-
-function Writable(options) {
-  Duplex = Duplex || __webpack_require__(9);
-
-  // Writable ctor is applied to Duplexes, too.
-  // `realHasInstance` is necessary because using plain `instanceof`
-  // would return false, as no `_writableState` property is attached.
-
-  // Trying to use the custom `instanceof` for Writable here will also break the
-  // Node.js LazyTransform implementation, which has a non-trivial getter for
-  // `_writableState` that would lead to infinite recursion.
-  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
-    return new Writable(options);
-  }
-
-  this._writableState = new WritableState(options, this);
-
-  // legacy.
-  this.writable = true;
-
-  if (options) {
-    if (typeof options.write === 'function') this._write = options.write;
-
-    if (typeof options.writev === 'function') this._writev = options.writev;
-
-    if (typeof options.destroy === 'function') this._destroy = options.destroy;
-
-    if (typeof options.final === 'function') this._final = options.final;
-  }
-
-  Stream.call(this);
-}
-
-// Otherwise people can pipe Writable streams, which is just wrong.
-Writable.prototype.pipe = function () {
-  this.emit('error', new Error('Cannot pipe, not readable'));
-};
-
-function writeAfterEnd(stream, cb) {
-  var er = new Error('write after end');
-  // TODO: defer error events consistently everywhere, not just the cb
-  stream.emit('error', er);
-  processNextTick(cb, er);
-}
-
-// Checks that a user-supplied chunk is valid, especially for the particular
-// mode the stream is in. Currently this means that `null` is never accepted
-// and undefined/non-string values are only allowed in object mode.
-function validChunk(stream, state, chunk, cb) {
-  var valid = true;
-  var er = false;
-
-  if (chunk === null) {
-    er = new TypeError('May not write null values to stream');
-  } else if (typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
-    er = new TypeError('Invalid non-string/buffer chunk');
-  }
-  if (er) {
-    stream.emit('error', er);
-    processNextTick(cb, er);
-    valid = false;
-  }
-  return valid;
-}
-
-Writable.prototype.write = function (chunk, encoding, cb) {
-  var state = this._writableState;
-  var ret = false;
-  var isBuf = _isUint8Array(chunk) && !state.objectMode;
-
-  if (isBuf && !Buffer.isBuffer(chunk)) {
-    chunk = _uint8ArrayToBuffer(chunk);
-  }
-
-  if (typeof encoding === 'function') {
-    cb = encoding;
-    encoding = null;
-  }
-
-  if (isBuf) encoding = 'buffer';else if (!encoding) encoding = state.defaultEncoding;
-
-  if (typeof cb !== 'function') cb = nop;
-
-  if (state.ended) writeAfterEnd(this, cb);else if (isBuf || validChunk(this, state, chunk, cb)) {
-    state.pendingcb++;
-    ret = writeOrBuffer(this, state, isBuf, chunk, encoding, cb);
-  }
-
-  return ret;
-};
-
-Writable.prototype.cork = function () {
-  var state = this._writableState;
-
-  state.corked++;
-};
-
-Writable.prototype.uncork = function () {
-  var state = this._writableState;
-
-  if (state.corked) {
-    state.corked--;
-
-    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
-  }
-};
-
-Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
-  // node::ParseEncoding() requires lower case.
-  if (typeof encoding === 'string') encoding = encoding.toLowerCase();
-  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) throw new TypeError('Unknown encoding: ' + encoding);
-  this._writableState.defaultEncoding = encoding;
-  return this;
-};
-
-function decodeChunk(state, chunk, encoding) {
-  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
-    chunk = Buffer.from(chunk, encoding);
-  }
-  return chunk;
-}
-
-// if we're already writing something, then just put this
-// in the queue, and wait our turn.  Otherwise, call _write
-// If we return false, then we need a drain event, so set that flag.
-function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
-  if (!isBuf) {
-    var newChunk = decodeChunk(state, chunk, encoding);
-    if (chunk !== newChunk) {
-      isBuf = true;
-      encoding = 'buffer';
-      chunk = newChunk;
-    }
-  }
-  var len = state.objectMode ? 1 : chunk.length;
-
-  state.length += len;
-
-  var ret = state.length < state.highWaterMark;
-  // we must ensure that previous needDrain will not be reset to false.
-  if (!ret) state.needDrain = true;
-
-  if (state.writing || state.corked) {
-    var last = state.lastBufferedRequest;
-    state.lastBufferedRequest = {
-      chunk: chunk,
-      encoding: encoding,
-      isBuf: isBuf,
-      callback: cb,
-      next: null
-    };
-    if (last) {
-      last.next = state.lastBufferedRequest;
-    } else {
-      state.bufferedRequest = state.lastBufferedRequest;
-    }
-    state.bufferedRequestCount += 1;
-  } else {
-    doWrite(stream, state, false, len, chunk, encoding, cb);
-  }
-
-  return ret;
-}
-
-function doWrite(stream, state, writev, len, chunk, encoding, cb) {
-  state.writelen = len;
-  state.writecb = cb;
-  state.writing = true;
-  state.sync = true;
-  if (writev) stream._writev(chunk, state.onwrite);else stream._write(chunk, encoding, state.onwrite);
-  state.sync = false;
-}
-
-function onwriteError(stream, state, sync, er, cb) {
-  --state.pendingcb;
-
-  if (sync) {
-    // defer the callback if we are being called synchronously
-    // to avoid piling up things on the stack
-    processNextTick(cb, er);
-    // this can emit finish, and it will always happen
-    // after error
-    processNextTick(finishMaybe, stream, state);
-    stream._writableState.errorEmitted = true;
-    stream.emit('error', er);
-  } else {
-    // the caller expect this to happen before if
-    // it is async
-    cb(er);
-    stream._writableState.errorEmitted = true;
-    stream.emit('error', er);
-    // this can emit finish, but finish must
-    // always follow error
-    finishMaybe(stream, state);
-  }
-}
-
-function onwriteStateUpdate(state) {
-  state.writing = false;
-  state.writecb = null;
-  state.length -= state.writelen;
-  state.writelen = 0;
-}
-
-function onwrite(stream, er) {
-  var state = stream._writableState;
-  var sync = state.sync;
-  var cb = state.writecb;
-
-  onwriteStateUpdate(state);
-
-  if (er) onwriteError(stream, state, sync, er, cb);else {
-    // Check if we're actually ready to finish, but don't emit yet
-    var finished = needFinish(state);
-
-    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
-      clearBuffer(stream, state);
-    }
-
-    if (sync) {
-      /*<replacement>*/
-      asyncWrite(afterWrite, stream, state, finished, cb);
-      /*</replacement>*/
-    } else {
-      afterWrite(stream, state, finished, cb);
-    }
-  }
-}
-
-function afterWrite(stream, state, finished, cb) {
-  if (!finished) onwriteDrain(stream, state);
-  state.pendingcb--;
-  cb();
-  finishMaybe(stream, state);
-}
-
-// Must force callback to be called on nextTick, so that we don't
-// emit 'drain' before the write() consumer gets the 'false' return
-// value, and has a chance to attach a 'drain' listener.
-function onwriteDrain(stream, state) {
-  if (state.length === 0 && state.needDrain) {
-    state.needDrain = false;
-    stream.emit('drain');
-  }
-}
-
-// if there's something in the buffer waiting, then process it
-function clearBuffer(stream, state) {
-  state.bufferProcessing = true;
-  var entry = state.bufferedRequest;
-
-  if (stream._writev && entry && entry.next) {
-    // Fast case, write everything using _writev()
-    var l = state.bufferedRequestCount;
-    var buffer = new Array(l);
-    var holder = state.corkedRequestsFree;
-    holder.entry = entry;
-
-    var count = 0;
-    var allBuffers = true;
-    while (entry) {
-      buffer[count] = entry;
-      if (!entry.isBuf) allBuffers = false;
-      entry = entry.next;
-      count += 1;
-    }
-    buffer.allBuffers = allBuffers;
-
-    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
-
-    // doWrite is almost always async, defer these to save a bit of time
-    // as the hot path ends with doWrite
-    state.pendingcb++;
-    state.lastBufferedRequest = null;
-    if (holder.next) {
-      state.corkedRequestsFree = holder.next;
-      holder.next = null;
-    } else {
-      state.corkedRequestsFree = new CorkedRequest(state);
-    }
-  } else {
-    // Slow case, write chunks one-by-one
-    while (entry) {
-      var chunk = entry.chunk;
-      var encoding = entry.encoding;
-      var cb = entry.callback;
-      var len = state.objectMode ? 1 : chunk.length;
-
-      doWrite(stream, state, false, len, chunk, encoding, cb);
-      entry = entry.next;
-      // if we didn't call the onwrite immediately, then
-      // it means that we need to wait until it does.
-      // also, that means that the chunk and cb are currently
-      // being processed, so move the buffer counter past them.
-      if (state.writing) {
-        break;
-      }
-    }
-
-    if (entry === null) state.lastBufferedRequest = null;
-  }
-
-  state.bufferedRequestCount = 0;
-  state.bufferedRequest = entry;
-  state.bufferProcessing = false;
-}
-
-Writable.prototype._write = function (chunk, encoding, cb) {
-  cb(new Error('_write() is not implemented'));
-};
-
-Writable.prototype._writev = null;
-
-Writable.prototype.end = function (chunk, encoding, cb) {
-  var state = this._writableState;
-
-  if (typeof chunk === 'function') {
-    cb = chunk;
-    chunk = null;
-    encoding = null;
-  } else if (typeof encoding === 'function') {
-    cb = encoding;
-    encoding = null;
-  }
-
-  if (chunk !== null && chunk !== undefined) this.write(chunk, encoding);
-
-  // .end() fully uncorks
-  if (state.corked) {
-    state.corked = 1;
-    this.uncork();
-  }
-
-  // ignore unnecessary end() calls.
-  if (!state.ending && !state.finished) endWritable(this, state, cb);
-};
-
-function needFinish(state) {
-  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
-}
-function callFinal(stream, state) {
-  stream._final(function (err) {
-    state.pendingcb--;
-    if (err) {
-      stream.emit('error', err);
-    }
-    state.prefinished = true;
-    stream.emit('prefinish');
-    finishMaybe(stream, state);
-  });
-}
-function prefinish(stream, state) {
-  if (!state.prefinished && !state.finalCalled) {
-    if (typeof stream._final === 'function') {
-      state.pendingcb++;
-      state.finalCalled = true;
-      processNextTick(callFinal, stream, state);
-    } else {
-      state.prefinished = true;
-      stream.emit('prefinish');
-    }
-  }
-}
-
-function finishMaybe(stream, state) {
-  var need = needFinish(state);
-  if (need) {
-    prefinish(stream, state);
-    if (state.pendingcb === 0) {
-      state.finished = true;
-      stream.emit('finish');
-    }
-  }
-  return need;
-}
-
-function endWritable(stream, state, cb) {
-  state.ending = true;
-  finishMaybe(stream, state);
-  if (cb) {
-    if (state.finished) processNextTick(cb);else stream.once('finish', cb);
-  }
-  state.ended = true;
-  stream.writable = false;
-}
-
-function onCorkedFinish(corkReq, state, err) {
-  var entry = corkReq.entry;
-  corkReq.entry = null;
-  while (entry) {
-    var cb = entry.callback;
-    state.pendingcb--;
-    cb(err);
-    entry = entry.next;
-  }
-  if (state.corkedRequestsFree) {
-    state.corkedRequestsFree.next = corkReq;
-  } else {
-    state.corkedRequestsFree = corkReq;
-  }
-}
-
-Object.defineProperty(Writable.prototype, 'destroyed', {
-  get: function () {
-    if (this._writableState === undefined) {
-      return false;
-    }
-    return this._writableState.destroyed;
-  },
-  set: function (value) {
-    // we ignore the value if the stream
-    // has not been initialized yet
-    if (!this._writableState) {
-      return;
-    }
-
-    // backward compatibility, the user is explicitly
-    // managing destroyed
-    this._writableState.destroyed = value;
-  }
-});
-
-Writable.prototype.destroy = destroyImpl.destroy;
-Writable.prototype._undestroy = destroyImpl.undestroy;
-Writable.prototype._destroy = function (err, cb) {
-  this.end();
-  cb(err);
-};
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(36).setImmediate, __webpack_require__(0)))
-
-/***/ }),
-/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* eslint-disable node/no-deprecated-api */
@@ -12160,66 +11291,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
 
 
 /***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var apply = Function.prototype.apply;
-
-// DOM APIs, for completeness
-
-exports.setTimeout = function() {
-  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
-};
-exports.setInterval = function() {
-  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
-};
-exports.clearTimeout =
-exports.clearInterval = function(timeout) {
-  if (timeout) {
-    timeout.close();
-  }
-};
-
-function Timeout(id, clearFn) {
-  this._id = id;
-  this._clearFn = clearFn;
-}
-Timeout.prototype.unref = Timeout.prototype.ref = function() {};
-Timeout.prototype.close = function() {
-  this._clearFn.call(window, this._id);
-};
-
-// Does not start the time, just sets up the members needed.
-exports.enroll = function(item, msecs) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = msecs;
-};
-
-exports.unenroll = function(item) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = -1;
-};
-
-exports._unrefActive = exports.active = function(item) {
-  clearTimeout(item._idleTimeoutId);
-
-  var msecs = item._idleTimeout;
-  if (msecs >= 0) {
-    item._idleTimeoutId = setTimeout(function onTimeout() {
-      if (item._onTimeout)
-        item._onTimeout();
-    }, msecs);
-  }
-};
-
-// setimmediate attaches itself to the global object
-__webpack_require__(149);
-exports.setImmediate = setImmediate;
-exports.clearImmediate = clearImmediate;
-
-
-/***/ }),
-/* 37 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12246,8 +11318,8 @@ exports.clearImmediate = clearImmediate;
 
 
 
-var punycode = __webpack_require__(139);
-var util = __webpack_require__(157);
+var punycode = __webpack_require__(141);
+var util = __webpack_require__(159);
 
 exports.parse = urlParse;
 exports.resolve = urlResolve;
@@ -12958,7 +12030,1074 @@ Url.prototype.parseHost = function() {
 
 
 /***/ }),
-/* 38 */
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * @fileoverview UID generator, from Blockly.
+ */
+
+/**
+ * Legal characters for the unique ID.
+ * Should be all on a US keyboard.  No XML special characters or control codes.
+ * Removed $ due to issue 251.
+ * @private
+ */
+var soup_ = '!#%()*+,-./:;=?@[]^_`{|}~' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+/**
+ * Generate a unique ID, from Blockly.  This should be globally unique.
+ * 87 characters ^ 20 length > 128 bits (better than a UUID).
+ * @return {string} A globally unique ID string.
+ */
+var uid = function uid() {
+  var length = 20;
+  var soupLength = soup_.length;
+  var id = [];
+  for (var i = 0; i < length; i++) {
+    id[i] = soup_.charAt(Math.random() * soupLength);
+  }
+  return id.join('');
+};
+
+module.exports = uid;
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports) {
+
+module.exports = {"Aacute":"Á","aacute":"á","Abreve":"Ă","abreve":"ă","ac":"∾","acd":"∿","acE":"∾̳","Acirc":"Â","acirc":"â","acute":"´","Acy":"А","acy":"а","AElig":"Æ","aelig":"æ","af":"⁡","Afr":"𝔄","afr":"𝔞","Agrave":"À","agrave":"à","alefsym":"ℵ","aleph":"ℵ","Alpha":"Α","alpha":"α","Amacr":"Ā","amacr":"ā","amalg":"⨿","amp":"&","AMP":"&","andand":"⩕","And":"⩓","and":"∧","andd":"⩜","andslope":"⩘","andv":"⩚","ang":"∠","ange":"⦤","angle":"∠","angmsdaa":"⦨","angmsdab":"⦩","angmsdac":"⦪","angmsdad":"⦫","angmsdae":"⦬","angmsdaf":"⦭","angmsdag":"⦮","angmsdah":"⦯","angmsd":"∡","angrt":"∟","angrtvb":"⊾","angrtvbd":"⦝","angsph":"∢","angst":"Å","angzarr":"⍼","Aogon":"Ą","aogon":"ą","Aopf":"𝔸","aopf":"𝕒","apacir":"⩯","ap":"≈","apE":"⩰","ape":"≊","apid":"≋","apos":"'","ApplyFunction":"⁡","approx":"≈","approxeq":"≊","Aring":"Å","aring":"å","Ascr":"𝒜","ascr":"𝒶","Assign":"≔","ast":"*","asymp":"≈","asympeq":"≍","Atilde":"Ã","atilde":"ã","Auml":"Ä","auml":"ä","awconint":"∳","awint":"⨑","backcong":"≌","backepsilon":"϶","backprime":"‵","backsim":"∽","backsimeq":"⋍","Backslash":"∖","Barv":"⫧","barvee":"⊽","barwed":"⌅","Barwed":"⌆","barwedge":"⌅","bbrk":"⎵","bbrktbrk":"⎶","bcong":"≌","Bcy":"Б","bcy":"б","bdquo":"„","becaus":"∵","because":"∵","Because":"∵","bemptyv":"⦰","bepsi":"϶","bernou":"ℬ","Bernoullis":"ℬ","Beta":"Β","beta":"β","beth":"ℶ","between":"≬","Bfr":"𝔅","bfr":"𝔟","bigcap":"⋂","bigcirc":"◯","bigcup":"⋃","bigodot":"⨀","bigoplus":"⨁","bigotimes":"⨂","bigsqcup":"⨆","bigstar":"★","bigtriangledown":"▽","bigtriangleup":"△","biguplus":"⨄","bigvee":"⋁","bigwedge":"⋀","bkarow":"⤍","blacklozenge":"⧫","blacksquare":"▪","blacktriangle":"▴","blacktriangledown":"▾","blacktriangleleft":"◂","blacktriangleright":"▸","blank":"␣","blk12":"▒","blk14":"░","blk34":"▓","block":"█","bne":"=⃥","bnequiv":"≡⃥","bNot":"⫭","bnot":"⌐","Bopf":"𝔹","bopf":"𝕓","bot":"⊥","bottom":"⊥","bowtie":"⋈","boxbox":"⧉","boxdl":"┐","boxdL":"╕","boxDl":"╖","boxDL":"╗","boxdr":"┌","boxdR":"╒","boxDr":"╓","boxDR":"╔","boxh":"─","boxH":"═","boxhd":"┬","boxHd":"╤","boxhD":"╥","boxHD":"╦","boxhu":"┴","boxHu":"╧","boxhU":"╨","boxHU":"╩","boxminus":"⊟","boxplus":"⊞","boxtimes":"⊠","boxul":"┘","boxuL":"╛","boxUl":"╜","boxUL":"╝","boxur":"└","boxuR":"╘","boxUr":"╙","boxUR":"╚","boxv":"│","boxV":"║","boxvh":"┼","boxvH":"╪","boxVh":"╫","boxVH":"╬","boxvl":"┤","boxvL":"╡","boxVl":"╢","boxVL":"╣","boxvr":"├","boxvR":"╞","boxVr":"╟","boxVR":"╠","bprime":"‵","breve":"˘","Breve":"˘","brvbar":"¦","bscr":"𝒷","Bscr":"ℬ","bsemi":"⁏","bsim":"∽","bsime":"⋍","bsolb":"⧅","bsol":"\\","bsolhsub":"⟈","bull":"•","bullet":"•","bump":"≎","bumpE":"⪮","bumpe":"≏","Bumpeq":"≎","bumpeq":"≏","Cacute":"Ć","cacute":"ć","capand":"⩄","capbrcup":"⩉","capcap":"⩋","cap":"∩","Cap":"⋒","capcup":"⩇","capdot":"⩀","CapitalDifferentialD":"ⅅ","caps":"∩︀","caret":"⁁","caron":"ˇ","Cayleys":"ℭ","ccaps":"⩍","Ccaron":"Č","ccaron":"č","Ccedil":"Ç","ccedil":"ç","Ccirc":"Ĉ","ccirc":"ĉ","Cconint":"∰","ccups":"⩌","ccupssm":"⩐","Cdot":"Ċ","cdot":"ċ","cedil":"¸","Cedilla":"¸","cemptyv":"⦲","cent":"¢","centerdot":"·","CenterDot":"·","cfr":"𝔠","Cfr":"ℭ","CHcy":"Ч","chcy":"ч","check":"✓","checkmark":"✓","Chi":"Χ","chi":"χ","circ":"ˆ","circeq":"≗","circlearrowleft":"↺","circlearrowright":"↻","circledast":"⊛","circledcirc":"⊚","circleddash":"⊝","CircleDot":"⊙","circledR":"®","circledS":"Ⓢ","CircleMinus":"⊖","CirclePlus":"⊕","CircleTimes":"⊗","cir":"○","cirE":"⧃","cire":"≗","cirfnint":"⨐","cirmid":"⫯","cirscir":"⧂","ClockwiseContourIntegral":"∲","CloseCurlyDoubleQuote":"”","CloseCurlyQuote":"’","clubs":"♣","clubsuit":"♣","colon":":","Colon":"∷","Colone":"⩴","colone":"≔","coloneq":"≔","comma":",","commat":"@","comp":"∁","compfn":"∘","complement":"∁","complexes":"ℂ","cong":"≅","congdot":"⩭","Congruent":"≡","conint":"∮","Conint":"∯","ContourIntegral":"∮","copf":"𝕔","Copf":"ℂ","coprod":"∐","Coproduct":"∐","copy":"©","COPY":"©","copysr":"℗","CounterClockwiseContourIntegral":"∳","crarr":"↵","cross":"✗","Cross":"⨯","Cscr":"𝒞","cscr":"𝒸","csub":"⫏","csube":"⫑","csup":"⫐","csupe":"⫒","ctdot":"⋯","cudarrl":"⤸","cudarrr":"⤵","cuepr":"⋞","cuesc":"⋟","cularr":"↶","cularrp":"⤽","cupbrcap":"⩈","cupcap":"⩆","CupCap":"≍","cup":"∪","Cup":"⋓","cupcup":"⩊","cupdot":"⊍","cupor":"⩅","cups":"∪︀","curarr":"↷","curarrm":"⤼","curlyeqprec":"⋞","curlyeqsucc":"⋟","curlyvee":"⋎","curlywedge":"⋏","curren":"¤","curvearrowleft":"↶","curvearrowright":"↷","cuvee":"⋎","cuwed":"⋏","cwconint":"∲","cwint":"∱","cylcty":"⌭","dagger":"†","Dagger":"‡","daleth":"ℸ","darr":"↓","Darr":"↡","dArr":"⇓","dash":"‐","Dashv":"⫤","dashv":"⊣","dbkarow":"⤏","dblac":"˝","Dcaron":"Ď","dcaron":"ď","Dcy":"Д","dcy":"д","ddagger":"‡","ddarr":"⇊","DD":"ⅅ","dd":"ⅆ","DDotrahd":"⤑","ddotseq":"⩷","deg":"°","Del":"∇","Delta":"Δ","delta":"δ","demptyv":"⦱","dfisht":"⥿","Dfr":"𝔇","dfr":"𝔡","dHar":"⥥","dharl":"⇃","dharr":"⇂","DiacriticalAcute":"´","DiacriticalDot":"˙","DiacriticalDoubleAcute":"˝","DiacriticalGrave":"`","DiacriticalTilde":"˜","diam":"⋄","diamond":"⋄","Diamond":"⋄","diamondsuit":"♦","diams":"♦","die":"¨","DifferentialD":"ⅆ","digamma":"ϝ","disin":"⋲","div":"÷","divide":"÷","divideontimes":"⋇","divonx":"⋇","DJcy":"Ђ","djcy":"ђ","dlcorn":"⌞","dlcrop":"⌍","dollar":"$","Dopf":"𝔻","dopf":"𝕕","Dot":"¨","dot":"˙","DotDot":"⃜","doteq":"≐","doteqdot":"≑","DotEqual":"≐","dotminus":"∸","dotplus":"∔","dotsquare":"⊡","doublebarwedge":"⌆","DoubleContourIntegral":"∯","DoubleDot":"¨","DoubleDownArrow":"⇓","DoubleLeftArrow":"⇐","DoubleLeftRightArrow":"⇔","DoubleLeftTee":"⫤","DoubleLongLeftArrow":"⟸","DoubleLongLeftRightArrow":"⟺","DoubleLongRightArrow":"⟹","DoubleRightArrow":"⇒","DoubleRightTee":"⊨","DoubleUpArrow":"⇑","DoubleUpDownArrow":"⇕","DoubleVerticalBar":"∥","DownArrowBar":"⤓","downarrow":"↓","DownArrow":"↓","Downarrow":"⇓","DownArrowUpArrow":"⇵","DownBreve":"̑","downdownarrows":"⇊","downharpoonleft":"⇃","downharpoonright":"⇂","DownLeftRightVector":"⥐","DownLeftTeeVector":"⥞","DownLeftVectorBar":"⥖","DownLeftVector":"↽","DownRightTeeVector":"⥟","DownRightVectorBar":"⥗","DownRightVector":"⇁","DownTeeArrow":"↧","DownTee":"⊤","drbkarow":"⤐","drcorn":"⌟","drcrop":"⌌","Dscr":"𝒟","dscr":"𝒹","DScy":"Ѕ","dscy":"ѕ","dsol":"⧶","Dstrok":"Đ","dstrok":"đ","dtdot":"⋱","dtri":"▿","dtrif":"▾","duarr":"⇵","duhar":"⥯","dwangle":"⦦","DZcy":"Џ","dzcy":"џ","dzigrarr":"⟿","Eacute":"É","eacute":"é","easter":"⩮","Ecaron":"Ě","ecaron":"ě","Ecirc":"Ê","ecirc":"ê","ecir":"≖","ecolon":"≕","Ecy":"Э","ecy":"э","eDDot":"⩷","Edot":"Ė","edot":"ė","eDot":"≑","ee":"ⅇ","efDot":"≒","Efr":"𝔈","efr":"𝔢","eg":"⪚","Egrave":"È","egrave":"è","egs":"⪖","egsdot":"⪘","el":"⪙","Element":"∈","elinters":"⏧","ell":"ℓ","els":"⪕","elsdot":"⪗","Emacr":"Ē","emacr":"ē","empty":"∅","emptyset":"∅","EmptySmallSquare":"◻","emptyv":"∅","EmptyVerySmallSquare":"▫","emsp13":" ","emsp14":" ","emsp":" ","ENG":"Ŋ","eng":"ŋ","ensp":" ","Eogon":"Ę","eogon":"ę","Eopf":"𝔼","eopf":"𝕖","epar":"⋕","eparsl":"⧣","eplus":"⩱","epsi":"ε","Epsilon":"Ε","epsilon":"ε","epsiv":"ϵ","eqcirc":"≖","eqcolon":"≕","eqsim":"≂","eqslantgtr":"⪖","eqslantless":"⪕","Equal":"⩵","equals":"=","EqualTilde":"≂","equest":"≟","Equilibrium":"⇌","equiv":"≡","equivDD":"⩸","eqvparsl":"⧥","erarr":"⥱","erDot":"≓","escr":"ℯ","Escr":"ℰ","esdot":"≐","Esim":"⩳","esim":"≂","Eta":"Η","eta":"η","ETH":"Ð","eth":"ð","Euml":"Ë","euml":"ë","euro":"€","excl":"!","exist":"∃","Exists":"∃","expectation":"ℰ","exponentiale":"ⅇ","ExponentialE":"ⅇ","fallingdotseq":"≒","Fcy":"Ф","fcy":"ф","female":"♀","ffilig":"ﬃ","fflig":"ﬀ","ffllig":"ﬄ","Ffr":"𝔉","ffr":"𝔣","filig":"ﬁ","FilledSmallSquare":"◼","FilledVerySmallSquare":"▪","fjlig":"fj","flat":"♭","fllig":"ﬂ","fltns":"▱","fnof":"ƒ","Fopf":"𝔽","fopf":"𝕗","forall":"∀","ForAll":"∀","fork":"⋔","forkv":"⫙","Fouriertrf":"ℱ","fpartint":"⨍","frac12":"½","frac13":"⅓","frac14":"¼","frac15":"⅕","frac16":"⅙","frac18":"⅛","frac23":"⅔","frac25":"⅖","frac34":"¾","frac35":"⅗","frac38":"⅜","frac45":"⅘","frac56":"⅚","frac58":"⅝","frac78":"⅞","frasl":"⁄","frown":"⌢","fscr":"𝒻","Fscr":"ℱ","gacute":"ǵ","Gamma":"Γ","gamma":"γ","Gammad":"Ϝ","gammad":"ϝ","gap":"⪆","Gbreve":"Ğ","gbreve":"ğ","Gcedil":"Ģ","Gcirc":"Ĝ","gcirc":"ĝ","Gcy":"Г","gcy":"г","Gdot":"Ġ","gdot":"ġ","ge":"≥","gE":"≧","gEl":"⪌","gel":"⋛","geq":"≥","geqq":"≧","geqslant":"⩾","gescc":"⪩","ges":"⩾","gesdot":"⪀","gesdoto":"⪂","gesdotol":"⪄","gesl":"⋛︀","gesles":"⪔","Gfr":"𝔊","gfr":"𝔤","gg":"≫","Gg":"⋙","ggg":"⋙","gimel":"ℷ","GJcy":"Ѓ","gjcy":"ѓ","gla":"⪥","gl":"≷","glE":"⪒","glj":"⪤","gnap":"⪊","gnapprox":"⪊","gne":"⪈","gnE":"≩","gneq":"⪈","gneqq":"≩","gnsim":"⋧","Gopf":"𝔾","gopf":"𝕘","grave":"`","GreaterEqual":"≥","GreaterEqualLess":"⋛","GreaterFullEqual":"≧","GreaterGreater":"⪢","GreaterLess":"≷","GreaterSlantEqual":"⩾","GreaterTilde":"≳","Gscr":"𝒢","gscr":"ℊ","gsim":"≳","gsime":"⪎","gsiml":"⪐","gtcc":"⪧","gtcir":"⩺","gt":">","GT":">","Gt":"≫","gtdot":"⋗","gtlPar":"⦕","gtquest":"⩼","gtrapprox":"⪆","gtrarr":"⥸","gtrdot":"⋗","gtreqless":"⋛","gtreqqless":"⪌","gtrless":"≷","gtrsim":"≳","gvertneqq":"≩︀","gvnE":"≩︀","Hacek":"ˇ","hairsp":" ","half":"½","hamilt":"ℋ","HARDcy":"Ъ","hardcy":"ъ","harrcir":"⥈","harr":"↔","hArr":"⇔","harrw":"↭","Hat":"^","hbar":"ℏ","Hcirc":"Ĥ","hcirc":"ĥ","hearts":"♥","heartsuit":"♥","hellip":"…","hercon":"⊹","hfr":"𝔥","Hfr":"ℌ","HilbertSpace":"ℋ","hksearow":"⤥","hkswarow":"⤦","hoarr":"⇿","homtht":"∻","hookleftarrow":"↩","hookrightarrow":"↪","hopf":"𝕙","Hopf":"ℍ","horbar":"―","HorizontalLine":"─","hscr":"𝒽","Hscr":"ℋ","hslash":"ℏ","Hstrok":"Ħ","hstrok":"ħ","HumpDownHump":"≎","HumpEqual":"≏","hybull":"⁃","hyphen":"‐","Iacute":"Í","iacute":"í","ic":"⁣","Icirc":"Î","icirc":"î","Icy":"И","icy":"и","Idot":"İ","IEcy":"Е","iecy":"е","iexcl":"¡","iff":"⇔","ifr":"𝔦","Ifr":"ℑ","Igrave":"Ì","igrave":"ì","ii":"ⅈ","iiiint":"⨌","iiint":"∭","iinfin":"⧜","iiota":"℩","IJlig":"Ĳ","ijlig":"ĳ","Imacr":"Ī","imacr":"ī","image":"ℑ","ImaginaryI":"ⅈ","imagline":"ℐ","imagpart":"ℑ","imath":"ı","Im":"ℑ","imof":"⊷","imped":"Ƶ","Implies":"⇒","incare":"℅","in":"∈","infin":"∞","infintie":"⧝","inodot":"ı","intcal":"⊺","int":"∫","Int":"∬","integers":"ℤ","Integral":"∫","intercal":"⊺","Intersection":"⋂","intlarhk":"⨗","intprod":"⨼","InvisibleComma":"⁣","InvisibleTimes":"⁢","IOcy":"Ё","iocy":"ё","Iogon":"Į","iogon":"į","Iopf":"𝕀","iopf":"𝕚","Iota":"Ι","iota":"ι","iprod":"⨼","iquest":"¿","iscr":"𝒾","Iscr":"ℐ","isin":"∈","isindot":"⋵","isinE":"⋹","isins":"⋴","isinsv":"⋳","isinv":"∈","it":"⁢","Itilde":"Ĩ","itilde":"ĩ","Iukcy":"І","iukcy":"і","Iuml":"Ï","iuml":"ï","Jcirc":"Ĵ","jcirc":"ĵ","Jcy":"Й","jcy":"й","Jfr":"𝔍","jfr":"𝔧","jmath":"ȷ","Jopf":"𝕁","jopf":"𝕛","Jscr":"𝒥","jscr":"𝒿","Jsercy":"Ј","jsercy":"ј","Jukcy":"Є","jukcy":"є","Kappa":"Κ","kappa":"κ","kappav":"ϰ","Kcedil":"Ķ","kcedil":"ķ","Kcy":"К","kcy":"к","Kfr":"𝔎","kfr":"𝔨","kgreen":"ĸ","KHcy":"Х","khcy":"х","KJcy":"Ќ","kjcy":"ќ","Kopf":"𝕂","kopf":"𝕜","Kscr":"𝒦","kscr":"𝓀","lAarr":"⇚","Lacute":"Ĺ","lacute":"ĺ","laemptyv":"⦴","lagran":"ℒ","Lambda":"Λ","lambda":"λ","lang":"⟨","Lang":"⟪","langd":"⦑","langle":"⟨","lap":"⪅","Laplacetrf":"ℒ","laquo":"«","larrb":"⇤","larrbfs":"⤟","larr":"←","Larr":"↞","lArr":"⇐","larrfs":"⤝","larrhk":"↩","larrlp":"↫","larrpl":"⤹","larrsim":"⥳","larrtl":"↢","latail":"⤙","lAtail":"⤛","lat":"⪫","late":"⪭","lates":"⪭︀","lbarr":"⤌","lBarr":"⤎","lbbrk":"❲","lbrace":"{","lbrack":"[","lbrke":"⦋","lbrksld":"⦏","lbrkslu":"⦍","Lcaron":"Ľ","lcaron":"ľ","Lcedil":"Ļ","lcedil":"ļ","lceil":"⌈","lcub":"{","Lcy":"Л","lcy":"л","ldca":"⤶","ldquo":"“","ldquor":"„","ldrdhar":"⥧","ldrushar":"⥋","ldsh":"↲","le":"≤","lE":"≦","LeftAngleBracket":"⟨","LeftArrowBar":"⇤","leftarrow":"←","LeftArrow":"←","Leftarrow":"⇐","LeftArrowRightArrow":"⇆","leftarrowtail":"↢","LeftCeiling":"⌈","LeftDoubleBracket":"⟦","LeftDownTeeVector":"⥡","LeftDownVectorBar":"⥙","LeftDownVector":"⇃","LeftFloor":"⌊","leftharpoondown":"↽","leftharpoonup":"↼","leftleftarrows":"⇇","leftrightarrow":"↔","LeftRightArrow":"↔","Leftrightarrow":"⇔","leftrightarrows":"⇆","leftrightharpoons":"⇋","leftrightsquigarrow":"↭","LeftRightVector":"⥎","LeftTeeArrow":"↤","LeftTee":"⊣","LeftTeeVector":"⥚","leftthreetimes":"⋋","LeftTriangleBar":"⧏","LeftTriangle":"⊲","LeftTriangleEqual":"⊴","LeftUpDownVector":"⥑","LeftUpTeeVector":"⥠","LeftUpVectorBar":"⥘","LeftUpVector":"↿","LeftVectorBar":"⥒","LeftVector":"↼","lEg":"⪋","leg":"⋚","leq":"≤","leqq":"≦","leqslant":"⩽","lescc":"⪨","les":"⩽","lesdot":"⩿","lesdoto":"⪁","lesdotor":"⪃","lesg":"⋚︀","lesges":"⪓","lessapprox":"⪅","lessdot":"⋖","lesseqgtr":"⋚","lesseqqgtr":"⪋","LessEqualGreater":"⋚","LessFullEqual":"≦","LessGreater":"≶","lessgtr":"≶","LessLess":"⪡","lesssim":"≲","LessSlantEqual":"⩽","LessTilde":"≲","lfisht":"⥼","lfloor":"⌊","Lfr":"𝔏","lfr":"𝔩","lg":"≶","lgE":"⪑","lHar":"⥢","lhard":"↽","lharu":"↼","lharul":"⥪","lhblk":"▄","LJcy":"Љ","ljcy":"љ","llarr":"⇇","ll":"≪","Ll":"⋘","llcorner":"⌞","Lleftarrow":"⇚","llhard":"⥫","lltri":"◺","Lmidot":"Ŀ","lmidot":"ŀ","lmoustache":"⎰","lmoust":"⎰","lnap":"⪉","lnapprox":"⪉","lne":"⪇","lnE":"≨","lneq":"⪇","lneqq":"≨","lnsim":"⋦","loang":"⟬","loarr":"⇽","lobrk":"⟦","longleftarrow":"⟵","LongLeftArrow":"⟵","Longleftarrow":"⟸","longleftrightarrow":"⟷","LongLeftRightArrow":"⟷","Longleftrightarrow":"⟺","longmapsto":"⟼","longrightarrow":"⟶","LongRightArrow":"⟶","Longrightarrow":"⟹","looparrowleft":"↫","looparrowright":"↬","lopar":"⦅","Lopf":"𝕃","lopf":"𝕝","loplus":"⨭","lotimes":"⨴","lowast":"∗","lowbar":"_","LowerLeftArrow":"↙","LowerRightArrow":"↘","loz":"◊","lozenge":"◊","lozf":"⧫","lpar":"(","lparlt":"⦓","lrarr":"⇆","lrcorner":"⌟","lrhar":"⇋","lrhard":"⥭","lrm":"‎","lrtri":"⊿","lsaquo":"‹","lscr":"𝓁","Lscr":"ℒ","lsh":"↰","Lsh":"↰","lsim":"≲","lsime":"⪍","lsimg":"⪏","lsqb":"[","lsquo":"‘","lsquor":"‚","Lstrok":"Ł","lstrok":"ł","ltcc":"⪦","ltcir":"⩹","lt":"<","LT":"<","Lt":"≪","ltdot":"⋖","lthree":"⋋","ltimes":"⋉","ltlarr":"⥶","ltquest":"⩻","ltri":"◃","ltrie":"⊴","ltrif":"◂","ltrPar":"⦖","lurdshar":"⥊","luruhar":"⥦","lvertneqq":"≨︀","lvnE":"≨︀","macr":"¯","male":"♂","malt":"✠","maltese":"✠","Map":"⤅","map":"↦","mapsto":"↦","mapstodown":"↧","mapstoleft":"↤","mapstoup":"↥","marker":"▮","mcomma":"⨩","Mcy":"М","mcy":"м","mdash":"—","mDDot":"∺","measuredangle":"∡","MediumSpace":" ","Mellintrf":"ℳ","Mfr":"𝔐","mfr":"𝔪","mho":"℧","micro":"µ","midast":"*","midcir":"⫰","mid":"∣","middot":"·","minusb":"⊟","minus":"−","minusd":"∸","minusdu":"⨪","MinusPlus":"∓","mlcp":"⫛","mldr":"…","mnplus":"∓","models":"⊧","Mopf":"𝕄","mopf":"𝕞","mp":"∓","mscr":"𝓂","Mscr":"ℳ","mstpos":"∾","Mu":"Μ","mu":"μ","multimap":"⊸","mumap":"⊸","nabla":"∇","Nacute":"Ń","nacute":"ń","nang":"∠⃒","nap":"≉","napE":"⩰̸","napid":"≋̸","napos":"ŉ","napprox":"≉","natural":"♮","naturals":"ℕ","natur":"♮","nbsp":" ","nbump":"≎̸","nbumpe":"≏̸","ncap":"⩃","Ncaron":"Ň","ncaron":"ň","Ncedil":"Ņ","ncedil":"ņ","ncong":"≇","ncongdot":"⩭̸","ncup":"⩂","Ncy":"Н","ncy":"н","ndash":"–","nearhk":"⤤","nearr":"↗","neArr":"⇗","nearrow":"↗","ne":"≠","nedot":"≐̸","NegativeMediumSpace":"​","NegativeThickSpace":"​","NegativeThinSpace":"​","NegativeVeryThinSpace":"​","nequiv":"≢","nesear":"⤨","nesim":"≂̸","NestedGreaterGreater":"≫","NestedLessLess":"≪","NewLine":"\n","nexist":"∄","nexists":"∄","Nfr":"𝔑","nfr":"𝔫","ngE":"≧̸","nge":"≱","ngeq":"≱","ngeqq":"≧̸","ngeqslant":"⩾̸","nges":"⩾̸","nGg":"⋙̸","ngsim":"≵","nGt":"≫⃒","ngt":"≯","ngtr":"≯","nGtv":"≫̸","nharr":"↮","nhArr":"⇎","nhpar":"⫲","ni":"∋","nis":"⋼","nisd":"⋺","niv":"∋","NJcy":"Њ","njcy":"њ","nlarr":"↚","nlArr":"⇍","nldr":"‥","nlE":"≦̸","nle":"≰","nleftarrow":"↚","nLeftarrow":"⇍","nleftrightarrow":"↮","nLeftrightarrow":"⇎","nleq":"≰","nleqq":"≦̸","nleqslant":"⩽̸","nles":"⩽̸","nless":"≮","nLl":"⋘̸","nlsim":"≴","nLt":"≪⃒","nlt":"≮","nltri":"⋪","nltrie":"⋬","nLtv":"≪̸","nmid":"∤","NoBreak":"⁠","NonBreakingSpace":" ","nopf":"𝕟","Nopf":"ℕ","Not":"⫬","not":"¬","NotCongruent":"≢","NotCupCap":"≭","NotDoubleVerticalBar":"∦","NotElement":"∉","NotEqual":"≠","NotEqualTilde":"≂̸","NotExists":"∄","NotGreater":"≯","NotGreaterEqual":"≱","NotGreaterFullEqual":"≧̸","NotGreaterGreater":"≫̸","NotGreaterLess":"≹","NotGreaterSlantEqual":"⩾̸","NotGreaterTilde":"≵","NotHumpDownHump":"≎̸","NotHumpEqual":"≏̸","notin":"∉","notindot":"⋵̸","notinE":"⋹̸","notinva":"∉","notinvb":"⋷","notinvc":"⋶","NotLeftTriangleBar":"⧏̸","NotLeftTriangle":"⋪","NotLeftTriangleEqual":"⋬","NotLess":"≮","NotLessEqual":"≰","NotLessGreater":"≸","NotLessLess":"≪̸","NotLessSlantEqual":"⩽̸","NotLessTilde":"≴","NotNestedGreaterGreater":"⪢̸","NotNestedLessLess":"⪡̸","notni":"∌","notniva":"∌","notnivb":"⋾","notnivc":"⋽","NotPrecedes":"⊀","NotPrecedesEqual":"⪯̸","NotPrecedesSlantEqual":"⋠","NotReverseElement":"∌","NotRightTriangleBar":"⧐̸","NotRightTriangle":"⋫","NotRightTriangleEqual":"⋭","NotSquareSubset":"⊏̸","NotSquareSubsetEqual":"⋢","NotSquareSuperset":"⊐̸","NotSquareSupersetEqual":"⋣","NotSubset":"⊂⃒","NotSubsetEqual":"⊈","NotSucceeds":"⊁","NotSucceedsEqual":"⪰̸","NotSucceedsSlantEqual":"⋡","NotSucceedsTilde":"≿̸","NotSuperset":"⊃⃒","NotSupersetEqual":"⊉","NotTilde":"≁","NotTildeEqual":"≄","NotTildeFullEqual":"≇","NotTildeTilde":"≉","NotVerticalBar":"∤","nparallel":"∦","npar":"∦","nparsl":"⫽⃥","npart":"∂̸","npolint":"⨔","npr":"⊀","nprcue":"⋠","nprec":"⊀","npreceq":"⪯̸","npre":"⪯̸","nrarrc":"⤳̸","nrarr":"↛","nrArr":"⇏","nrarrw":"↝̸","nrightarrow":"↛","nRightarrow":"⇏","nrtri":"⋫","nrtrie":"⋭","nsc":"⊁","nsccue":"⋡","nsce":"⪰̸","Nscr":"𝒩","nscr":"𝓃","nshortmid":"∤","nshortparallel":"∦","nsim":"≁","nsime":"≄","nsimeq":"≄","nsmid":"∤","nspar":"∦","nsqsube":"⋢","nsqsupe":"⋣","nsub":"⊄","nsubE":"⫅̸","nsube":"⊈","nsubset":"⊂⃒","nsubseteq":"⊈","nsubseteqq":"⫅̸","nsucc":"⊁","nsucceq":"⪰̸","nsup":"⊅","nsupE":"⫆̸","nsupe":"⊉","nsupset":"⊃⃒","nsupseteq":"⊉","nsupseteqq":"⫆̸","ntgl":"≹","Ntilde":"Ñ","ntilde":"ñ","ntlg":"≸","ntriangleleft":"⋪","ntrianglelefteq":"⋬","ntriangleright":"⋫","ntrianglerighteq":"⋭","Nu":"Ν","nu":"ν","num":"#","numero":"№","numsp":" ","nvap":"≍⃒","nvdash":"⊬","nvDash":"⊭","nVdash":"⊮","nVDash":"⊯","nvge":"≥⃒","nvgt":">⃒","nvHarr":"⤄","nvinfin":"⧞","nvlArr":"⤂","nvle":"≤⃒","nvlt":"<⃒","nvltrie":"⊴⃒","nvrArr":"⤃","nvrtrie":"⊵⃒","nvsim":"∼⃒","nwarhk":"⤣","nwarr":"↖","nwArr":"⇖","nwarrow":"↖","nwnear":"⤧","Oacute":"Ó","oacute":"ó","oast":"⊛","Ocirc":"Ô","ocirc":"ô","ocir":"⊚","Ocy":"О","ocy":"о","odash":"⊝","Odblac":"Ő","odblac":"ő","odiv":"⨸","odot":"⊙","odsold":"⦼","OElig":"Œ","oelig":"œ","ofcir":"⦿","Ofr":"𝔒","ofr":"𝔬","ogon":"˛","Ograve":"Ò","ograve":"ò","ogt":"⧁","ohbar":"⦵","ohm":"Ω","oint":"∮","olarr":"↺","olcir":"⦾","olcross":"⦻","oline":"‾","olt":"⧀","Omacr":"Ō","omacr":"ō","Omega":"Ω","omega":"ω","Omicron":"Ο","omicron":"ο","omid":"⦶","ominus":"⊖","Oopf":"𝕆","oopf":"𝕠","opar":"⦷","OpenCurlyDoubleQuote":"“","OpenCurlyQuote":"‘","operp":"⦹","oplus":"⊕","orarr":"↻","Or":"⩔","or":"∨","ord":"⩝","order":"ℴ","orderof":"ℴ","ordf":"ª","ordm":"º","origof":"⊶","oror":"⩖","orslope":"⩗","orv":"⩛","oS":"Ⓢ","Oscr":"𝒪","oscr":"ℴ","Oslash":"Ø","oslash":"ø","osol":"⊘","Otilde":"Õ","otilde":"õ","otimesas":"⨶","Otimes":"⨷","otimes":"⊗","Ouml":"Ö","ouml":"ö","ovbar":"⌽","OverBar":"‾","OverBrace":"⏞","OverBracket":"⎴","OverParenthesis":"⏜","para":"¶","parallel":"∥","par":"∥","parsim":"⫳","parsl":"⫽","part":"∂","PartialD":"∂","Pcy":"П","pcy":"п","percnt":"%","period":".","permil":"‰","perp":"⊥","pertenk":"‱","Pfr":"𝔓","pfr":"𝔭","Phi":"Φ","phi":"φ","phiv":"ϕ","phmmat":"ℳ","phone":"☎","Pi":"Π","pi":"π","pitchfork":"⋔","piv":"ϖ","planck":"ℏ","planckh":"ℎ","plankv":"ℏ","plusacir":"⨣","plusb":"⊞","pluscir":"⨢","plus":"+","plusdo":"∔","plusdu":"⨥","pluse":"⩲","PlusMinus":"±","plusmn":"±","plussim":"⨦","plustwo":"⨧","pm":"±","Poincareplane":"ℌ","pointint":"⨕","popf":"𝕡","Popf":"ℙ","pound":"£","prap":"⪷","Pr":"⪻","pr":"≺","prcue":"≼","precapprox":"⪷","prec":"≺","preccurlyeq":"≼","Precedes":"≺","PrecedesEqual":"⪯","PrecedesSlantEqual":"≼","PrecedesTilde":"≾","preceq":"⪯","precnapprox":"⪹","precneqq":"⪵","precnsim":"⋨","pre":"⪯","prE":"⪳","precsim":"≾","prime":"′","Prime":"″","primes":"ℙ","prnap":"⪹","prnE":"⪵","prnsim":"⋨","prod":"∏","Product":"∏","profalar":"⌮","profline":"⌒","profsurf":"⌓","prop":"∝","Proportional":"∝","Proportion":"∷","propto":"∝","prsim":"≾","prurel":"⊰","Pscr":"𝒫","pscr":"𝓅","Psi":"Ψ","psi":"ψ","puncsp":" ","Qfr":"𝔔","qfr":"𝔮","qint":"⨌","qopf":"𝕢","Qopf":"ℚ","qprime":"⁗","Qscr":"𝒬","qscr":"𝓆","quaternions":"ℍ","quatint":"⨖","quest":"?","questeq":"≟","quot":"\"","QUOT":"\"","rAarr":"⇛","race":"∽̱","Racute":"Ŕ","racute":"ŕ","radic":"√","raemptyv":"⦳","rang":"⟩","Rang":"⟫","rangd":"⦒","range":"⦥","rangle":"⟩","raquo":"»","rarrap":"⥵","rarrb":"⇥","rarrbfs":"⤠","rarrc":"⤳","rarr":"→","Rarr":"↠","rArr":"⇒","rarrfs":"⤞","rarrhk":"↪","rarrlp":"↬","rarrpl":"⥅","rarrsim":"⥴","Rarrtl":"⤖","rarrtl":"↣","rarrw":"↝","ratail":"⤚","rAtail":"⤜","ratio":"∶","rationals":"ℚ","rbarr":"⤍","rBarr":"⤏","RBarr":"⤐","rbbrk":"❳","rbrace":"}","rbrack":"]","rbrke":"⦌","rbrksld":"⦎","rbrkslu":"⦐","Rcaron":"Ř","rcaron":"ř","Rcedil":"Ŗ","rcedil":"ŗ","rceil":"⌉","rcub":"}","Rcy":"Р","rcy":"р","rdca":"⤷","rdldhar":"⥩","rdquo":"”","rdquor":"”","rdsh":"↳","real":"ℜ","realine":"ℛ","realpart":"ℜ","reals":"ℝ","Re":"ℜ","rect":"▭","reg":"®","REG":"®","ReverseElement":"∋","ReverseEquilibrium":"⇋","ReverseUpEquilibrium":"⥯","rfisht":"⥽","rfloor":"⌋","rfr":"𝔯","Rfr":"ℜ","rHar":"⥤","rhard":"⇁","rharu":"⇀","rharul":"⥬","Rho":"Ρ","rho":"ρ","rhov":"ϱ","RightAngleBracket":"⟩","RightArrowBar":"⇥","rightarrow":"→","RightArrow":"→","Rightarrow":"⇒","RightArrowLeftArrow":"⇄","rightarrowtail":"↣","RightCeiling":"⌉","RightDoubleBracket":"⟧","RightDownTeeVector":"⥝","RightDownVectorBar":"⥕","RightDownVector":"⇂","RightFloor":"⌋","rightharpoondown":"⇁","rightharpoonup":"⇀","rightleftarrows":"⇄","rightleftharpoons":"⇌","rightrightarrows":"⇉","rightsquigarrow":"↝","RightTeeArrow":"↦","RightTee":"⊢","RightTeeVector":"⥛","rightthreetimes":"⋌","RightTriangleBar":"⧐","RightTriangle":"⊳","RightTriangleEqual":"⊵","RightUpDownVector":"⥏","RightUpTeeVector":"⥜","RightUpVectorBar":"⥔","RightUpVector":"↾","RightVectorBar":"⥓","RightVector":"⇀","ring":"˚","risingdotseq":"≓","rlarr":"⇄","rlhar":"⇌","rlm":"‏","rmoustache":"⎱","rmoust":"⎱","rnmid":"⫮","roang":"⟭","roarr":"⇾","robrk":"⟧","ropar":"⦆","ropf":"𝕣","Ropf":"ℝ","roplus":"⨮","rotimes":"⨵","RoundImplies":"⥰","rpar":")","rpargt":"⦔","rppolint":"⨒","rrarr":"⇉","Rrightarrow":"⇛","rsaquo":"›","rscr":"𝓇","Rscr":"ℛ","rsh":"↱","Rsh":"↱","rsqb":"]","rsquo":"’","rsquor":"’","rthree":"⋌","rtimes":"⋊","rtri":"▹","rtrie":"⊵","rtrif":"▸","rtriltri":"⧎","RuleDelayed":"⧴","ruluhar":"⥨","rx":"℞","Sacute":"Ś","sacute":"ś","sbquo":"‚","scap":"⪸","Scaron":"Š","scaron":"š","Sc":"⪼","sc":"≻","sccue":"≽","sce":"⪰","scE":"⪴","Scedil":"Ş","scedil":"ş","Scirc":"Ŝ","scirc":"ŝ","scnap":"⪺","scnE":"⪶","scnsim":"⋩","scpolint":"⨓","scsim":"≿","Scy":"С","scy":"с","sdotb":"⊡","sdot":"⋅","sdote":"⩦","searhk":"⤥","searr":"↘","seArr":"⇘","searrow":"↘","sect":"§","semi":";","seswar":"⤩","setminus":"∖","setmn":"∖","sext":"✶","Sfr":"𝔖","sfr":"𝔰","sfrown":"⌢","sharp":"♯","SHCHcy":"Щ","shchcy":"щ","SHcy":"Ш","shcy":"ш","ShortDownArrow":"↓","ShortLeftArrow":"←","shortmid":"∣","shortparallel":"∥","ShortRightArrow":"→","ShortUpArrow":"↑","shy":"­","Sigma":"Σ","sigma":"σ","sigmaf":"ς","sigmav":"ς","sim":"∼","simdot":"⩪","sime":"≃","simeq":"≃","simg":"⪞","simgE":"⪠","siml":"⪝","simlE":"⪟","simne":"≆","simplus":"⨤","simrarr":"⥲","slarr":"←","SmallCircle":"∘","smallsetminus":"∖","smashp":"⨳","smeparsl":"⧤","smid":"∣","smile":"⌣","smt":"⪪","smte":"⪬","smtes":"⪬︀","SOFTcy":"Ь","softcy":"ь","solbar":"⌿","solb":"⧄","sol":"/","Sopf":"𝕊","sopf":"𝕤","spades":"♠","spadesuit":"♠","spar":"∥","sqcap":"⊓","sqcaps":"⊓︀","sqcup":"⊔","sqcups":"⊔︀","Sqrt":"√","sqsub":"⊏","sqsube":"⊑","sqsubset":"⊏","sqsubseteq":"⊑","sqsup":"⊐","sqsupe":"⊒","sqsupset":"⊐","sqsupseteq":"⊒","square":"□","Square":"□","SquareIntersection":"⊓","SquareSubset":"⊏","SquareSubsetEqual":"⊑","SquareSuperset":"⊐","SquareSupersetEqual":"⊒","SquareUnion":"⊔","squarf":"▪","squ":"□","squf":"▪","srarr":"→","Sscr":"𝒮","sscr":"𝓈","ssetmn":"∖","ssmile":"⌣","sstarf":"⋆","Star":"⋆","star":"☆","starf":"★","straightepsilon":"ϵ","straightphi":"ϕ","strns":"¯","sub":"⊂","Sub":"⋐","subdot":"⪽","subE":"⫅","sube":"⊆","subedot":"⫃","submult":"⫁","subnE":"⫋","subne":"⊊","subplus":"⪿","subrarr":"⥹","subset":"⊂","Subset":"⋐","subseteq":"⊆","subseteqq":"⫅","SubsetEqual":"⊆","subsetneq":"⊊","subsetneqq":"⫋","subsim":"⫇","subsub":"⫕","subsup":"⫓","succapprox":"⪸","succ":"≻","succcurlyeq":"≽","Succeeds":"≻","SucceedsEqual":"⪰","SucceedsSlantEqual":"≽","SucceedsTilde":"≿","succeq":"⪰","succnapprox":"⪺","succneqq":"⪶","succnsim":"⋩","succsim":"≿","SuchThat":"∋","sum":"∑","Sum":"∑","sung":"♪","sup1":"¹","sup2":"²","sup3":"³","sup":"⊃","Sup":"⋑","supdot":"⪾","supdsub":"⫘","supE":"⫆","supe":"⊇","supedot":"⫄","Superset":"⊃","SupersetEqual":"⊇","suphsol":"⟉","suphsub":"⫗","suplarr":"⥻","supmult":"⫂","supnE":"⫌","supne":"⊋","supplus":"⫀","supset":"⊃","Supset":"⋑","supseteq":"⊇","supseteqq":"⫆","supsetneq":"⊋","supsetneqq":"⫌","supsim":"⫈","supsub":"⫔","supsup":"⫖","swarhk":"⤦","swarr":"↙","swArr":"⇙","swarrow":"↙","swnwar":"⤪","szlig":"ß","Tab":"\t","target":"⌖","Tau":"Τ","tau":"τ","tbrk":"⎴","Tcaron":"Ť","tcaron":"ť","Tcedil":"Ţ","tcedil":"ţ","Tcy":"Т","tcy":"т","tdot":"⃛","telrec":"⌕","Tfr":"𝔗","tfr":"𝔱","there4":"∴","therefore":"∴","Therefore":"∴","Theta":"Θ","theta":"θ","thetasym":"ϑ","thetav":"ϑ","thickapprox":"≈","thicksim":"∼","ThickSpace":"  ","ThinSpace":" ","thinsp":" ","thkap":"≈","thksim":"∼","THORN":"Þ","thorn":"þ","tilde":"˜","Tilde":"∼","TildeEqual":"≃","TildeFullEqual":"≅","TildeTilde":"≈","timesbar":"⨱","timesb":"⊠","times":"×","timesd":"⨰","tint":"∭","toea":"⤨","topbot":"⌶","topcir":"⫱","top":"⊤","Topf":"𝕋","topf":"𝕥","topfork":"⫚","tosa":"⤩","tprime":"‴","trade":"™","TRADE":"™","triangle":"▵","triangledown":"▿","triangleleft":"◃","trianglelefteq":"⊴","triangleq":"≜","triangleright":"▹","trianglerighteq":"⊵","tridot":"◬","trie":"≜","triminus":"⨺","TripleDot":"⃛","triplus":"⨹","trisb":"⧍","tritime":"⨻","trpezium":"⏢","Tscr":"𝒯","tscr":"𝓉","TScy":"Ц","tscy":"ц","TSHcy":"Ћ","tshcy":"ћ","Tstrok":"Ŧ","tstrok":"ŧ","twixt":"≬","twoheadleftarrow":"↞","twoheadrightarrow":"↠","Uacute":"Ú","uacute":"ú","uarr":"↑","Uarr":"↟","uArr":"⇑","Uarrocir":"⥉","Ubrcy":"Ў","ubrcy":"ў","Ubreve":"Ŭ","ubreve":"ŭ","Ucirc":"Û","ucirc":"û","Ucy":"У","ucy":"у","udarr":"⇅","Udblac":"Ű","udblac":"ű","udhar":"⥮","ufisht":"⥾","Ufr":"𝔘","ufr":"𝔲","Ugrave":"Ù","ugrave":"ù","uHar":"⥣","uharl":"↿","uharr":"↾","uhblk":"▀","ulcorn":"⌜","ulcorner":"⌜","ulcrop":"⌏","ultri":"◸","Umacr":"Ū","umacr":"ū","uml":"¨","UnderBar":"_","UnderBrace":"⏟","UnderBracket":"⎵","UnderParenthesis":"⏝","Union":"⋃","UnionPlus":"⊎","Uogon":"Ų","uogon":"ų","Uopf":"𝕌","uopf":"𝕦","UpArrowBar":"⤒","uparrow":"↑","UpArrow":"↑","Uparrow":"⇑","UpArrowDownArrow":"⇅","updownarrow":"↕","UpDownArrow":"↕","Updownarrow":"⇕","UpEquilibrium":"⥮","upharpoonleft":"↿","upharpoonright":"↾","uplus":"⊎","UpperLeftArrow":"↖","UpperRightArrow":"↗","upsi":"υ","Upsi":"ϒ","upsih":"ϒ","Upsilon":"Υ","upsilon":"υ","UpTeeArrow":"↥","UpTee":"⊥","upuparrows":"⇈","urcorn":"⌝","urcorner":"⌝","urcrop":"⌎","Uring":"Ů","uring":"ů","urtri":"◹","Uscr":"𝒰","uscr":"𝓊","utdot":"⋰","Utilde":"Ũ","utilde":"ũ","utri":"▵","utrif":"▴","uuarr":"⇈","Uuml":"Ü","uuml":"ü","uwangle":"⦧","vangrt":"⦜","varepsilon":"ϵ","varkappa":"ϰ","varnothing":"∅","varphi":"ϕ","varpi":"ϖ","varpropto":"∝","varr":"↕","vArr":"⇕","varrho":"ϱ","varsigma":"ς","varsubsetneq":"⊊︀","varsubsetneqq":"⫋︀","varsupsetneq":"⊋︀","varsupsetneqq":"⫌︀","vartheta":"ϑ","vartriangleleft":"⊲","vartriangleright":"⊳","vBar":"⫨","Vbar":"⫫","vBarv":"⫩","Vcy":"В","vcy":"в","vdash":"⊢","vDash":"⊨","Vdash":"⊩","VDash":"⊫","Vdashl":"⫦","veebar":"⊻","vee":"∨","Vee":"⋁","veeeq":"≚","vellip":"⋮","verbar":"|","Verbar":"‖","vert":"|","Vert":"‖","VerticalBar":"∣","VerticalLine":"|","VerticalSeparator":"❘","VerticalTilde":"≀","VeryThinSpace":" ","Vfr":"𝔙","vfr":"𝔳","vltri":"⊲","vnsub":"⊂⃒","vnsup":"⊃⃒","Vopf":"𝕍","vopf":"𝕧","vprop":"∝","vrtri":"⊳","Vscr":"𝒱","vscr":"𝓋","vsubnE":"⫋︀","vsubne":"⊊︀","vsupnE":"⫌︀","vsupne":"⊋︀","Vvdash":"⊪","vzigzag":"⦚","Wcirc":"Ŵ","wcirc":"ŵ","wedbar":"⩟","wedge":"∧","Wedge":"⋀","wedgeq":"≙","weierp":"℘","Wfr":"𝔚","wfr":"𝔴","Wopf":"𝕎","wopf":"𝕨","wp":"℘","wr":"≀","wreath":"≀","Wscr":"𝒲","wscr":"𝓌","xcap":"⋂","xcirc":"◯","xcup":"⋃","xdtri":"▽","Xfr":"𝔛","xfr":"𝔵","xharr":"⟷","xhArr":"⟺","Xi":"Ξ","xi":"ξ","xlarr":"⟵","xlArr":"⟸","xmap":"⟼","xnis":"⋻","xodot":"⨀","Xopf":"𝕏","xopf":"𝕩","xoplus":"⨁","xotime":"⨂","xrarr":"⟶","xrArr":"⟹","Xscr":"𝒳","xscr":"𝓍","xsqcup":"⨆","xuplus":"⨄","xutri":"△","xvee":"⋁","xwedge":"⋀","Yacute":"Ý","yacute":"ý","YAcy":"Я","yacy":"я","Ycirc":"Ŷ","ycirc":"ŷ","Ycy":"Ы","ycy":"ы","yen":"¥","Yfr":"𝔜","yfr":"𝔶","YIcy":"Ї","yicy":"ї","Yopf":"𝕐","yopf":"𝕪","Yscr":"𝒴","yscr":"𝓎","YUcy":"Ю","yucy":"ю","yuml":"ÿ","Yuml":"Ÿ","Zacute":"Ź","zacute":"ź","Zcaron":"Ž","zcaron":"ž","Zcy":"З","zcy":"з","Zdot":"Ż","zdot":"ż","zeetrf":"ℨ","ZeroWidthSpace":"​","Zeta":"Ζ","zeta":"ζ","zfr":"𝔷","Zfr":"ℨ","ZHcy":"Ж","zhcy":"ж","zigrarr":"⇝","zopf":"𝕫","Zopf":"ℤ","Zscr":"𝒵","zscr":"𝓏","zwj":"‍","zwnj":"‌"}
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports) {
+
+module.exports = {"amp":"&","apos":"'","gt":">","lt":"<","quot":"\""}
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.decode = exports.parse = __webpack_require__(142);
+exports.encode = exports.stringify = __webpack_require__(143);
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process, setImmediate, global) {// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// A bit simpler than readable streams.
+// Implement an async ._write(chunk, encoding, cb), and it'll handle all
+// the drain event emission and buffering.
+
+
+
+/*<replacement>*/
+
+var processNextTick = __webpack_require__(27);
+/*</replacement>*/
+
+module.exports = Writable;
+
+/* <replacement> */
+function WriteReq(chunk, encoding, cb) {
+  this.chunk = chunk;
+  this.encoding = encoding;
+  this.callback = cb;
+  this.next = null;
+}
+
+// It seems a linked list but it is not
+// there will be only 2 of these for each stream
+function CorkedRequest(state) {
+  var _this = this;
+
+  this.next = null;
+  this.entry = null;
+  this.finish = function () {
+    onCorkedFinish(_this, state);
+  };
+}
+/* </replacement> */
+
+/*<replacement>*/
+var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
+/*</replacement>*/
+
+/*<replacement>*/
+var Duplex;
+/*</replacement>*/
+
+Writable.WritableState = WritableState;
+
+/*<replacement>*/
+var util = __webpack_require__(16);
+util.inherits = __webpack_require__(1);
+/*</replacement>*/
+
+/*<replacement>*/
+var internalUtil = {
+  deprecate: __webpack_require__(160)
+};
+/*</replacement>*/
+
+/*<replacement>*/
+var Stream = __webpack_require__(52);
+/*</replacement>*/
+
+/*<replacement>*/
+var Buffer = __webpack_require__(28).Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
+/*</replacement>*/
+
+var destroyImpl = __webpack_require__(51);
+
+util.inherits(Writable, Stream);
+
+function nop() {}
+
+function WritableState(options, stream) {
+  Duplex = Duplex || __webpack_require__(10);
+
+  options = options || {};
+
+  // object stream flag to indicate whether or not this stream
+  // contains buffers or objects.
+  this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
+
+  // the point at which write() starts returning false
+  // Note: 0 is a valid value, means that we always return false if
+  // the entire buffer is not flushed immediately on write()
+  var hwm = options.highWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // if _final has been called
+  this.finalCalled = false;
+
+  // drain event flag.
+  this.needDrain = false;
+  // at the start of calling end()
+  this.ending = false;
+  // when end() has been called, and returned
+  this.ended = false;
+  // when 'finish' is emitted
+  this.finished = false;
+
+  // has it been destroyed
+  this.destroyed = false;
+
+  // should we decode strings into buffers before passing to _write?
+  // this is here so that some node-core streams can optimize string
+  // handling at a lower level.
+  var noDecode = options.decodeStrings === false;
+  this.decodeStrings = !noDecode;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // not an actual buffer we keep track of, but a measurement
+  // of how much we're waiting to get pushed to some underlying
+  // socket or file.
+  this.length = 0;
+
+  // a flag to see when we're in the middle of a write.
+  this.writing = false;
+
+  // when true all writes will be buffered until .uncork() call
+  this.corked = 0;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, because any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // a flag to know if we're processing previously buffered items, which
+  // may call the _write() callback in the same tick, so that we don't
+  // end up in an overlapped onwrite situation.
+  this.bufferProcessing = false;
+
+  // the callback that's passed to _write(chunk,cb)
+  this.onwrite = function (er) {
+    onwrite(stream, er);
+  };
+
+  // the callback that the user supplies to write(chunk,encoding,cb)
+  this.writecb = null;
+
+  // the amount that is being written when _write is called.
+  this.writelen = 0;
+
+  this.bufferedRequest = null;
+  this.lastBufferedRequest = null;
+
+  // number of pending user-supplied write callbacks
+  // this must be 0 before 'finish' can be emitted
+  this.pendingcb = 0;
+
+  // emit prefinish if the only thing we're waiting for is _write cbs
+  // This is relevant for synchronous Transform streams
+  this.prefinished = false;
+
+  // True if the error was already emitted and should not be thrown again
+  this.errorEmitted = false;
+
+  // count buffered requests
+  this.bufferedRequestCount = 0;
+
+  // allocate the first CorkedRequest, there is always
+  // one allocated and free to use, and we maintain at most two
+  this.corkedRequestsFree = new CorkedRequest(this);
+}
+
+WritableState.prototype.getBuffer = function getBuffer() {
+  var current = this.bufferedRequest;
+  var out = [];
+  while (current) {
+    out.push(current);
+    current = current.next;
+  }
+  return out;
+};
+
+(function () {
+  try {
+    Object.defineProperty(WritableState.prototype, 'buffer', {
+      get: internalUtil.deprecate(function () {
+        return this.getBuffer();
+      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
+    });
+  } catch (_) {}
+})();
+
+// Test _writableState for inheritance to account for Duplex streams,
+// whose prototype chain only points to Readable.
+var realHasInstance;
+if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
+  realHasInstance = Function.prototype[Symbol.hasInstance];
+  Object.defineProperty(Writable, Symbol.hasInstance, {
+    value: function (object) {
+      if (realHasInstance.call(this, object)) return true;
+
+      return object && object._writableState instanceof WritableState;
+    }
+  });
+} else {
+  realHasInstance = function (object) {
+    return object instanceof this;
+  };
+}
+
+function Writable(options) {
+  Duplex = Duplex || __webpack_require__(10);
+
+  // Writable ctor is applied to Duplexes, too.
+  // `realHasInstance` is necessary because using plain `instanceof`
+  // would return false, as no `_writableState` property is attached.
+
+  // Trying to use the custom `instanceof` for Writable here will also break the
+  // Node.js LazyTransform implementation, which has a non-trivial getter for
+  // `_writableState` that would lead to infinite recursion.
+  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
+    return new Writable(options);
+  }
+
+  this._writableState = new WritableState(options, this);
+
+  // legacy.
+  this.writable = true;
+
+  if (options) {
+    if (typeof options.write === 'function') this._write = options.write;
+
+    if (typeof options.writev === 'function') this._writev = options.writev;
+
+    if (typeof options.destroy === 'function') this._destroy = options.destroy;
+
+    if (typeof options.final === 'function') this._final = options.final;
+  }
+
+  Stream.call(this);
+}
+
+// Otherwise people can pipe Writable streams, which is just wrong.
+Writable.prototype.pipe = function () {
+  this.emit('error', new Error('Cannot pipe, not readable'));
+};
+
+function writeAfterEnd(stream, cb) {
+  var er = new Error('write after end');
+  // TODO: defer error events consistently everywhere, not just the cb
+  stream.emit('error', er);
+  processNextTick(cb, er);
+}
+
+// Checks that a user-supplied chunk is valid, especially for the particular
+// mode the stream is in. Currently this means that `null` is never accepted
+// and undefined/non-string values are only allowed in object mode.
+function validChunk(stream, state, chunk, cb) {
+  var valid = true;
+  var er = false;
+
+  if (chunk === null) {
+    er = new TypeError('May not write null values to stream');
+  } else if (typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  if (er) {
+    stream.emit('error', er);
+    processNextTick(cb, er);
+    valid = false;
+  }
+  return valid;
+}
+
+Writable.prototype.write = function (chunk, encoding, cb) {
+  var state = this._writableState;
+  var ret = false;
+  var isBuf = _isUint8Array(chunk) && !state.objectMode;
+
+  if (isBuf && !Buffer.isBuffer(chunk)) {
+    chunk = _uint8ArrayToBuffer(chunk);
+  }
+
+  if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (isBuf) encoding = 'buffer';else if (!encoding) encoding = state.defaultEncoding;
+
+  if (typeof cb !== 'function') cb = nop;
+
+  if (state.ended) writeAfterEnd(this, cb);else if (isBuf || validChunk(this, state, chunk, cb)) {
+    state.pendingcb++;
+    ret = writeOrBuffer(this, state, isBuf, chunk, encoding, cb);
+  }
+
+  return ret;
+};
+
+Writable.prototype.cork = function () {
+  var state = this._writableState;
+
+  state.corked++;
+};
+
+Writable.prototype.uncork = function () {
+  var state = this._writableState;
+
+  if (state.corked) {
+    state.corked--;
+
+    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
+  }
+};
+
+Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
+  // node::ParseEncoding() requires lower case.
+  if (typeof encoding === 'string') encoding = encoding.toLowerCase();
+  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) throw new TypeError('Unknown encoding: ' + encoding);
+  this._writableState.defaultEncoding = encoding;
+  return this;
+};
+
+function decodeChunk(state, chunk, encoding) {
+  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
+    chunk = Buffer.from(chunk, encoding);
+  }
+  return chunk;
+}
+
+// if we're already writing something, then just put this
+// in the queue, and wait our turn.  Otherwise, call _write
+// If we return false, then we need a drain event, so set that flag.
+function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
+  if (!isBuf) {
+    var newChunk = decodeChunk(state, chunk, encoding);
+    if (chunk !== newChunk) {
+      isBuf = true;
+      encoding = 'buffer';
+      chunk = newChunk;
+    }
+  }
+  var len = state.objectMode ? 1 : chunk.length;
+
+  state.length += len;
+
+  var ret = state.length < state.highWaterMark;
+  // we must ensure that previous needDrain will not be reset to false.
+  if (!ret) state.needDrain = true;
+
+  if (state.writing || state.corked) {
+    var last = state.lastBufferedRequest;
+    state.lastBufferedRequest = {
+      chunk: chunk,
+      encoding: encoding,
+      isBuf: isBuf,
+      callback: cb,
+      next: null
+    };
+    if (last) {
+      last.next = state.lastBufferedRequest;
+    } else {
+      state.bufferedRequest = state.lastBufferedRequest;
+    }
+    state.bufferedRequestCount += 1;
+  } else {
+    doWrite(stream, state, false, len, chunk, encoding, cb);
+  }
+
+  return ret;
+}
+
+function doWrite(stream, state, writev, len, chunk, encoding, cb) {
+  state.writelen = len;
+  state.writecb = cb;
+  state.writing = true;
+  state.sync = true;
+  if (writev) stream._writev(chunk, state.onwrite);else stream._write(chunk, encoding, state.onwrite);
+  state.sync = false;
+}
+
+function onwriteError(stream, state, sync, er, cb) {
+  --state.pendingcb;
+
+  if (sync) {
+    // defer the callback if we are being called synchronously
+    // to avoid piling up things on the stack
+    processNextTick(cb, er);
+    // this can emit finish, and it will always happen
+    // after error
+    processNextTick(finishMaybe, stream, state);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+  } else {
+    // the caller expect this to happen before if
+    // it is async
+    cb(er);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+    // this can emit finish, but finish must
+    // always follow error
+    finishMaybe(stream, state);
+  }
+}
+
+function onwriteStateUpdate(state) {
+  state.writing = false;
+  state.writecb = null;
+  state.length -= state.writelen;
+  state.writelen = 0;
+}
+
+function onwrite(stream, er) {
+  var state = stream._writableState;
+  var sync = state.sync;
+  var cb = state.writecb;
+
+  onwriteStateUpdate(state);
+
+  if (er) onwriteError(stream, state, sync, er, cb);else {
+    // Check if we're actually ready to finish, but don't emit yet
+    var finished = needFinish(state);
+
+    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
+      clearBuffer(stream, state);
+    }
+
+    if (sync) {
+      /*<replacement>*/
+      asyncWrite(afterWrite, stream, state, finished, cb);
+      /*</replacement>*/
+    } else {
+      afterWrite(stream, state, finished, cb);
+    }
+  }
+}
+
+function afterWrite(stream, state, finished, cb) {
+  if (!finished) onwriteDrain(stream, state);
+  state.pendingcb--;
+  cb();
+  finishMaybe(stream, state);
+}
+
+// Must force callback to be called on nextTick, so that we don't
+// emit 'drain' before the write() consumer gets the 'false' return
+// value, and has a chance to attach a 'drain' listener.
+function onwriteDrain(stream, state) {
+  if (state.length === 0 && state.needDrain) {
+    state.needDrain = false;
+    stream.emit('drain');
+  }
+}
+
+// if there's something in the buffer waiting, then process it
+function clearBuffer(stream, state) {
+  state.bufferProcessing = true;
+  var entry = state.bufferedRequest;
+
+  if (stream._writev && entry && entry.next) {
+    // Fast case, write everything using _writev()
+    var l = state.bufferedRequestCount;
+    var buffer = new Array(l);
+    var holder = state.corkedRequestsFree;
+    holder.entry = entry;
+
+    var count = 0;
+    var allBuffers = true;
+    while (entry) {
+      buffer[count] = entry;
+      if (!entry.isBuf) allBuffers = false;
+      entry = entry.next;
+      count += 1;
+    }
+    buffer.allBuffers = allBuffers;
+
+    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
+
+    // doWrite is almost always async, defer these to save a bit of time
+    // as the hot path ends with doWrite
+    state.pendingcb++;
+    state.lastBufferedRequest = null;
+    if (holder.next) {
+      state.corkedRequestsFree = holder.next;
+      holder.next = null;
+    } else {
+      state.corkedRequestsFree = new CorkedRequest(state);
+    }
+  } else {
+    // Slow case, write chunks one-by-one
+    while (entry) {
+      var chunk = entry.chunk;
+      var encoding = entry.encoding;
+      var cb = entry.callback;
+      var len = state.objectMode ? 1 : chunk.length;
+
+      doWrite(stream, state, false, len, chunk, encoding, cb);
+      entry = entry.next;
+      // if we didn't call the onwrite immediately, then
+      // it means that we need to wait until it does.
+      // also, that means that the chunk and cb are currently
+      // being processed, so move the buffer counter past them.
+      if (state.writing) {
+        break;
+      }
+    }
+
+    if (entry === null) state.lastBufferedRequest = null;
+  }
+
+  state.bufferedRequestCount = 0;
+  state.bufferedRequest = entry;
+  state.bufferProcessing = false;
+}
+
+Writable.prototype._write = function (chunk, encoding, cb) {
+  cb(new Error('_write() is not implemented'));
+};
+
+Writable.prototype._writev = null;
+
+Writable.prototype.end = function (chunk, encoding, cb) {
+  var state = this._writableState;
+
+  if (typeof chunk === 'function') {
+    cb = chunk;
+    chunk = null;
+    encoding = null;
+  } else if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (chunk !== null && chunk !== undefined) this.write(chunk, encoding);
+
+  // .end() fully uncorks
+  if (state.corked) {
+    state.corked = 1;
+    this.uncork();
+  }
+
+  // ignore unnecessary end() calls.
+  if (!state.ending && !state.finished) endWritable(this, state, cb);
+};
+
+function needFinish(state) {
+  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
+}
+function callFinal(stream, state) {
+  stream._final(function (err) {
+    state.pendingcb--;
+    if (err) {
+      stream.emit('error', err);
+    }
+    state.prefinished = true;
+    stream.emit('prefinish');
+    finishMaybe(stream, state);
+  });
+}
+function prefinish(stream, state) {
+  if (!state.prefinished && !state.finalCalled) {
+    if (typeof stream._final === 'function') {
+      state.pendingcb++;
+      state.finalCalled = true;
+      processNextTick(callFinal, stream, state);
+    } else {
+      state.prefinished = true;
+      stream.emit('prefinish');
+    }
+  }
+}
+
+function finishMaybe(stream, state) {
+  var need = needFinish(state);
+  if (need) {
+    prefinish(stream, state);
+    if (state.pendingcb === 0) {
+      state.finished = true;
+      stream.emit('finish');
+    }
+  }
+  return need;
+}
+
+function endWritable(stream, state, cb) {
+  state.ending = true;
+  finishMaybe(stream, state);
+  if (cb) {
+    if (state.finished) processNextTick(cb);else stream.once('finish', cb);
+  }
+  state.ended = true;
+  stream.writable = false;
+}
+
+function onCorkedFinish(corkReq, state, err) {
+  var entry = corkReq.entry;
+  corkReq.entry = null;
+  while (entry) {
+    var cb = entry.callback;
+    state.pendingcb--;
+    cb(err);
+    entry = entry.next;
+  }
+  if (state.corkedRequestsFree) {
+    state.corkedRequestsFree.next = corkReq;
+  } else {
+    state.corkedRequestsFree = corkReq;
+  }
+}
+
+Object.defineProperty(Writable.prototype, 'destroyed', {
+  get: function () {
+    if (this._writableState === undefined) {
+      return false;
+    }
+    return this._writableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._writableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._writableState.destroyed = value;
+  }
+});
+
+Writable.prototype.destroy = destroyImpl.destroy;
+Writable.prototype._undestroy = destroyImpl.undestroy;
+Writable.prototype._destroy = function (err, cb) {
+  this.end();
+  cb(err);
+};
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), __webpack_require__(36).setImmediate, __webpack_require__(0)))
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Buffer = __webpack_require__(28).Buffer;
+
+var isEncoding = Buffer.isEncoding || function (encoding) {
+  encoding = '' + encoding;
+  switch (encoding && encoding.toLowerCase()) {
+    case 'hex':case 'utf8':case 'utf-8':case 'ascii':case 'binary':case 'base64':case 'ucs2':case 'ucs-2':case 'utf16le':case 'utf-16le':case 'raw':
+      return true;
+    default:
+      return false;
+  }
+};
+
+function _normalizeEncoding(enc) {
+  if (!enc) return 'utf8';
+  var retried;
+  while (true) {
+    switch (enc) {
+      case 'utf8':
+      case 'utf-8':
+        return 'utf8';
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return 'utf16le';
+      case 'latin1':
+      case 'binary':
+        return 'latin1';
+      case 'base64':
+      case 'ascii':
+      case 'hex':
+        return enc;
+      default:
+        if (retried) return; // undefined
+        enc = ('' + enc).toLowerCase();
+        retried = true;
+    }
+  }
+};
+
+// Do not cache `Buffer.isEncoding` when checking encoding names as some
+// modules monkey-patch it to support additional encodings
+function normalizeEncoding(enc) {
+  var nenc = _normalizeEncoding(enc);
+  if (typeof nenc !== 'string' && (Buffer.isEncoding === isEncoding || !isEncoding(enc))) throw new Error('Unknown encoding: ' + enc);
+  return nenc || enc;
+}
+
+// StringDecoder provides an interface for efficiently splitting a series of
+// buffers into a series of JS strings without breaking apart multi-byte
+// characters.
+exports.StringDecoder = StringDecoder;
+function StringDecoder(encoding) {
+  this.encoding = normalizeEncoding(encoding);
+  var nb;
+  switch (this.encoding) {
+    case 'utf16le':
+      this.text = utf16Text;
+      this.end = utf16End;
+      nb = 4;
+      break;
+    case 'utf8':
+      this.fillLast = utf8FillLast;
+      nb = 4;
+      break;
+    case 'base64':
+      this.text = base64Text;
+      this.end = base64End;
+      nb = 3;
+      break;
+    default:
+      this.write = simpleWrite;
+      this.end = simpleEnd;
+      return;
+  }
+  this.lastNeed = 0;
+  this.lastTotal = 0;
+  this.lastChar = Buffer.allocUnsafe(nb);
+}
+
+StringDecoder.prototype.write = function (buf) {
+  if (buf.length === 0) return '';
+  var r;
+  var i;
+  if (this.lastNeed) {
+    r = this.fillLast(buf);
+    if (r === undefined) return '';
+    i = this.lastNeed;
+    this.lastNeed = 0;
+  } else {
+    i = 0;
+  }
+  if (i < buf.length) return r ? r + this.text(buf, i) : this.text(buf, i);
+  return r || '';
+};
+
+StringDecoder.prototype.end = utf8End;
+
+// Returns only complete characters in a Buffer
+StringDecoder.prototype.text = utf8Text;
+
+// Attempts to complete a partial non-UTF-8 character using bytes from a Buffer
+StringDecoder.prototype.fillLast = function (buf) {
+  if (this.lastNeed <= buf.length) {
+    buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, this.lastNeed);
+    return this.lastChar.toString(this.encoding, 0, this.lastTotal);
+  }
+  buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, buf.length);
+  this.lastNeed -= buf.length;
+};
+
+// Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
+// continuation byte.
+function utf8CheckByte(byte) {
+  if (byte <= 0x7F) return 0;else if (byte >> 5 === 0x06) return 2;else if (byte >> 4 === 0x0E) return 3;else if (byte >> 3 === 0x1E) return 4;
+  return -1;
+}
+
+// Checks at most 3 bytes at the end of a Buffer in order to detect an
+// incomplete multi-byte UTF-8 character. The total number of bytes (2, 3, or 4)
+// needed to complete the UTF-8 character (if applicable) are returned.
+function utf8CheckIncomplete(self, buf, i) {
+  var j = buf.length - 1;
+  if (j < i) return 0;
+  var nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) self.lastNeed = nb - 1;
+    return nb;
+  }
+  if (--j < i) return 0;
+  nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) self.lastNeed = nb - 2;
+    return nb;
+  }
+  if (--j < i) return 0;
+  nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) {
+      if (nb === 2) nb = 0;else self.lastNeed = nb - 3;
+    }
+    return nb;
+  }
+  return 0;
+}
+
+// Validates as many continuation bytes for a multi-byte UTF-8 character as
+// needed or are available. If we see a non-continuation byte where we expect
+// one, we "replace" the validated continuation bytes we've seen so far with
+// UTF-8 replacement characters ('\ufffd'), to match v8's UTF-8 decoding
+// behavior. The continuation byte check is included three times in the case
+// where all of the continuation bytes for a character exist in the same buffer.
+// It is also done this way as a slight performance increase instead of using a
+// loop.
+function utf8CheckExtraBytes(self, buf, p) {
+  if ((buf[0] & 0xC0) !== 0x80) {
+    self.lastNeed = 0;
+    return '\ufffd'.repeat(p);
+  }
+  if (self.lastNeed > 1 && buf.length > 1) {
+    if ((buf[1] & 0xC0) !== 0x80) {
+      self.lastNeed = 1;
+      return '\ufffd'.repeat(p + 1);
+    }
+    if (self.lastNeed > 2 && buf.length > 2) {
+      if ((buf[2] & 0xC0) !== 0x80) {
+        self.lastNeed = 2;
+        return '\ufffd'.repeat(p + 2);
+      }
+    }
+  }
+}
+
+// Attempts to complete a multi-byte UTF-8 character using bytes from a Buffer.
+function utf8FillLast(buf) {
+  var p = this.lastTotal - this.lastNeed;
+  var r = utf8CheckExtraBytes(this, buf, p);
+  if (r !== undefined) return r;
+  if (this.lastNeed <= buf.length) {
+    buf.copy(this.lastChar, p, 0, this.lastNeed);
+    return this.lastChar.toString(this.encoding, 0, this.lastTotal);
+  }
+  buf.copy(this.lastChar, p, 0, buf.length);
+  this.lastNeed -= buf.length;
+}
+
+// Returns all complete UTF-8 characters in a Buffer. If the Buffer ended on a
+// partial character, the character's bytes are buffered until the required
+// number of bytes are available.
+function utf8Text(buf, i) {
+  var total = utf8CheckIncomplete(this, buf, i);
+  if (!this.lastNeed) return buf.toString('utf8', i);
+  this.lastTotal = total;
+  var end = buf.length - (total - this.lastNeed);
+  buf.copy(this.lastChar, 0, end);
+  return buf.toString('utf8', i, end);
+}
+
+// For UTF-8, a replacement character for each buffered byte of a (partial)
+// character needs to be added to the output.
+function utf8End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) return r + '\ufffd'.repeat(this.lastTotal - this.lastNeed);
+  return r;
+}
+
+// UTF-16LE typically needs two bytes per character, but even if we have an even
+// number of bytes available, we need to check if we end on a leading/high
+// surrogate. In that case, we need to wait for the next two bytes in order to
+// decode the last character properly.
+function utf16Text(buf, i) {
+  if ((buf.length - i) % 2 === 0) {
+    var r = buf.toString('utf16le', i);
+    if (r) {
+      var c = r.charCodeAt(r.length - 1);
+      if (c >= 0xD800 && c <= 0xDBFF) {
+        this.lastNeed = 2;
+        this.lastTotal = 4;
+        this.lastChar[0] = buf[buf.length - 2];
+        this.lastChar[1] = buf[buf.length - 1];
+        return r.slice(0, -1);
+      }
+    }
+    return r;
+  }
+  this.lastNeed = 1;
+  this.lastTotal = 2;
+  this.lastChar[0] = buf[buf.length - 1];
+  return buf.toString('utf16le', i, buf.length - 1);
+}
+
+// For UTF-16LE we do not explicitly append special replacement characters if we
+// end on a partial character, we simply let v8 handle that.
+function utf16End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) {
+    var end = this.lastTotal - this.lastNeed;
+    return r + this.lastChar.toString('utf16le', 0, end);
+  }
+  return r;
+}
+
+function base64Text(buf, i) {
+  var n = (buf.length - i) % 3;
+  if (n === 0) return buf.toString('base64', i);
+  this.lastNeed = 3 - n;
+  this.lastTotal = 3;
+  if (n === 1) {
+    this.lastChar[0] = buf[buf.length - 1];
+  } else {
+    this.lastChar[0] = buf[buf.length - 2];
+    this.lastChar[1] = buf[buf.length - 1];
+  }
+  return buf.toString('base64', i, buf.length - n);
+}
+
+function base64End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) return r + this.lastChar.toString('base64', 0, 3 - this.lastNeed);
+  return r;
+}
+
+// Pass bytes on through for single-byte encodings (e.g. ascii, latin1, hex)
+function simpleWrite(buf) {
+  return buf.toString(this.encoding);
+}
+
+function simpleEnd(buf) {
+  return buf && buf.length ? this.write(buf) : '';
+}
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(151);
+exports.setImmediate = setImmediate;
+exports.clearImmediate = clearImmediate;
+
+
+/***/ }),
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12972,9 +13111,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var SharedDispatch = __webpack_require__(70);
+var SharedDispatch = __webpack_require__(69);
 
-var log = __webpack_require__(2);
+var log = __webpack_require__(3);
 
 /**
  * This class serves as the central broker for message dispatch. It expects to operate on the main thread / Window and
@@ -13107,7 +13246,7 @@ var CentralDispatch = function (_SharedDispatch) {
 module.exports = new CentralDispatch();
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13156,7 +13295,7 @@ var mutationAdpater = function mutationAdpater(mutation) {
 module.exports = mutationAdpater;
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13166,16 +13305,16 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var RenderedTarget = __webpack_require__(19);
+var RenderedTarget = __webpack_require__(23);
 var Blocks = __webpack_require__(12);
 
-var _require = __webpack_require__(18),
+var _require = __webpack_require__(22),
     loadSoundFromAsset = _require.loadSoundFromAsset;
 
-var _require2 = __webpack_require__(17),
+var _require2 = __webpack_require__(21),
     loadCostumeFromAsset = _require2.loadCostumeFromAsset;
 
-var StringUtil = __webpack_require__(13);
+var StringUtil = __webpack_require__(15);
 
 var Sprite = function () {
     /**
@@ -13301,7 +13440,7 @@ var Sprite = function () {
 module.exports = Sprite;
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, exports) {
 
 // This object will be used as the prototype for Nodes when creating a
@@ -13351,10 +13490,10 @@ Object.keys(domLvl1).forEach(function(key) {
 
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var decodeMap = __webpack_require__(106);
+var decodeMap = __webpack_require__(108);
 
 module.exports = decodeCodePoint;
 
@@ -13383,16 +13522,16 @@ function decodeCodePoint(codePoint){
 
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports) {
 
 module.exports = {"Aacute":"Á","aacute":"á","Acirc":"Â","acirc":"â","acute":"´","AElig":"Æ","aelig":"æ","Agrave":"À","agrave":"à","amp":"&","AMP":"&","Aring":"Å","aring":"å","Atilde":"Ã","atilde":"ã","Auml":"Ä","auml":"ä","brvbar":"¦","Ccedil":"Ç","ccedil":"ç","cedil":"¸","cent":"¢","copy":"©","COPY":"©","curren":"¤","deg":"°","divide":"÷","Eacute":"É","eacute":"é","Ecirc":"Ê","ecirc":"ê","Egrave":"È","egrave":"è","ETH":"Ð","eth":"ð","Euml":"Ë","euml":"ë","frac12":"½","frac14":"¼","frac34":"¾","gt":">","GT":">","Iacute":"Í","iacute":"í","Icirc":"Î","icirc":"î","iexcl":"¡","Igrave":"Ì","igrave":"ì","iquest":"¿","Iuml":"Ï","iuml":"ï","laquo":"«","lt":"<","LT":"<","macr":"¯","micro":"µ","middot":"·","nbsp":" ","not":"¬","Ntilde":"Ñ","ntilde":"ñ","Oacute":"Ó","oacute":"ó","Ocirc":"Ô","ocirc":"ô","Ograve":"Ò","ograve":"ò","ordf":"ª","ordm":"º","Oslash":"Ø","oslash":"ø","Otilde":"Õ","otilde":"õ","Ouml":"Ö","ouml":"ö","para":"¶","plusmn":"±","pound":"£","quot":"\"","QUOT":"\"","raquo":"»","reg":"®","REG":"®","sect":"§","shy":"­","sup1":"¹","sup2":"²","sup3":"³","szlig":"ß","THORN":"Þ","thorn":"þ","times":"×","Uacute":"Ú","uacute":"ú","Ucirc":"Û","ucirc":"û","Ugrave":"Ù","ugrave":"ù","uml":"¨","Uuml":"Ü","uuml":"ü","Yacute":"Ý","yacute":"ý","yen":"¥","yuml":"ÿ"}
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Tokenizer = __webpack_require__(45);
+var Tokenizer = __webpack_require__(44);
 
 /*
 	Options:
@@ -13748,15 +13887,15 @@ module.exports = Parser;
 
 
 /***/ }),
-/* 45 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = Tokenizer;
 
-var decodeCodePoint = __webpack_require__(42),
-    entityMap = __webpack_require__(30),
-    legacyMap = __webpack_require__(43),
-    xmlMap    = __webpack_require__(31),
+var decodeCodePoint = __webpack_require__(41),
+    entityMap = __webpack_require__(31),
+    legacyMap = __webpack_require__(42),
+    xmlMap    = __webpack_require__(32),
 
     i = 0,
 
@@ -14660,14 +14799,14 @@ Tokenizer.prototype._emitPartial = function(value){
 
 
 /***/ }),
-/* 46 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = Stream;
 
-var Parser = __webpack_require__(44),
-    WritableStream = __webpack_require__(151).Writable || __webpack_require__(166).Writable,
-    StringDecoder = __webpack_require__(32).StringDecoder,
+var Parser = __webpack_require__(43),
+    WritableStream = __webpack_require__(153).Writable || __webpack_require__(168).Writable,
+    StringDecoder = __webpack_require__(35).StringDecoder,
     Buffer = __webpack_require__(4).Buffer;
 
 function Stream(cbs, options){
@@ -14690,7 +14829,7 @@ WritableStream.prototype._write = function(chunk, encoding, cb){
 };
 
 /***/ }),
-/* 47 */
+/* 46 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -14701,7 +14840,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 48 */
+/* 47 */
 /***/ (function(module, exports) {
 
 var hex = {
@@ -14727,17 +14866,17 @@ module.exports = color;
 
 
 /***/ }),
-/* 49 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = typeof Promise === 'function' ? Promise : __webpack_require__(137);
+module.exports = typeof Promise === 'function' ? Promise : __webpack_require__(139);
 
 
 /***/ }),
-/* 50 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14766,13 +14905,13 @@ module.exports = typeof Promise === 'function' ? Promise : __webpack_require__(1
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(23);
+var processNextTick = __webpack_require__(27);
 /*</replacement>*/
 
 module.exports = Readable;
 
 /*<replacement>*/
-var isArray = __webpack_require__(47);
+var isArray = __webpack_require__(46);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -14790,13 +14929,13 @@ var EElistenerCount = function (emitter, type) {
 /*</replacement>*/
 
 /*<replacement>*/
-var Stream = __webpack_require__(53);
+var Stream = __webpack_require__(52);
 /*</replacement>*/
 
 // TODO(bmeurer): Change this back to const once hole checks are
 // properly optimized away early in Ignition+TurboFan.
 /*<replacement>*/
-var Buffer = __webpack_require__(35).Buffer;
+var Buffer = __webpack_require__(28).Buffer;
 var OurUint8Array = global.Uint8Array || function () {};
 function _uint8ArrayToBuffer(chunk) {
   return Buffer.from(chunk);
@@ -14807,12 +14946,12 @@ function _isUint8Array(obj) {
 /*</replacement>*/
 
 /*<replacement>*/
-var util = __webpack_require__(14);
+var util = __webpack_require__(16);
 util.inherits = __webpack_require__(1);
 /*</replacement>*/
 
 /*<replacement>*/
-var debugUtil = __webpack_require__(167);
+var debugUtil = __webpack_require__(169);
 var debug = void 0;
 if (debugUtil && debugUtil.debuglog) {
   debug = debugUtil.debuglog('stream');
@@ -14821,8 +14960,8 @@ if (debugUtil && debugUtil.debuglog) {
 }
 /*</replacement>*/
 
-var BufferList = __webpack_require__(145);
-var destroyImpl = __webpack_require__(52);
+var BufferList = __webpack_require__(147);
+var destroyImpl = __webpack_require__(51);
 var StringDecoder;
 
 util.inherits(Readable, Stream);
@@ -14844,7 +14983,7 @@ function prependListener(emitter, event, fn) {
 }
 
 function ReadableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(9);
+  Duplex = Duplex || __webpack_require__(10);
 
   options = options || {};
 
@@ -14905,14 +15044,14 @@ function ReadableState(options, stream) {
   this.decoder = null;
   this.encoding = null;
   if (options.encoding) {
-    if (!StringDecoder) StringDecoder = __webpack_require__(32).StringDecoder;
+    if (!StringDecoder) StringDecoder = __webpack_require__(35).StringDecoder;
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
 }
 
 function Readable(options) {
-  Duplex = Duplex || __webpack_require__(9);
+  Duplex = Duplex || __webpack_require__(10);
 
   if (!(this instanceof Readable)) return new Readable(options);
 
@@ -15061,7 +15200,7 @@ Readable.prototype.isPaused = function () {
 
 // backwards compatibility.
 Readable.prototype.setEncoding = function (enc) {
-  if (!StringDecoder) StringDecoder = __webpack_require__(32).StringDecoder;
+  if (!StringDecoder) StringDecoder = __webpack_require__(35).StringDecoder;
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;
@@ -15748,10 +15887,10 @@ function indexOf(xs, x) {
   }
   return -1;
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0), __webpack_require__(8)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0), __webpack_require__(9)))
 
 /***/ }),
-/* 51 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15822,10 +15961,10 @@ function indexOf(xs, x) {
 
 module.exports = Transform;
 
-var Duplex = __webpack_require__(9);
+var Duplex = __webpack_require__(10);
 
 /*<replacement>*/
-var util = __webpack_require__(14);
+var util = __webpack_require__(16);
 util.inherits = __webpack_require__(1);
 /*</replacement>*/
 
@@ -15971,7 +16110,7 @@ function done(stream, er, data) {
 }
 
 /***/ }),
-/* 52 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15979,7 +16118,7 @@ function done(stream, er, data) {
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(23);
+var processNextTick = __webpack_require__(27);
 /*</replacement>*/
 
 // undocumented cb() API, needed for core, not for public API
@@ -16049,20 +16188,20 @@ module.exports = {
 };
 
 /***/ }),
-/* 53 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(5).EventEmitter;
 
 
 /***/ }),
-/* 54 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {var ClientRequest = __webpack_require__(152)
-var extend = __webpack_require__(163)
-var statusCodes = __webpack_require__(88)
-var url = __webpack_require__(37)
+/* WEBPACK VAR INJECTION */(function(global) {var ClientRequest = __webpack_require__(154)
+var extend = __webpack_require__(165)
+var statusCodes = __webpack_require__(90)
+var url = __webpack_require__(29)
 
 var http = exports
 
@@ -16141,7 +16280,7 @@ http.METHODS = [
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 55 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableStream)
@@ -16217,7 +16356,7 @@ xhr = null // Help gc
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 56 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -16745,7 +16884,7 @@ function isPrimitive(arg) {
 }
 exports.isPrimitive = isPrimitive;
 
-exports.isBuffer = __webpack_require__(160);
+exports.isBuffer = __webpack_require__(162);
 
 function objectToString(o) {
   return Object.prototype.toString.call(o);
@@ -16789,7 +16928,7 @@ exports.log = function() {
  *     prototype.
  * @param {function} superCtor Constructor function to inherit prototype from.
  */
-exports.inherits = __webpack_require__(159);
+exports.inherits = __webpack_require__(161);
 
 exports._extend = function(origin, add) {
   // Don't do anything if add isn't an object
@@ -16807,29 +16946,29 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0), __webpack_require__(8)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0), __webpack_require__(9)))
 
 /***/ }),
-/* 57 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const VirtualMachine = __webpack_require__(86);
+const VirtualMachine = __webpack_require__(88);
 
 module.exports = VirtualMachine;
 
 
 /***/ }),
-/* 58 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {
 
-module.exports = global["VirtualMachine"] = __webpack_require__(57);
+module.exports = global["VirtualMachine"] = __webpack_require__(56);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 59 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16839,7 +16978,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
+var Cast = __webpack_require__(2);
 
 var Scratch3ControlBlocks = function () {
     function Scratch3ControlBlocks(runtime) {
@@ -16995,7 +17134,7 @@ var Scratch3ControlBlocks = function () {
 module.exports = Scratch3ControlBlocks;
 
 /***/ }),
-/* 60 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17005,7 +17144,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
+var Cast = __webpack_require__(2);
 
 var Scratch3DataBlocks = function () {
     function Scratch3DataBlocks(runtime) {
@@ -17069,87 +17208,87 @@ var Scratch3DataBlocks = function () {
             // If it is, report contents joined together with no separator.
             // If it's not, report contents joined together with a space.
             var allSingleLetters = true;
-            for (var i = 0; i < list.contents.length; i++) {
-                var listItem = list.contents[i];
+            for (var i = 0; i < list.value.length; i++) {
+                var listItem = list.value[i];
                 if (!(typeof listItem === 'string' && listItem.length === 1)) {
                     allSingleLetters = false;
                     break;
                 }
             }
             if (allSingleLetters) {
-                return list.contents.join('');
+                return list.value.join('');
             }
-            return list.contents.join(' ');
+            return list.value.join(' ');
         }
     }, {
         key: 'addToList',
         value: function addToList(args, util) {
             var list = util.target.lookupOrCreateList(args.LIST);
-            list.contents.push(args.ITEM);
+            list.value.push(args.ITEM);
         }
     }, {
         key: 'deleteOfList',
         value: function deleteOfList(args, util) {
             var list = util.target.lookupOrCreateList(args.LIST);
-            var index = Cast.toListIndex(args.INDEX, list.contents.length);
+            var index = Cast.toListIndex(args.INDEX, list.value.length);
             if (index === Cast.LIST_INVALID) {
                 return;
             } else if (index === Cast.LIST_ALL) {
-                list.contents = [];
+                list.value = [];
                 return;
             }
-            list.contents.splice(index - 1, 1);
+            list.value.splice(index - 1, 1);
         }
     }, {
         key: 'insertAtList',
         value: function insertAtList(args, util) {
             var item = args.ITEM;
             var list = util.target.lookupOrCreateList(args.LIST);
-            var index = Cast.toListIndex(args.INDEX, list.contents.length + 1);
+            var index = Cast.toListIndex(args.INDEX, list.value.length + 1);
             if (index === Cast.LIST_INVALID) {
                 return;
             }
-            list.contents.splice(index - 1, 0, item);
+            list.value.splice(index - 1, 0, item);
         }
     }, {
         key: 'replaceItemOfList',
         value: function replaceItemOfList(args, util) {
             var item = args.ITEM;
             var list = util.target.lookupOrCreateList(args.LIST);
-            var index = Cast.toListIndex(args.INDEX, list.contents.length);
+            var index = Cast.toListIndex(args.INDEX, list.value.length);
             if (index === Cast.LIST_INVALID) {
                 return;
             }
-            list.contents.splice(index - 1, 1, item);
+            list.value.splice(index - 1, 1, item);
         }
     }, {
         key: 'getItemOfList',
         value: function getItemOfList(args, util) {
             var list = util.target.lookupOrCreateList(args.LIST);
-            var index = Cast.toListIndex(args.INDEX, list.contents.length);
+            var index = Cast.toListIndex(args.INDEX, list.value.length);
             if (index === Cast.LIST_INVALID) {
                 return '';
             }
-            return list.contents[index - 1];
+            return list.value[index - 1];
         }
     }, {
         key: 'lengthOfList',
         value: function lengthOfList(args, util) {
             var list = util.target.lookupOrCreateList(args.LIST);
-            return list.contents.length;
+            return list.value.length;
         }
     }, {
         key: 'listContainsItem',
         value: function listContainsItem(args, util) {
             var item = args.ITEM;
             var list = util.target.lookupOrCreateList(args.LIST);
-            if (list.contents.indexOf(item) >= 0) {
+            if (list.value.indexOf(item) >= 0) {
                 return true;
             }
             // Try using Scratch comparison operator on each item.
             // (Scratch considers the string '123' equal to the number 123).
-            for (var i = 0; i < list.contents.length; i++) {
-                if (Cast.compare(list.contents[i], item) === 0) {
+            for (var i = 0; i < list.value.length; i++) {
+                if (Cast.compare(list.value[i], item) === 0) {
                     return true;
                 }
             }
@@ -17163,7 +17302,7 @@ var Scratch3DataBlocks = function () {
 module.exports = Scratch3DataBlocks;
 
 /***/ }),
-/* 61 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17173,7 +17312,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
+var Cast = __webpack_require__(2);
 
 var Scratch3EventBlocks = function () {
     function Scratch3EventBlocks(runtime) {
@@ -17277,7 +17416,7 @@ var Scratch3EventBlocks = function () {
 module.exports = Scratch3EventBlocks;
 
 /***/ }),
-/* 62 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17289,9 +17428,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
-var Clone = __webpack_require__(20);
-var RenderedTarget = __webpack_require__(19);
+var Cast = __webpack_require__(2);
+var Clone = __webpack_require__(14);
+var RenderedTarget = __webpack_require__(23);
 
 /**
  * @typedef {object} BubbleState - the bubble state associated with a particular target.
@@ -17316,10 +17455,14 @@ var Scratch3LooksBlocks = function () {
         this._onTargetMoved = this._onTargetMoved.bind(this);
         this._onResetBubbles = this._onResetBubbles.bind(this);
         this._onTargetWillExit = this._onTargetWillExit.bind(this);
+        this._updateBubble = this._updateBubble.bind(this);
 
         // Reset all bubbles on start/stop
         this.runtime.on('PROJECT_STOP_ALL', this._onResetBubbles);
         this.runtime.on('targetWasRemoved', this._onTargetWillExit);
+
+        // Enable other blocks to use bubbles like ask/answer
+        this.runtime.on('SAY', this._updateBubble);
     }
 
     /**
@@ -17541,10 +17684,20 @@ var Scratch3LooksBlocks = function () {
             };
         }
     }, {
+        key: 'getMonitored',
+        value: function getMonitored() {
+            return {
+                looks_size: { isSpriteSpecific: true },
+                looks_costumeorder: { isSpriteSpecific: true },
+                looks_backdroporder: {},
+                looks_backdropname: {}
+            };
+        }
+    }, {
         key: 'say',
         value: function say(args, util) {
             // @TODO in 2.0 calling say/think resets the right/left bias of the bubble
-            this._updateBubble(util.target, 'say', args.MESSAGE);
+            this._updateBubble(util.target, 'say', String(args.MESSAGE));
         }
     }, {
         key: 'sayforsecs',
@@ -17552,11 +17705,12 @@ var Scratch3LooksBlocks = function () {
             var _this = this;
 
             this.say(args, util);
+            var _target = util.target;
             return new Promise(function (resolve) {
                 _this._bubbleTimeout = setTimeout(function () {
                     _this._bubbleTimeout = null;
                     // Clear say bubble and proceed.
-                    _this._updateBubble(util.target, 'say', '');
+                    _this._updateBubble(_target, 'say', '');
                     resolve();
                 }, 1000 * args.SECS);
             });
@@ -17564,7 +17718,7 @@ var Scratch3LooksBlocks = function () {
     }, {
         key: 'think',
         value: function think(args, util) {
-            this._updateBubble(util.target, 'think', args.MESSAGE);
+            this._updateBubble(util.target, 'think', String(args.MESSAGE));
         }
     }, {
         key: 'thinkforsecs',
@@ -17572,11 +17726,12 @@ var Scratch3LooksBlocks = function () {
             var _this2 = this;
 
             this.think(args, util);
+            var _target = util.target;
             return new Promise(function (resolve) {
                 _this2._bubbleTimeout = setTimeout(function () {
                     _this2._bubbleTimeout = null;
                     // Clear say bubble and proceed.
-                    _this2._updateBubble(util.target, 'think', '');
+                    _this2._updateBubble(_target, 'think', '');
                     resolve();
                 }, 1000 * args.SECS);
             });
@@ -17770,7 +17925,7 @@ var Scratch3LooksBlocks = function () {
 module.exports = Scratch3LooksBlocks;
 
 /***/ }),
-/* 63 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17780,9 +17935,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
-var MathUtil = __webpack_require__(10);
-var Timer = __webpack_require__(28);
+var Cast = __webpack_require__(2);
+var MathUtil = __webpack_require__(8);
+var Timer = __webpack_require__(25);
 
 var Scratch3MotionBlocks = function () {
     function Scratch3MotionBlocks(runtime) {
@@ -17823,6 +17978,15 @@ var Scratch3MotionBlocks = function () {
                 motion_xposition: this.getX,
                 motion_yposition: this.getY,
                 motion_direction: this.getDirection
+            };
+        }
+    }, {
+        key: 'getMonitored',
+        value: function getMonitored() {
+            return {
+                motion_xposition: { isSpriteSpecific: true },
+                motion_yposition: { isSpriteSpecific: true },
+                motion_direction: { isSpriteSpecific: true }
             };
         }
     }, {
@@ -18058,7 +18222,7 @@ var Scratch3MotionBlocks = function () {
 module.exports = Scratch3MotionBlocks;
 
 /***/ }),
-/* 64 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18068,8 +18232,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
-var MathUtil = __webpack_require__(10);
+var Cast = __webpack_require__(2);
+var MathUtil = __webpack_require__(8);
 
 var Scratch3OperatorsBlocks = function () {
     function Scratch3OperatorsBlocks(runtime) {
@@ -18265,7 +18429,7 @@ var Scratch3OperatorsBlocks = function () {
 module.exports = Scratch3OperatorsBlocks;
 
 /***/ }),
-/* 65 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18275,14 +18439,21 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(27);
-var BlockType = __webpack_require__(16);
-var Cast = __webpack_require__(3);
-var Clone = __webpack_require__(20);
-var Color = __webpack_require__(21);
-var MathUtil = __webpack_require__(10);
-var RenderedTarget = __webpack_require__(19);
-var log = __webpack_require__(2);
+var ArgumentType = __webpack_require__(20);
+var BlockType = __webpack_require__(13);
+var Cast = __webpack_require__(2);
+var Clone = __webpack_require__(14);
+var Color = __webpack_require__(24);
+var MathUtil = __webpack_require__(8);
+var RenderedTarget = __webpack_require__(23);
+var log = __webpack_require__(3);
+
+/**
+ * Icon svg to be displayed at the left edge of each extension block, encoded as a data URI.
+ * @type {string}
+ */
+// eslint-disable-next-line max-len
+var iconURI = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+cGVuLWljb248L3RpdGxlPjxnIHN0cm9rZT0iIzU3NUU3NSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik04Ljc1MyAzNC42MDJsLTQuMjUgMS43OCAxLjc4My00LjIzN2MxLjIxOC0yLjg5MiAyLjkwNy01LjQyMyA1LjAzLTcuNTM4TDMxLjA2NiA0LjkzYy44NDYtLjg0MiAyLjY1LS40MSA0LjAzMi45NjcgMS4zOCAxLjM3NSAxLjgxNiAzLjE3My45NyA0LjAxNUwxNi4zMTggMjkuNTljLTIuMTIzIDIuMTE2LTQuNjY0IDMuOC03LjU2NSA1LjAxMiIgZmlsbD0iI0ZGRiIvPjxwYXRoIGQ9Ik0yOS40MSA2LjExcy00LjQ1LTIuMzc4LTguMjAyIDUuNzcyYy0xLjczNCAzLjc2Ni00LjM1IDEuNTQ2LTQuMzUgMS41NDYiLz48cGF0aCBkPSJNMzYuNDIgOC44MjVjMCAuNDYzLS4xNC44NzMtLjQzMiAxLjE2NGwtOS4zMzUgOS4zYy4yODItLjI5LjQxLS42NjguNDEtMS4xMiAwLS44NzQtLjUwNy0xLjk2My0xLjQwNi0yLjg2OC0xLjM2Mi0xLjM1OC0zLjE0Ny0xLjgtNC4wMDItLjk5TDMwLjk5IDUuMDFjLjg0NC0uODQgMi42NS0uNDEgNC4wMzUuOTYuODk4LjkwNCAxLjM5NiAxLjk4MiAxLjM5NiAyLjg1NU0xMC41MTUgMzMuNzc0Yy0uNTczLjMwMi0xLjE1Ny41Ny0xLjc2NC44M0w0LjUgMzYuMzgybDEuNzg2LTQuMjM1Yy4yNTgtLjYwNC41My0xLjE4Ni44MzMtMS43NTcuNjkuMTgzIDEuNDQ4LjYyNSAyLjEwOCAxLjI4Mi42Ni42NTggMS4xMDIgMS40MTIgMS4yODcgMi4xMDIiIGZpbGw9IiM0Qzk3RkYiLz48cGF0aCBkPSJNMzYuNDk4IDguNzQ4YzAgLjQ2NC0uMTQuODc0LS40MzMgMS4xNjVsLTE5Ljc0MiAxOS42OGMtMi4xMyAyLjExLTQuNjczIDMuNzkzLTcuNTcyIDUuMDFMNC41IDM2LjM4bC45NzQtMi4zMTYgMS45MjUtLjgwOGMyLjg5OC0xLjIxOCA1LjQ0LTIuOSA3LjU3LTUuMDFsMTkuNzQzLTE5LjY4Yy4yOTItLjI5Mi40MzItLjcwMi40MzItMS4xNjUgMC0uNjQ2LS4yNy0xLjQtLjc4LTIuMTIyLjI1LjE3Mi41LjM3Ny43MzcuNjE0Ljg5OC45MDUgMS4zOTYgMS45ODMgMS4zOTYgMi44NTYiIGZpbGw9IiM1NzVFNzUiIG9wYWNpdHk9Ii4xNSIvPjxwYXRoIGQ9Ik0xOC40NSAxMi44M2MwIC41LS40MDQuOTA1LS45MDQuOTA1cy0uOTA1LS40MDUtLjkwNS0uOTA0YzAtLjUuNDA3LS45MDMuOTA2LS45MDMuNSAwIC45MDQuNDA0LjkwNC45MDR6IiBmaWxsPSIjNTc1RTc1Ii8+PC9nPjwvc3ZnPg==';
 
 /**
  * Enum for pen color parameters.
@@ -18519,6 +18690,7 @@ var Scratch3PenBlocks = function () {
             return {
                 id: 'pen',
                 name: 'Pen',
+                iconURI: iconURI,
                 blocks: [{
                     opcode: 'clear',
                     blockType: BlockType.COMMAND
@@ -18592,6 +18764,52 @@ var Scratch3PenBlocks = function () {
                             defaultValue: 1
                         }
                     }
+                },
+                /* Legacy blocks, should not be shown in flyout */
+                {
+                    opcode: 'setPenShadeToNumber',
+                    blockType: BlockType.COMMAND,
+                    text: 'set pen shade to [SHADE]',
+                    arguments: {
+                        SHADE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    },
+                    hideFromPalette: true
+                }, {
+                    opcode: 'changePenShadeBy',
+                    blockType: BlockType.COMMAND,
+                    text: 'change pen shade by [SHADE]',
+                    arguments: {
+                        SHADE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    },
+                    hideFromPalette: true
+                }, {
+                    opcode: 'setPenHueToNumber',
+                    blockType: BlockType.COMMAND,
+                    text: 'set pen hue to [HUE]',
+                    arguments: {
+                        HUE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    },
+                    hideFromPalette: true
+                }, {
+                    opcode: 'changePenHueBy',
+                    blockType: BlockType.COMMAND,
+                    text: 'change pen hue by [HUE]',
+                    arguments: {
+                        HUE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    },
+                    hideFromPalette: true
                 }],
                 menus: {
                     colorParam: [ColorParam.COLOR, ColorParam.SATURATION, ColorParam.BRIGHTNESS, ColorParam.TRANSPARENCY]
@@ -18689,7 +18907,15 @@ var Scratch3PenBlocks = function () {
             penState.color = hsv.h / 360 * 100;
             penState.saturation = hsv.s * 100;
             penState.brightness = hsv.v * 100;
-            penState.transparency = 0;
+            if (rgb.hasOwnProperty('a')) {
+                penState.transparency = 100 * (1 - rgb.a / 255.0);
+            } else {
+                penState.transparency = 0;
+            }
+
+            // Set the legacy "shade" value the same way scratch 2 did.
+            penState._shade = penState.brightness / 2;
+
             this._updatePenColor(penState);
         }
 
@@ -18804,6 +19030,96 @@ var Scratch3PenBlocks = function () {
             var penAttributes = this._getPenState(util.target).penAttributes;
             penAttributes.diameter = this._clampPenSize(Cast.toNumber(args.SIZE));
         }
+
+        /* LEGACY OPCODES */
+        /**
+         * Scratch 2 "hue" param is equivelant to twice the new "color" param.
+         * @param {object} args - the block arguments.
+         *  @property {number} HUE - the amount to set the hue to.
+         * @param {object} util - utility object provided by the runtime.
+         */
+
+    }, {
+        key: 'setPenHueToNumber',
+        value: function setPenHueToNumber(args, util) {
+            var penState = this._getPenState(util.target);
+            var hueValue = Cast.toNumber(args.HUE);
+            var colorValue = hueValue / 2;
+            this._setOrChangeColorParam(ColorParam.COLOR, colorValue, penState, false);
+        }
+
+        /**
+         * Scratch 2 "hue" param is equivelant to twice the new "color" param.
+         * @param {object} args - the block arguments.
+         *  @property {number} HUE - the amount of desired hue change.
+         * @param {object} util - utility object provided by the runtime.
+         */
+
+    }, {
+        key: 'changePenHueBy',
+        value: function changePenHueBy(args, util) {
+            var penState = this._getPenState(util.target);
+            var hueChange = Cast.toNumber(args.HUE);
+            var colorChange = hueChange / 2;
+            this._setOrChangeColorParam(ColorParam.COLOR, colorChange, penState, true);
+        }
+
+        /**
+         * Use legacy "set shade" code to calculate RGB value for shade,
+         * then convert back to HSV and store those components.
+         * It is important to also track the given shade in penState._shade
+         * because it cannot be accurately backed out of the new HSV later.
+         * @param {object} args - the block arguments.
+         *  @property {number} SHADE - the amount to set the shade to.
+         * @param {object} util - utility object provided by the runtime.
+         */
+
+    }, {
+        key: 'setPenShadeToNumber',
+        value: function setPenShadeToNumber(args, util) {
+            var penState = this._getPenState(util.target);
+            var newShade = Cast.toNumber(args.SHADE);
+
+            // Wrap clamp the new shade value the way scratch 2 did.
+            newShade = newShade % 200;
+            if (newShade < 0) newShade += 200;
+
+            // Create the new color in RGB using the scratch 2 "shade" model
+            var rgb = Color.hsvToRgb({ h: penState.color * 360 / 100, s: 1, v: 1 });
+            var shade = newShade > 100 ? 200 - newShade : newShade;
+            if (shade < 50) {
+                rgb = Color.mixRgb(Color.RGB_BLACK, rgb, (10 + shade) / 60);
+            } else {
+                rgb = Color.mixRgb(rgb, Color.RGB_WHITE, (shade - 50) / 60);
+            }
+
+            // Update the pen state according to new color
+            var hsv = Color.rgbToHsv(rgb);
+            penState.color = 100 * hsv.h / 360;
+            penState.saturation = 100 * hsv.s;
+            penState.brightness = 100 * hsv.v;
+
+            // And store the shade that was used to compute this new color for later use.
+            penState._shade = newShade;
+
+            this._updatePenColor(penState);
+        }
+
+        /**
+         * Because "shade" cannot be backed out of hsv consistently, use the previously
+         * stored penState._shade to make the shade change.
+         * @param {object} args - the block arguments.
+         *  @property {number} SHADE - the amount of desired shade change.
+         * @param {object} util - utility object provided by the runtime.
+         */
+
+    }, {
+        key: 'changePenShadeBy',
+        value: function changePenShadeBy(args, util) {
+            var penState = this._getPenState(util.target);
+            var shadeChange = Cast.toNumber(args.SHADE);
+            this.setPenShadeToNumber({ SHADE: penState._shade + shadeChange }, util);
+        }
     }], [{
         key: 'DEFAULT_PEN_STATE',
         get: function get() {
@@ -18813,6 +19129,7 @@ var Scratch3PenBlocks = function () {
                 saturation: 100,
                 brightness: 100,
                 transparency: 0,
+                _shade: 50, // Used only for legacy `change shade by` blocks
                 penAttributes: {
                     color4f: [0, 0, 1, 1],
                     diameter: 1
@@ -18862,7 +19179,7 @@ var Scratch3PenBlocks = function () {
 module.exports = Scratch3PenBlocks;
 
 /***/ }),
-/* 66 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18893,19 +19210,20 @@ var Scratch3ProcedureBlocks = function () {
         key: "getPrimitives",
         value: function getPrimitives() {
             return {
-                procedures_defnoreturn: this.defNoReturn,
-                procedures_callnoreturn: this.callNoReturn,
-                procedures_param: this.param
+                procedures_definition: this.definition,
+                procedures_call: this.call,
+                argument_reporter_string_number: this.param,
+                argument_reporter_boolean: this.param
             };
         }
     }, {
-        key: "defNoReturn",
-        value: function defNoReturn() {
+        key: "definition",
+        value: function definition() {
             // No-op: execute the blocks.
         }
     }, {
-        key: "callNoReturn",
-        value: function callNoReturn(args, util) {
+        key: "call",
+        value: function call(args, util) {
             if (!util.stackFrame.executed) {
                 var procedureCode = args.mutation.proccode;
                 var paramNames = util.getProcedureParamNames(procedureCode);
@@ -18930,7 +19248,7 @@ var Scratch3ProcedureBlocks = function () {
     }, {
         key: "param",
         value: function param(args, util) {
-            var value = util.getParam(args.mutation.paramname);
+            var value = util.getParam(args.VALUE);
             return value;
         }
     }]);
@@ -18941,17 +19259,19 @@ var Scratch3ProcedureBlocks = function () {
 module.exports = Scratch3ProcedureBlocks;
 
 /***/ }),
-/* 67 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
+var Cast = __webpack_require__(2);
 
 var Scratch3SensingBlocks = function () {
     function Scratch3SensingBlocks(runtime) {
@@ -18962,6 +19282,21 @@ var Scratch3SensingBlocks = function () {
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        /**
+         * The "answer" block value.
+         * @type {string}
+         */
+        this._answer = '';
+
+        /**
+         * The list of queued questions and respective `resolve` callbacks.
+         * @type {!Array}
+         */
+        this._questionList = [];
+
+        this.runtime.on('ANSWER', this._onAnswer.bind(this));
+        this.runtime.on('PROJECT_STOP_ALL', this._clearAllQuestions.bind(this));
     }
 
     /**
@@ -18987,8 +19322,93 @@ var Scratch3SensingBlocks = function () {
                 sensing_keypressed: this.getKeyPressed,
                 sensing_current: this.current,
                 sensing_dayssince2000: this.daysSince2000,
-                sensing_loudness: this.getLoudness
+                sensing_loudness: this.getLoudness,
+                sensing_askandwait: this.askAndWait,
+                sensing_answer: this.getAnswer
             };
+        }
+    }, {
+        key: 'getMonitored',
+        value: function getMonitored() {
+            return {
+                sensing_answer: {},
+                sensing_loudness: {},
+                sensing_timer: {},
+                sensing_of: {},
+                sensing_current: {}
+            };
+        }
+    }, {
+        key: '_onAnswer',
+        value: function _onAnswer(answer) {
+            this._answer = answer;
+            var questionObj = this._questionList.shift();
+            if (questionObj) {
+                var _questionObj = _slicedToArray(questionObj, 4),
+                    _question = _questionObj[0],
+                    resolve = _questionObj[1],
+                    target = _questionObj[2],
+                    wasVisible = _questionObj[3];
+                // If the target was visible when asked, hide the say bubble.
+
+
+                if (wasVisible) {
+                    this.runtime.emit('SAY', target, 'say', '');
+                }
+                resolve();
+                this._askNextQuestion();
+            }
+        }
+    }, {
+        key: '_enqueueAsk',
+        value: function _enqueueAsk(question, resolve, target, wasVisible) {
+            this._questionList.push([question, resolve, target, wasVisible]);
+        }
+    }, {
+        key: '_askNextQuestion',
+        value: function _askNextQuestion() {
+            if (this._questionList.length > 0) {
+                var _questionList$ = _slicedToArray(this._questionList[0], 4),
+                    question = _questionList$[0],
+                    _resolve = _questionList$[1],
+                    target = _questionList$[2],
+                    wasVisible = _questionList$[3];
+                // If the target is visible, emit a blank question and use the
+                // say event to trigger a bubble.
+
+
+                if (wasVisible) {
+                    this.runtime.emit('SAY', target, 'say', question);
+                    this.runtime.emit('QUESTION', '');
+                } else {
+                    this.runtime.emit('QUESTION', question);
+                }
+            }
+        }
+    }, {
+        key: '_clearAllQuestions',
+        value: function _clearAllQuestions() {
+            this._questionList = [];
+            this.runtime.emit('QUESTION', null);
+        }
+    }, {
+        key: 'askAndWait',
+        value: function askAndWait(args, util) {
+            var _this = this;
+
+            var _target = util.target;
+            return new Promise(function (resolve) {
+                var isQuestionAsked = _this._questionList.length > 0;
+                _this._enqueueAsk(args.QUESTION, resolve, _target, _target.visible);
+                if (!isQuestionAsked) {
+                    _this._askNextQuestion();
+                }
+            });
+        }
+    }, {
+        key: 'getAnswer',
+        value: function getAnswer() {
+            return this._answer;
         }
     }, {
         key: 'touchingObject',
@@ -19153,8 +19573,10 @@ var Scratch3SensingBlocks = function () {
 
             // Variables
             var varName = args.PROPERTY;
-            if (attrTarget.variables.hasOwnProperty(varName)) {
-                return attrTarget.variables[varName].value;
+            for (var id in attrTarget.variables) {
+                if (attrTarget.variables[id].name === varName) {
+                    return attrTarget.variables[id].value;
+                }
             }
 
             // Otherwise, 0
@@ -19168,7 +19590,7 @@ var Scratch3SensingBlocks = function () {
 module.exports = Scratch3SensingBlocks;
 
 /***/ }),
-/* 68 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19178,9 +19600,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var MathUtil = __webpack_require__(10);
-var Cast = __webpack_require__(3);
-var Clone = __webpack_require__(20);
+var MathUtil = __webpack_require__(8);
+var Cast = __webpack_require__(2);
+var Clone = __webpack_require__(14);
 
 var Scratch3SoundBlocks = function () {
     function Scratch3SoundBlocks(runtime) {
@@ -19229,10 +19651,6 @@ var Scratch3SoundBlocks = function () {
                 sound_play: this.playSound,
                 sound_playuntildone: this.playSoundAndWait,
                 sound_stopallsounds: this.stopAllSounds,
-                sound_playnoteforbeats: this.playNoteForBeats,
-                sound_playdrumforbeats: this.playDrumForBeats,
-                sound_restforbeats: this.restForBeats,
-                sound_setinstrumentto: this.setInstrument,
                 sound_seteffectto: this.setEffect,
                 sound_changeeffectby: this.changeEffect,
                 sound_cleareffects: this.clearEffects,
@@ -19241,10 +19659,14 @@ var Scratch3SoundBlocks = function () {
                 sound_effects_menu: this.effectsMenu,
                 sound_setvolumeto: this.setVolume,
                 sound_changevolumeby: this.changeVolume,
-                sound_volume: this.getVolume,
-                sound_settempotobpm: this.setTempo,
-                sound_changetempoby: this.changeTempo,
-                sound_tempo: this.getTempo
+                sound_volume: this.getVolume
+            };
+        }
+    }, {
+        key: 'getMonitored',
+        value: function getMonitored() {
+            return {
+                sound_volume: {}
             };
         }
     }, {
@@ -19308,55 +19730,6 @@ var Scratch3SoundBlocks = function () {
         value: function stopAllSounds(args, util) {
             if (util.target.audioPlayer === null) return;
             util.target.audioPlayer.stopAllSounds();
-        }
-    }, {
-        key: 'playNoteForBeats',
-        value: function playNoteForBeats(args, util) {
-            var note = Cast.toNumber(args.NOTE);
-            note = MathUtil.clamp(note, Scratch3SoundBlocks.MIDI_NOTE_RANGE.min, Scratch3SoundBlocks.MIDI_NOTE_RANGE.max);
-            var beats = Cast.toNumber(args.BEATS);
-            beats = this._clampBeats(beats);
-            var soundState = this._getSoundState(util.target);
-            var inst = soundState.currentInstrument;
-            var vol = soundState.volume;
-            if (typeof this.runtime.audioEngine === 'undefined') return;
-            return this.runtime.audioEngine.playNoteForBeatsWithInstAndVol(note, beats, inst, vol);
-        }
-    }, {
-        key: 'playDrumForBeats',
-        value: function playDrumForBeats(args, util) {
-            var drum = Cast.toNumber(args.DRUM);
-            drum -= 1; // drums are one-indexed
-            if (typeof this.runtime.audioEngine === 'undefined') return;
-            drum = MathUtil.wrapClamp(drum, 0, this.runtime.audioEngine.numDrums - 1);
-            var beats = Cast.toNumber(args.BEATS);
-            beats = this._clampBeats(beats);
-            if (util.target.audioPlayer === null) return;
-            return util.target.audioPlayer.playDrumForBeats(drum, beats);
-        }
-    }, {
-        key: 'restForBeats',
-        value: function restForBeats(args) {
-            var beats = Cast.toNumber(args.BEATS);
-            beats = this._clampBeats(beats);
-            if (typeof this.runtime.audioEngine === 'undefined') return;
-            return this.runtime.audioEngine.waitForBeats(beats);
-        }
-    }, {
-        key: '_clampBeats',
-        value: function _clampBeats(beats) {
-            return MathUtil.clamp(beats, Scratch3SoundBlocks.BEAT_RANGE.min, Scratch3SoundBlocks.BEAT_RANGE.max);
-        }
-    }, {
-        key: 'setInstrument',
-        value: function setInstrument(args, util) {
-            var soundState = this._getSoundState(util.target);
-            var instNum = Cast.toNumber(args.INSTRUMENT);
-            instNum -= 1; // instruments are one-indexed
-            if (typeof this.runtime.audioEngine === 'undefined') return;
-            instNum = MathUtil.wrapClamp(instNum, 0, this.runtime.audioEngine.numInstruments - 1);
-            soundState.currentInstrument = instNum;
-            return this.runtime.audioEngine.instrumentPlayer.loadInstrument(soundState.currentInstrument);
         }
     }, {
         key: 'setEffect',
@@ -19427,33 +19800,6 @@ var Scratch3SoundBlocks = function () {
         value: function getVolume(args, util) {
             var soundState = this._getSoundState(util.target);
             return soundState.volume;
-        }
-    }, {
-        key: 'setTempo',
-        value: function setTempo(args) {
-            var tempo = Cast.toNumber(args.TEMPO);
-            this._updateTempo(tempo);
-        }
-    }, {
-        key: 'changeTempo',
-        value: function changeTempo(args) {
-            var change = Cast.toNumber(args.TEMPO);
-            if (typeof this.runtime.audioEngine === 'undefined') return;
-            var tempo = change + this.runtime.audioEngine.currentTempo;
-            this._updateTempo(tempo);
-        }
-    }, {
-        key: '_updateTempo',
-        value: function _updateTempo(tempo) {
-            tempo = MathUtil.clamp(tempo, Scratch3SoundBlocks.TEMPO_RANGE.min, Scratch3SoundBlocks.TEMPO_RANGE.max);
-            if (typeof this.runtime.audioEngine === 'undefined') return;
-            this.runtime.audioEngine.setTempo(tempo);
-        }
-    }, {
-        key: 'getTempo',
-        value: function getTempo() {
-            if (typeof this.runtime.audioEngine === 'undefined') return;
-            return this.runtime.audioEngine.currentTempo;
         }
     }, {
         key: 'soundsMenu',
@@ -19547,7 +19893,7 @@ var Scratch3SoundBlocks = function () {
 module.exports = Scratch3SoundBlocks;
 
 /***/ }),
-/* 69 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19557,10 +19903,17 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(27);
-var BlockType = __webpack_require__(16);
-var color = __webpack_require__(21);
-var log = __webpack_require__(2);
+var ArgumentType = __webpack_require__(20);
+var BlockType = __webpack_require__(13);
+var color = __webpack_require__(24);
+var log = __webpack_require__(3);
+
+/**
+ * Icon svg to be displayed at the left edge of each extension block, encoded as a data URI.
+ * @type {string}
+ */
+// eslint-disable-next-line max-len
+var iconURI = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+d2VkbzItYmxvY2staWNvbjwvdGl0bGU+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMzUuMzEzIDEwLjQ2N0gzMi4wOVY4Ljg2NWMwLS4yMjMuMTgtLjQwNC40MDUtLjQwNGgyLjQxMmMuMjI0IDAgLjQwNi4xODIuNDA2LjQwNXYxLjYwMnpNMzAuNDc3IDEwLjQ2N2gtMy4yMjRWOC44NjVjMC0uMjIzLjE4My0uNDA0LjQwNy0uNDA0aDIuNDFjLjIyNiAwIC40MDcuMTgyLjQwNy40MDV2MS42MDJ6TTI1LjY0IDEwLjQ2N0gyMi40MlY4Ljg2NWMwLS4yMjMuMTgyLS40MDQuNDA2LS40MDRoMi40MWMuMjI2IDAgLjQwNy4xODIuNDA3LjQwNXYxLjYwMnpNMjAuODA2IDEwLjQ2N2gtMy4yMjRWOC44NjVjMC0uMjIzLjE4Mi0uNDA0LjQwNi0uNDA0SDIwLjRjLjIyNCAwIC40MDYuMTgyLjQwNi40MDV2MS42MDJ6TTE1Ljk3IDEwLjQ2N2gtMy4yMjRWOC44NjVjMC0uMjIzLjE4Mi0uNDA0LjQwNy0uNDA0aDIuNDFjLjIyNiAwIC40MDcuMTgyLjQwNy40MDV2MS42MDJ6TTExLjEzNSAxMC40NjdINy45MVY4Ljg2NWMwLS4yMjMuMTgzLS40MDQuNDA3LS40MDRoMi40MTJjLjIyMyAwIC40MDUuMTgyLjQwNS40MDV2MS42MDJ6IiBzdHJva2U9IiM2Rjc4OTMiIGZpbGw9IiNGRkYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0zNy43MyAxMC40NjdINi4zYy0yLjY3IDAtNC44MzYgMi4xNTMtNC44MzYgNC44MDh2My4yMDVoMzcuMDczdi03LjIxYzAtLjQ0NC0uMzYyLS44MDMtLjgwNy0uODAzeiIgc3Ryb2tlPSIjNkY3ODkzIiBmaWxsPSIjRkZGIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMzguMTM0IDMwLjk4SDEuODY3Yy0uMjI0IDAtLjQwMy0uMTgtLjQwMy0uNFYxNi4yMzZoMzIuNzFjLjczIDAgMS40My4yODcgMS45NDUuOC41MTUuNTE0IDEuMjE1LjgwMiAxLjk0NC44MDJoLjQ3M3YxMi43NGMwIC4yMi0uMTguNC0uNDAzLjR6IiBzdHJva2U9IiM2Rjc4OTMiIGZpbGw9IiNFNkU3RTgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIHN0cm9rZT0iIzZGNzg5MyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNMzQuODMgMTYuMjM3bC40ODMtMi41NjVoMy4yMjMiLz48cGF0aCBkPSJNMzguNTM2IDExLjI2OFYzMC41OGMwIC4yMi0uMTguNC0uNDAzLjRIMS44NjZjLS4yMiAwLS40MDMtLjE4LS40MDMtLjR2LTEuMjAzaDM0LjI4MmMuNjUgMCAxLjE4LS41MjQgMS4xOC0xLjE3M1YxMC40NjdoLjgwNWMuNDQ2IDAgLjgwNi4zNi44MDYuOHoiIHN0cm9rZT0iIzZGNzg5MyIgZmlsbD0iIzZGNzg5MyIgb3BhY2l0eT0iLjE1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTEuNTM4IDE2LjI4aDIwLjE0OGMuMjIyIDAgLjQwMy4xOC40MDMuNHY2LjUyN2MwIC4yMjItLjE4Mi40LS40MDQuNEgxMS41MzhjLS4yMjMgMC0uNDA0LS4xNzgtLjQwNC0uNFYxNi42OGMwLS4yMi4xOC0uNC40MDQtLjQiIGZpbGw9IiNFNkU3RTgiLz48cGF0aCBkPSJNMTEuNTM4IDE2LjI4aDIwLjE0OGMuMjIyIDAgLjQwMy4xOC40MDMuNHY2LjUyN2MwIC4yMjItLjE4Mi40LS40MDQuNEgxMS41MzhjLS4yMjMgMC0uNDA0LS4xNzgtLjQwNC0uNFYxNi42OGMwLS4yMi4xOC0uNC40MDQtLjR6IiBzdHJva2U9IiM2Rjc4OTMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0zMi4wOSAxNi4yOHY2LjkyN2MwIC4yMjItLjE4LjQtLjQwNC40aC0yMC4xNWMtLjIyIDAtLjQtLjE4LS40LS40di0xLjJoMTguMTZjLjY1MyAwIDEuMTgtLjUyNiAxLjE4LTEuMTc0VjE2LjI4aDEuNjEzeiIgc3Ryb2tlPSIjNkY3ODkzIiBmaWxsPSIjNkU3NzkyIiBvcGFjaXR5PSIuMTUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0zMC40NzcgMTYuMjhoLTMuMjI0di0xLjYwNGMwLS4yMjMuMTgzLS40MDQuNDA3LS40MDRoMi40MWMuMjI2IDAgLjQwNy4xOC40MDcuNDA0djEuNjAzek0xNS45NyAxNi4yOGgtMy4yMjR2LTEuNjA0YzAtLjIyMy4xODItLjQwNC40MDctLjQwNGgyLjQxYy4yMjYgMCAuNDA3LjE4LjQwNy40MDR2MS42MDN6TTI1LjY0IDE2LjI4SDIyLjQydi0xLjYwNGMwLS4yMjMuMTgyLS40MDQuNDA2LS40MDRoMi40MWMuMjI2IDAgLjQwNy4xOC40MDcuNDA0djEuNjAzek0yMC44MDYgMTYuMjhoLTMuMjI0di0xLjYwNGMwLS4yMjMuMTgyLS40MDQuNDA2LS40MDRIMjAuNGMuMjI0IDAgLjQwNi4xOC40MDYuNDA0djEuNjAzeiIgc3Ryb2tlPSIjNkY3ODkzIiBmaWxsPSIjRTZFN0U4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTguNTU3IDE5LjkxYzAgMS4wMjUtLjgzNyAxLjg1Ny0xLjg3IDEuODU3LTEuMDMgMC0xLjg2Ny0uODMyLTEuODY3LTEuODU4IDAtMS4wMjcuODM3LTEuODU4IDEuODY4LTEuODU4IDEuMDMyIDAgMS44Ny44MyAxLjg3IDEuODU3ek0yMy40OCAxOS45MWMwIDEuMDI1LS44MzYgMS44NTctMS44NjggMS44NTdzLTEuODctLjgzMi0xLjg3LTEuODU4YzAtMS4wMjcuODM4LTEuODU4IDEuODctMS44NThzMS44NjguODMgMS44NjggMS44NTd6TTI4LjQwNCAxOS45MWMwIDEuMDI1LS44MzcgMS44NTctMS44NjggMS44NTctMS4wMzIgMC0xLjg3LS44MzItMS44Ny0xLjg1OCAwLTEuMDI3LjgzOC0xLjg1OCAxLjg3LTEuODU4IDEuMDMgMCAxLjg2OC44MyAxLjg2OCAxLjg1N3oiIHN0cm9rZT0iIzZGNzg5MyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTE4LjU1NyAxOS45MjJjMCAxLjAyNi0uODM3IDEuODU4LTEuODcgMS44NTgtMS4wMyAwLTEuODY3LS44MzItMS44NjctMS44NTggMC0xLjAyNS44MzctMS44NTcgMS44NjgtMS44NTcgMS4wMzIgMCAxLjg3LjgzMiAxLjg3IDEuODU3TTIzLjQ4IDE5LjkyMmMwIDEuMDI2LS44MzYgMS44NTgtMS44NjggMS44NThzLTEuODctLjgzMi0xLjg3LTEuODU4YzAtMS4wMjUuODM4LTEuODU3IDEuODctMS44NTdzMS44NjguODMyIDEuODY4IDEuODU3TTI4LjQwNCAxOS45MjJjMCAxLjAyNi0uODM3IDEuODU4LTEuODY4IDEuODU4LTEuMDMyIDAtMS44Ny0uODMyLTEuODctMS44NTggMC0xLjAyNS44MzgtMS44NTcgMS44Ny0xLjg1NyAxLjAzIDAgMS44NjguODMyIDEuODY4IDEuODU3IiBmaWxsPSIjNkY3ODkzIiBvcGFjaXR5PSIuNSIvPjwvZz48L3N2Zz4=';
 
 /**
  * Manage power, direction, and timers for one WeDo 2.0 motor.
@@ -20078,6 +20431,7 @@ var Scratch3WeDo2Blocks = function () {
             return {
                 id: Scratch3WeDo2Blocks.EXTENSION_ID,
                 name: 'WeDo 2.0',
+                iconURI: iconURI,
                 blocks: [{
                     opcode: 'motorOnFor',
                     text: 'turn [MOTOR_ID] on for [DURATION] seconds',
@@ -20204,7 +20558,7 @@ var Scratch3WeDo2Blocks = function () {
                 }, {
                     opcode: 'isTilted',
                     text: 'tilted [DIRECTION]?',
-                    blockType: BlockType.REPORTER,
+                    blockType: BlockType.BOOLEAN,
                     arguments: {
                         DIRECTION: {
                             type: ArgumentType.STRING,
@@ -20602,7 +20956,7 @@ var Scratch3WeDo2Blocks = function () {
 module.exports = Scratch3WeDo2Blocks;
 
 /***/ }),
-/* 70 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20616,7 +20970,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var log = __webpack_require__(2);
+var log = __webpack_require__(3);
 
 /**
  * @typedef {object} DispatchCallMessage - a message to the dispatch system representing a service method call
@@ -20913,7 +21267,7 @@ var SharedDispatch = function () {
 module.exports = SharedDispatch;
 
 /***/ }),
-/* 71 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20921,7 +21275,7 @@ module.exports = SharedDispatch;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var mutationAdapter = __webpack_require__(39);
+var mutationAdapter = __webpack_require__(38);
 var html = __webpack_require__(11);
 
 /**
@@ -21000,6 +21354,10 @@ var domToBlock = function domToBlock(blockDOM, blocks, isTopBlock, parent) {
                         value: fieldData,
                         variabletype: variabletype
                     };
+                    var fieldVarType = xmlChild.attribs.variabletype;
+                    if (typeof fieldVarType === 'string') {
+                        block.fields[fieldName].variableType = fieldVarType;
+                    }
                     break;
                 }
             case 'value':
@@ -21081,10 +21439,222 @@ var adapter = function adapter(e) {
     if ((typeof e === 'undefined' ? 'undefined' : _typeof(e)) !== 'object') return;
     if (_typeof(e.xml) !== 'object') return;
 
-    return domToBlocks(html.parseDOM(e.xml.outerHTML));
+    return domToBlocks(html.parseDOM(e.xml.outerHTML, { decodeEntities: true }));
 };
 
 module.exports = adapter;
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Thread = __webpack_require__(18);
+
+/**
+ * @fileoverview
+ * Interface provided to block primitive functions for interacting with the
+ * runtime, thread, target, and convenient methods.
+ */
+
+var BlockUtility = function () {
+    function BlockUtility() {
+        var sequencer = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+        var thread = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+        _classCallCheck(this, BlockUtility);
+
+        /**
+         * A sequencer block primitives use to branch or start procedures with
+         * @type {?Sequencer}
+         */
+        this.sequencer = sequencer;
+
+        /**
+         * The block primitives thread with the block's target, stackFrame and
+         * modifiable status.
+         * @type {?Thread}
+         */
+        this.thread = thread;
+    }
+
+    /**
+     * The target the primitive is working on.
+     * @type {Target}
+     */
+
+
+    _createClass(BlockUtility, [{
+        key: 'yield',
+
+
+        /**
+         * Set the thread to yield.
+         */
+        value: function _yield() {
+            this.thread.status = Thread.STATUS_YIELD;
+        }
+
+        /**
+         * Start a branch in the current block.
+         * @param {number} branchNum Which branch to step to (i.e., 1, 2).
+         * @param {boolean} isLoop Whether this block is a loop.
+         */
+
+    }, {
+        key: 'startBranch',
+        value: function startBranch(branchNum, isLoop) {
+            this.sequencer.stepToBranch(this.thread, branchNum, isLoop);
+        }
+
+        /**
+         * Stop all threads.
+         */
+
+    }, {
+        key: 'stopAll',
+        value: function stopAll() {
+            this.sequencer.runtime.stopAll();
+        }
+
+        /**
+         * Stop threads other on this target other than the thread holding the
+         * executed block.
+         */
+
+    }, {
+        key: 'stopOtherTargetThreads',
+        value: function stopOtherTargetThreads() {
+            this.sequencer.runtime.stopForTarget(this.thread.target, this.thread);
+        }
+
+        /**
+         * Stop this thread.
+         */
+
+    }, {
+        key: 'stopThisScript',
+        value: function stopThisScript() {
+            this.thread.stopThisScript();
+        }
+
+        /**
+         * Start a specified procedure on this thread.
+         * @param {string} procedureCode Procedure code for procedure to start.
+         */
+
+    }, {
+        key: 'startProcedure',
+        value: function startProcedure(procedureCode) {
+            this.sequencer.stepToProcedure(this.thread, procedureCode);
+        }
+
+        /**
+         * Get names for parameters for the given procedure.
+         * @param {string} procedureCode Procedure code for procedure to query.
+         * @return {Array.<string>} List of param names for a procedure.
+         */
+
+    }, {
+        key: 'getProcedureParamNames',
+        value: function getProcedureParamNames(procedureCode) {
+            return this.thread.target.blocks.getProcedureParamNames(procedureCode);
+        }
+
+        /**
+         * Store a procedure parameter value by its name.
+         * @param {string} paramName The procedure's parameter name.
+         * @param {*} paramValue The procedure's parameter value.
+         */
+
+    }, {
+        key: 'pushParam',
+        value: function pushParam(paramName, paramValue) {
+            this.thread.pushParam(paramName, paramValue);
+        }
+
+        /**
+         * Retrieve the stored parameter value for a given parameter name.
+         * @param {string} paramName The procedure's parameter name.
+         * @return {*} The parameter's current stored value.
+         */
+
+    }, {
+        key: 'getParam',
+        value: function getParam(paramName) {
+            return this.thread.getParam(paramName);
+        }
+
+        /**
+         * Start all relevant hats.
+         * @param {!string} requestedHat Opcode of hats to start.
+         * @param {object=} optMatchFields Optionally, fields to match on the hat.
+         * @param {Target=} optTarget Optionally, a target to restrict to.
+         * @return {Array.<Thread>} List of threads started by this function.
+         */
+
+    }, {
+        key: 'startHats',
+        value: function startHats(requestedHat, optMatchFields, optTarget) {
+            return this.sequencer.runtime.startHats(requestedHat, optMatchFields, optTarget);
+        }
+
+        /**
+         * Query a named IO device.
+         * @param {string} device The name of like the device, like keyboard.
+         * @param {string} func The name of the device's function to query.
+         * @param {Array.<*>} args Arguments to pass to the device's function.
+         * @return {*} The expected output for the device's function.
+         */
+
+    }, {
+        key: 'ioQuery',
+        value: function ioQuery(device, func, args) {
+            // Find the I/O device and execute the query/function call.
+            if (this.sequencer.runtime.ioDevices[device] && this.sequencer.runtime.ioDevices[device][func]) {
+                var devObject = this.sequencer.runtime.ioDevices[device];
+                return devObject[func].apply(devObject, args);
+            }
+        }
+    }, {
+        key: 'target',
+        get: function get() {
+            return this.thread.target;
+        }
+
+        /**
+         * The runtime the block primitive is running in.
+         * @type {Runtime}
+         */
+
+    }, {
+        key: 'runtime',
+        get: function get() {
+            return this.sequencer.runtime;
+        }
+
+        /**
+         * The stack frame used by loop and other blocks to track internal state.
+         * @type {object}
+         */
+
+    }, {
+        key: 'stackFrame',
+        get: function get() {
+            return this.thread.peekStackFrame().executionContext;
+        }
+    }]);
+
+    return BlockUtility;
+}();
+
+module.exports = BlockUtility;
 
 /***/ }),
 /* 72 */
@@ -21093,21 +21663,101 @@ module.exports = adapter;
 "use strict";
 
 
-var log = __webpack_require__(2);
-var Thread = __webpack_require__(25);
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _require = __webpack_require__(22),
+var BlockUtility = __webpack_require__(71);
+var log = __webpack_require__(3);
+var Thread = __webpack_require__(18);
+
+var _require = __webpack_require__(26),
     Map = _require.Map;
+
+/**
+ * Single BlockUtility instance reused by execute for every pritimive ran.
+ * @const
+ */
+
+
+var blockUtility = new BlockUtility();
+
+/**
+ * Profiler frame name for block functions.
+ * @const {string}
+ */
+var blockFunctionProfilerFrame = 'blockFunction';
+
+/**
+ * Profiler frame ID for 'blockFunction'.
+ * @type {number}
+ */
+var blockFunctionProfilerId = -1;
 
 /**
  * Utility function to determine if a value is a Promise.
  * @param {*} value Value to check for a Promise.
  * @return {boolean} True if the value appears to be a Promise.
  */
-
-
 var isPromise = function isPromise(value) {
-    return value && value.then && typeof value.then === 'function';
+    return value !== null && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && typeof value.then === 'function';
+};
+
+/**
+ * Handle any reported value from the primitive, either directly returned
+ * or after a promise resolves.
+ * @param {*} resolvedValue Value eventually returned from the primitive.
+ * @param {!Sequencer} sequencer Sequencer stepping the thread for the ran
+ * primitive.
+ * @param {!Thread} thread Thread containing the primitive.
+ * @param {!string} currentBlockId Id of the block in its thread for value from
+ * the primitive.
+ * @param {!string} opcode opcode used to identify a block function primitive.
+ * @param {!boolean} isHat Is the current block a hat?
+ */
+// @todo move this to callback attached to the thread when we have performance
+// metrics (dd)
+var handleReport = function handleReport(resolvedValue, sequencer, thread, currentBlockId, opcode, isHat) {
+    thread.pushReportedValue(resolvedValue);
+    if (isHat) {
+        // Hat predicate was evaluated.
+        if (sequencer.runtime.getIsEdgeActivatedHat(opcode)) {
+            // If this is an edge-activated hat, only proceed if the value is
+            // true and used to be false, or the stack was activated explicitly
+            // via stack click
+            if (!thread.stackClick) {
+                var oldEdgeValue = sequencer.runtime.updateEdgeActivatedValue(currentBlockId, resolvedValue);
+                var edgeWasActivated = !oldEdgeValue && resolvedValue;
+                if (!edgeWasActivated) {
+                    sequencer.retireThread(thread);
+                }
+            }
+        } else if (!resolvedValue) {
+            // Not an edge-activated hat: retire the thread
+            // if predicate was false.
+            sequencer.retireThread(thread);
+        }
+    } else {
+        // In a non-hat, report the value visually if necessary if
+        // at the top of the thread stack.
+        if (typeof resolvedValue !== 'undefined' && thread.atStackTop()) {
+            if (thread.stackClick) {
+                sequencer.runtime.visualReport(currentBlockId, resolvedValue);
+            }
+            if (thread.updateMonitor) {
+                var targetId = sequencer.runtime.monitorBlocks.getBlock(currentBlockId).targetId;
+                if (targetId && !sequencer.runtime.getTargetById(targetId)) {
+                    // Target no longer exists
+                    return;
+                }
+                sequencer.runtime.requestUpdateMonitor(Map({
+                    id: currentBlockId,
+                    spriteName: targetId ? sequencer.runtime.getTargetById(targetId).getName() : null,
+                    value: String(resolvedValue)
+                }));
+            }
+        }
+        // Finished any yields.
+        thread.status = Thread.STATUS_RUNNING;
+    }
 };
 
 /**
@@ -21159,56 +21809,6 @@ var execute = function execute(sequencer, thread) {
         return;
     }
 
-    /**
-     * Handle any reported value from the primitive, either directly returned
-     * or after a promise resolves.
-     * @param {*} resolvedValue Value eventually returned from the primitive.
-     */
-    // @todo move this to callback attached to the thread when we have performance
-    // metrics (dd)
-    var handleReport = function handleReport(resolvedValue, params) {
-        thread.pushReportedValue(resolvedValue);
-        if (isHat) {
-            // Hat predicate was evaluated.
-            if (runtime.getIsEdgeActivatedHat(opcode)) {
-                // If this is an edge-activated hat, only proceed if
-                // the value is true and used to be false, or the stack was activated
-                // explicitly via stack click
-                if (!thread.stackClick) {
-                    var oldEdgeValue = runtime.updateEdgeActivatedValue(currentBlockId, resolvedValue);
-                    var edgeWasActivated = !oldEdgeValue && resolvedValue;
-                    if (!edgeWasActivated) {
-                        sequencer.retireThread(thread);
-                    }
-                }
-            } else if (!resolvedValue) {
-                // Not an edge-activated hat: retire the thread
-                // if predicate was false.
-                sequencer.retireThread(thread);
-            }
-        } else {
-            // In a non-hat, report the value visually if necessary if
-            // at the top of the thread stack.
-            if (typeof resolvedValue !== 'undefined' && thread.atStackTop()) {
-                if (thread.stackClick) {
-                    runtime.visualReport(currentBlockId, resolvedValue);
-                }
-                if (thread.updateMonitor) {
-                    var monitorParams = null;
-                    if (params && Object.keys(params).length > 0) {
-                        monitorParams = { params: params };
-                    }
-                    runtime.requestUpdateMonitor(Map(Object.assign({
-                        id: currentBlockId,
-                        value: String(resolvedValue)
-                    }, monitorParams)));
-                }
-            }
-            // Finished any yields.
-            thread.status = Thread.STATUS_RUNNING;
-        }
-    };
-
     // Hats and single-field shadows are implemented slightly differently
     // from regular blocks.
     // For hats: if they have an associated block function,
@@ -21223,7 +21823,7 @@ var execute = function execute(sequencer, thread) {
         var keys = Object.keys(fields);
         if (keys.length === 1 && Object.keys(inputs).length === 0) {
             // One field and no inputs - treat as arg.
-            handleReport(fields[keys[0]].value);
+            handleReport(fields[keys[0]].value, sequencer, thread, currentBlockId, opcode, isHat);
         } else {
             log.warn('Could not get implementation for opcode: ' + opcode);
         }
@@ -21239,7 +21839,7 @@ var execute = function execute(sequencer, thread) {
     // Add all fields on this block to the argValues.
     for (var fieldName in fields) {
         if (!fields.hasOwnProperty(fieldName)) continue;
-        if (fieldName === 'VARIABLE') {
+        if (fieldName === 'VARIABLE' || fieldName === 'LIST') {
             argValues[fieldName] = fields[fieldName].id;
         } else {
             argValues[fieldName] = fields[fieldName].value;
@@ -21289,47 +21889,24 @@ var execute = function execute(sequencer, thread) {
     currentStackFrame.reported = {};
 
     var primitiveReportedValue = null;
-    primitiveReportedValue = blockFunction(argValues, {
-        stackFrame: currentStackFrame.executionContext,
-        target: target,
-        yield: function _yield() {
-            thread.status = Thread.STATUS_YIELD;
-        },
-        startBranch: function startBranch(branchNum, isLoop) {
-            sequencer.stepToBranch(thread, branchNum, isLoop);
-        },
-        stopAll: function stopAll() {
-            runtime.stopAll();
-        },
-        stopOtherTargetThreads: function stopOtherTargetThreads() {
-            runtime.stopForTarget(target, thread);
-        },
-        stopThisScript: function stopThisScript() {
-            thread.stopThisScript();
-        },
-        startProcedure: function startProcedure(procedureCode) {
-            sequencer.stepToProcedure(thread, procedureCode);
-        },
-        getProcedureParamNames: function getProcedureParamNames(procedureCode) {
-            return blockContainer.getProcedureParamNames(procedureCode);
-        },
-        pushParam: function pushParam(paramName, paramValue) {
-            thread.pushParam(paramName, paramValue);
-        },
-        getParam: function getParam(paramName) {
-            return thread.getParam(paramName);
-        },
-        startHats: function startHats(requestedHat, optMatchFields, optTarget) {
-            return runtime.startHats(requestedHat, optMatchFields, optTarget);
-        },
-        ioQuery: function ioQuery(device, func, args) {
-            // Find the I/O device and execute the query/function call.
-            if (runtime.ioDevices[device] && runtime.ioDevices[device][func]) {
-                var devObject = runtime.ioDevices[device];
-                return devObject[func].apply(devObject, args);
-            }
+    blockUtility.sequencer = sequencer;
+    blockUtility.thread = thread;
+    if (runtime.profiler !== null) {
+        if (blockFunctionProfilerId === -1) {
+            blockFunctionProfilerId = runtime.profiler.idByName(blockFunctionProfilerFrame);
         }
-    });
+        // The method commented below has its code inlined underneath to reduce
+        // the bias recorded for the profiler's calls in this time sensitive
+        // execute function.
+        //
+        // runtime.profiler.start(blockFunctionProfilerId, opcode);
+        runtime.profiler.records.push(runtime.profiler.START, blockFunctionProfilerId, opcode, performance.now());
+    }
+    primitiveReportedValue = blockFunction(argValues, blockUtility);
+    if (runtime.profiler !== null) {
+        // runtime.profiler.stop(blockFunctionProfilerId);
+        runtime.profiler.records.push(runtime.profiler.STOP, performance.now());
+    }
 
     if (typeof primitiveReportedValue === 'undefined') {
         // No value reported - potentially a command block.
@@ -21345,7 +21922,7 @@ var execute = function execute(sequencer, thread) {
         }
         // Promise handlers
         primitiveReportedValue.then(function (resolvedValue) {
-            handleReport(resolvedValue);
+            handleReport(resolvedValue, sequencer, thread, currentBlockId, opcode, isHat);
             if (typeof resolvedValue === 'undefined') {
                 var stackFrame = void 0;
                 var nextBlockId = void 0;
@@ -21378,8 +21955,7 @@ var execute = function execute(sequencer, thread) {
             thread.popStack();
         });
     } else if (thread.status === Thread.STATUS_RUNNING) {
-        // 通过添加params动态更新monitor block参数
-        handleReport(primitiveReportedValue, params);
+        handleReport(primitiveReportedValue, sequencer, thread, currentBlockId, opcode, isHat);
     }
 };
 
@@ -21392,11 +21968,15 @@ module.exports = execute;
 "use strict";
 
 
-var _require = __webpack_require__(22),
+var _require = __webpack_require__(26),
     Record = _require.Record;
 
 var MonitorRecord = Record({
     id: null,
+    /** Present only if the monitor is sprite-specific, such as x position */
+    spriteName: null,
+    /** Present only if the monitor is sprite-specific, such as x position */
+    targetId: null,
     opcode: null,
     value: null,
     params: null
@@ -21406,6 +21986,363 @@ module.exports = MonitorRecord;
 
 /***/ }),
 /* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @fileoverview
+ * A way to profile Scratch internal performance. Like what blocks run during a
+ * step? How much time do they take? How much time is spent inbetween blocks?
+ *
+ * Profiler aims for to spend as little time inside its functions while
+ * recording. For this it has a simple internal record structure that records a
+ * series of values for each START and STOP event in a single array. This lets
+ * all the values be pushed in one call for the array. This simplicity allows
+ * the contents of the start() and stop() calls to be inlined in areas that are
+ * called frequently enough to want even greater performance from Profiler so
+ * what is recorded better reflects on the profiled code and not Profiler
+ * itself.
+ */
+
+/**
+ * The next id returned for a new profile'd function.
+ * @type {number}
+ */
+var nextId = 0;
+
+/**
+ * The mapping of names to ids.
+ * @const {Object.<string, number>}
+ */
+var profilerNames = {};
+
+/**
+ * The START event identifier in Profiler records.
+ * @const {number}
+ */
+var START = 0;
+
+/**
+ * The STOP event identifier in Profiler records.
+ * @const {number}
+ */
+var STOP = 1;
+
+/**
+ * The number of cells used in the records array by a START event.
+ * @const {number}
+ */
+var START_SIZE = 4;
+
+/**
+ * The number of cells used in the records array by a STOP event.
+ * @const {number}
+ */
+var STOP_SIZE = 2;
+
+/**
+ * Stored reference to Performance instance provided by the Browser.
+ * @const {Performance}
+ */
+var performance = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && window.performance;
+
+/**
+ * Callback handle called by Profiler for each frame it decodes from its
+ * records.
+ * @callback FrameCallback
+ * @param {ProfilerFrame} frame
+ */
+
+/**
+ * A set of information about a frame of execution that was recorded.
+ */
+
+var ProfilerFrame =
+/**
+ * @param {number} depth Depth of the frame in the recorded stack.
+ */
+function ProfilerFrame(depth) {
+  _classCallCheck(this, ProfilerFrame);
+
+  /**
+   * The numeric id of a record symbol like Runtime._step or
+   * blockFunction.
+   * @type {number}
+   */
+  this.id = -1;
+
+  /**
+   * The amount of time spent inside the recorded frame and any deeper
+   * frames.
+   * @type {number}
+   */
+  this.totalTime = 0;
+
+  /**
+   * The amount of time spent only inside this record frame. Not
+   * including time in any deeper frames.
+   * @type {number}
+   */
+  this.selfTime = 0;
+
+  /**
+   * An arbitrary argument for the recorded frame. For example a block
+   * function might record its opcode as an argument.
+   * @type {*}
+   */
+  this.arg = null;
+
+  /**
+   * The depth of the recorded frame. This can help compare recursive
+   * funtions that are recorded. Each level of recursion with have a
+   * different depth value.
+   * @type {number}
+   */
+  this.depth = depth;
+};
+
+var Profiler = function () {
+  /**
+   * @param {FrameCallback} onFrame a handle called for each recorded frame.
+   * The passed frame value may not be stored as it'll be updated with later
+   * frame information. Any information that is further stored by the handler
+   * should make copies or reduce the information.
+   */
+  function Profiler() {
+    var onFrame = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+
+    _classCallCheck(this, Profiler);
+
+    /**
+     * A series of START and STOP values followed by arguments. After
+     * recording is complete the full set of records is reported back by
+     * stepping through the series to connect the relative START and STOP
+     * information.
+     * @type {Array.<*>}
+     */
+    this.records = [];
+
+    /**
+     * A cache of ProfilerFrames to reuse when reporting the recorded
+     * frames in records.
+     * @type {Array.<ProfilerFrame>}
+     */
+    this._stack = [new ProfilerFrame(0)];
+
+    /**
+     * A callback handle called with each decoded frame when reporting back
+     * all the recorded times.
+     * @type {FrameCallback}
+     */
+    this.onFrame = onFrame;
+
+    /**
+     * A reference to the START record id constant.
+     * @const {number}
+     */
+    this.START = START;
+
+    /**
+     * A reference to the STOP record id constant.
+     * @const {number}
+     */
+    this.STOP = STOP;
+  }
+
+  /**
+   * Start recording a frame of time for an id and optional argument.
+   * @param {number} id The id returned by idByName for a name symbol like
+   * Runtime._step.
+   * @param {?*} arg An arbitrary argument value to store with the frame.
+   */
+
+
+  _createClass(Profiler, [{
+    key: 'start',
+    value: function start(id, arg) {
+      this.records.push(START, id, arg, performance.now());
+    }
+
+    /**
+     * Stop the current frame.
+     */
+
+  }, {
+    key: 'stop',
+    value: function stop() {
+      this.records.push(STOP, performance.now());
+    }
+
+    /**
+     * Decode records and report all frames to `this.onFrame`.
+     */
+
+  }, {
+    key: 'reportFrames',
+    value: function reportFrames() {
+      var stack = this._stack;
+      var depth = 1;
+
+      // Step through the records and initialize Frame instances from the
+      // START and STOP events. START and STOP events are separated by events
+      // for deeper frames run by higher frames. Frames are stored on a stack
+      // and reinitialized for each START event. When a stop event is reach
+      // the Frame for the current depth has its final values stored and its
+      // passed to the current onFrame callback. This way Frames are "pushed"
+      // for each START event and "popped" for each STOP and handed to an
+      // outside handle to any desired reduction of the collected data.
+      for (var i = 0; i < this.records.length;) {
+        if (this.records[i] === START) {
+          if (depth >= stack.length) {
+            stack.push(new ProfilerFrame(depth));
+          }
+
+          // Store id, arg, totalTime, and initialize selfTime.
+          var frame = stack[depth++];
+          frame.id = this.records[i + 1];
+          frame.arg = this.records[i + 2];
+          // totalTime is first set as the time recorded by this START
+          // event. Once the STOP event is reached the stored start time
+          // is subtracted from the recorded stop time. The resulting
+          // difference is the actual totalTime, and replaces the start
+          // time in frame.totalTime.
+          //
+          // totalTime is used this way as a convenient member to store a
+          // value between the two events without needing additional
+          // members on the Frame or in a shadow map.
+          frame.totalTime = this.records[i + 3];
+          // selfTime is decremented until we reach the STOP event for
+          // this frame. totalTime will be added to it then to get the
+          // time difference.
+          frame.selfTime = 0;
+
+          i += START_SIZE;
+        } else if (this.records[i] === STOP) {
+          var now = this.records[i + 1];
+
+          var _frame = stack[--depth];
+          // totalTime is the difference between the start event time
+          // stored in totalTime and the stop event time pulled from this
+          // record.
+          _frame.totalTime = now - _frame.totalTime;
+          // selfTime is the difference of this frame's totalTime and the
+          // sum of totalTime of deeper frames.
+          _frame.selfTime += _frame.totalTime;
+
+          // Remove this frames totalTime from the parent's selfTime.
+          stack[depth - 1].selfTime -= _frame.totalTime;
+
+          this.onFrame(_frame);
+
+          i += STOP_SIZE;
+        } else {
+          this.records.length = 0;
+          throw new Error('Unable to decode Profiler records.');
+        }
+      }
+
+      this.records.length = 0;
+    }
+
+    /**
+     * Lookup or create an id for a frame name.
+     * @param {string} name The name to return an id for.
+     * @return {number} The id for the passed name.
+     */
+
+  }, {
+    key: 'idByName',
+    value: function idByName(name) {
+      return Profiler.idByName(name);
+    }
+
+    /**
+     * Reverse lookup the name from a given frame id.
+     * @param {number} id The id to search for.
+     * @return {string} The name for the given id.
+     */
+
+  }, {
+    key: 'nameById',
+    value: function nameById(id) {
+      return Profiler.nameById(id);
+    }
+
+    /**
+     * Lookup or create an id for a frame name.
+     * @static
+     * @param {string} name The name to return an id for.
+     * @return {number} The id for the passed name.
+     */
+
+  }], [{
+    key: 'idByName',
+    value: function idByName(name) {
+      if (typeof profilerNames[name] !== 'number') {
+        profilerNames[name] = nextId++;
+      }
+      return profilerNames[name];
+    }
+
+    /**
+     * Reverse lookup the name from a given frame id.
+     * @static
+     * @param {number} id The id to search for.
+     * @return {string} The name for the given id.
+     */
+
+  }, {
+    key: 'nameById',
+    value: function nameById(id) {
+      for (var name in profilerNames) {
+        if (profilerNames[name] === id) {
+          return name;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Profiler is only available on platforms with the Performance API.
+     * @return {boolean} Can the Profiler run in this browser?
+     */
+
+  }, {
+    key: 'available',
+    value: function available() {
+      return (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && typeof window.performance !== 'undefined';
+    }
+  }]);
+
+  return Profiler;
+}();
+
+/**
+ * A reference to the START record id constant.
+ * @const {number}
+ */
+
+
+Profiler.START = START;
+
+/**
+ * A reference to the STOP record id constant.
+ * @const {number}
+ */
+Profiler.STOP = STOP;
+
+module.exports = Profiler;
+
+/***/ }),
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21425,33 +22362,34 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var EventEmitter = __webpack_require__(5);
 
-var _require = __webpack_require__(22),
+var _require = __webpack_require__(26),
     OrderedMap = _require.OrderedMap;
 
-var escapeHtml = __webpack_require__(108);
+var escapeHtml = __webpack_require__(110);
 
-var ArgumentType = __webpack_require__(27);
+var ArgumentType = __webpack_require__(20);
 var Blocks = __webpack_require__(12);
-var BlockType = __webpack_require__(16);
-var Sequencer = __webpack_require__(75);
-var Thread = __webpack_require__(25);
+var BlockType = __webpack_require__(13);
+var Sequencer = __webpack_require__(76);
+var Thread = __webpack_require__(18);
+var Profiler = __webpack_require__(74);
 
 // Virtual I/O devices.
-var Clock = __webpack_require__(78);
-var DeviceManager = __webpack_require__(79);
-var Keyboard = __webpack_require__(80);
-var Mouse = __webpack_require__(81);
+var Clock = __webpack_require__(80);
+var DeviceManager = __webpack_require__(81);
+var Keyboard = __webpack_require__(82);
+var Mouse = __webpack_require__(83);
 
 var defaultBlockPackages = {
-    scratch3_control: __webpack_require__(59),
-    scratch3_event: __webpack_require__(61),
-    scratch3_looks: __webpack_require__(62),
-    scratch3_motion: __webpack_require__(63),
-    scratch3_operators: __webpack_require__(64),
-    scratch3_sound: __webpack_require__(68),
-    scratch3_sensing: __webpack_require__(67),
-    scratch3_data: __webpack_require__(60),
-    scratch3_procedures: __webpack_require__(66)
+    scratch3_control: __webpack_require__(58),
+    scratch3_event: __webpack_require__(60),
+    scratch3_looks: __webpack_require__(61),
+    scratch3_motion: __webpack_require__(62),
+    scratch3_operators: __webpack_require__(63),
+    scratch3_sound: __webpack_require__(67),
+    scratch3_sensing: __webpack_require__(66),
+    scratch3_data: __webpack_require__(59),
+    scratch3_procedures: __webpack_require__(65)
 };
 
 /**
@@ -21506,6 +22444,24 @@ var ScratchBlocksConstants = {
      */
     OUTPUT_SHAPE_SQUARE: 3
 };
+
+/**
+ * Numeric ID for Runtime._step in Profiler instances.
+ * @type {number}
+ */
+var stepProfilerId = -1;
+
+/**
+ * Numeric ID for Sequencer.stepThreads in Profiler instances.
+ * @type {number}
+ */
+var stepThreadsProfilerId = -1;
+
+/**
+ * Numeric ID for RenderWebGL.draw in Profiler instances.
+ * @type {number}
+ */
+var rendererDrawProfilerId = -1;
 
 /**
  * Manages targets, scripts, and the sequencer.
@@ -21610,6 +22566,13 @@ var Runtime = function (_EventEmitter) {
         _this._refreshTargets = false;
 
         /**
+         * Map to look up all monitor block information by opcode.
+         * @type {object}
+         * @private
+         */
+        _this.monitorBlockInfo = {};
+
+        /**
          * Ordered map of all monitors, which are MonitorReporter objects.
          */
         _this._monitorState = OrderedMap({});
@@ -21670,6 +22633,12 @@ var Runtime = function (_EventEmitter) {
 
         _this.stageWith = 480;
         _this.stageHeight = 360;
+        /**
+         * A runtime profiler that records timed events for later playback to
+         * diagnose Scratch performance.
+         * @type {Profiler}
+         */
+        _this.profiler = null;
         return _this;
     }
 
@@ -21725,6 +22694,10 @@ var Runtime = function (_EventEmitter) {
                             }
                         }
                     }
+                    // Collect monitored from package.
+                    if (packageObject.getMonitored) {
+                        this.monitorBlockInfo = Object.assign({}, this.monitorBlockInfo, packageObject.getMonitored());
+                    }
                 }
             }
         }
@@ -21755,6 +22728,7 @@ var Runtime = function (_EventEmitter) {
             var categoryInfo = {
                 id: extensionInfo.id,
                 name: extensionInfo.name,
+                iconURI: extensionInfo.iconURI,
                 color1: '#FF6680',
                 color2: '#FF4D6A',
                 color3: '#FF3355',
@@ -21767,7 +22741,7 @@ var Runtime = function (_EventEmitter) {
             for (var menuName in extensionInfo.menus) {
                 if (extensionInfo.menus.hasOwnProperty(menuName)) {
                     var menuItems = extensionInfo.menus[menuName];
-                    var convertedMenu = this._buildMenuForScratchBlocks(menuName, menuItems, extensionInfo);
+                    var convertedMenu = this._buildMenuForScratchBlocks(menuName, menuItems, categoryInfo);
                     categoryInfo.menus.push(convertedMenu);
                 }
             }
@@ -21885,8 +22859,21 @@ var Runtime = function (_EventEmitter) {
             // but each `[ARG]` will need to be replaced with the number in this map instead of `args0.length`.
             var argsMap = {};
 
-            blockJSON.message0 = blockInfo.text.replace(/\[(.+?)]/g, function (match, placeholder) {
+            blockJSON.message0 = '';
 
+            // If an icon for the extension exists, prepend it to each block
+            if (categoryInfo.iconURI) {
+                blockJSON.message0 = '%1';
+                var iconJSON = {
+                    type: 'field_image',
+                    src: categoryInfo.iconURI,
+                    width: 40,
+                    height: 40
+                };
+                blockJSON.args0.push(iconJSON);
+            }
+
+            blockJSON.message0 += blockInfo.text.replace(/\[(.+?)]/g, function (match, placeholder) {
                 // Sanitize the placeholder to ensure valid XML
                 placeholder = placeholder.replace(/[<"&]/, '_');
 
@@ -21999,9 +22986,12 @@ var Runtime = function (_EventEmitter) {
                         color1 = categoryInfo.color1,
                         color2 = categoryInfo.color2;
 
+                    var paletteBlocks = categoryInfo.blocks.filter(function (block) {
+                        return !block.info.hideFromPalette;
+                    });
                     xmlParts.push('<category name="' + name + '" colour="' + color1 + '" secondaryColour="' + color2 + '">');
-                    xmlParts.push.apply(xmlParts, categoryInfo.blocks.map(function (blockInfo) {
-                        return blockInfo.xml;
+                    xmlParts.push.apply(xmlParts, paletteBlocks.map(function (block) {
+                        return block.xml;
                     }));
                     xmlParts.push('</category>');
                 }
@@ -22184,6 +23174,7 @@ var Runtime = function (_EventEmitter) {
          * This is used by `startHats` to and is necessary to ensure 2.0-like execution order.
          * Test project: https://scratch.mit.edu/projects/130183108/
          * @param {!Thread} thread Thread object to restart.
+         * @return {Thread} The restarted thread.
          */
 
     }, {
@@ -22197,9 +23188,10 @@ var Runtime = function (_EventEmitter) {
             var i = this.threads.indexOf(thread);
             if (i > -1) {
                 this.threads[i] = newThread;
-            } else {
-                this.threads.push(thread);
+                return newThread;
             }
+            this.threads.push(thread);
+            return thread;
         }
 
         /**
@@ -22211,7 +23203,7 @@ var Runtime = function (_EventEmitter) {
     }, {
         key: 'isActiveThread',
         value: function isActiveThread(thread) {
-            return this.threads.indexOf(thread) > -1;
+            return thread.stack.length > 0 && thread.status !== Thread.STATUS_DONE && this.threads.indexOf(thread) > -1;
         }
 
         /**
@@ -22253,7 +23245,7 @@ var Runtime = function (_EventEmitter) {
         /**
          * Enqueue a script that when finished will update the monitor for the block.
          * @param {!string} topBlockId ID of block that starts the script.
-         * @param {?string} optTarget target ID for target to run script on. If not supplied, uses editing target.
+         * @param {?Target} optTarget target Target to run script on. If not supplied, uses editing target.
          */
 
     }, {
@@ -22368,7 +23360,7 @@ var Runtime = function (_EventEmitter) {
                     for (var i = 0; i < instance.threads.length; i++) {
                         if (instance.threads[i].topBlock === topBlockId && !instance.threads[i].stackClick && // stack click threads and hat threads can coexist
                         instance.threads[i].target === target) {
-                            instance._restartThread(instance.threads[i]);
+                            newThreads.push(instance._restartThread(instance.threads[i]));
                             return;
                         }
                     }
@@ -22492,6 +23484,12 @@ var Runtime = function (_EventEmitter) {
     }, {
         key: '_step',
         value: function _step() {
+            if (this.profiler !== null) {
+                if (stepProfilerId === -1) {
+                    stepProfilerId = this.profiler.idByName('Runtime._step');
+                }
+                this.profiler.start(stepProfilerId);
+            }
             // Find all edge-activated hats, and add them to threads to be evaluated.
             for (var hatType in this._hats) {
                 if (!this._hats.hasOwnProperty(hatType)) continue;
@@ -22502,14 +23500,32 @@ var Runtime = function (_EventEmitter) {
             }
             this.redrawRequested = false;
             this._pushMonitors();
+            if (this.profiler !== null) {
+                if (stepThreadsProfilerId === -1) {
+                    stepThreadsProfilerId = this.profiler.idByName('Sequencer.stepThreads');
+                }
+                this.profiler.start(stepThreadsProfilerId);
+            }
             var doneThreads = this.sequencer.stepThreads();
+            if (this.profiler !== null) {
+                this.profiler.stop();
+            }
             this._updateGlows(doneThreads);
             // Add done threads so that even if a thread finishes within 1 frame, the green
             // flag will still indicate that a script ran.
             this._emitProjectRunStatus(this.threads.length + doneThreads.length - this._getMonitorThreadCount([].concat(_toConsumableArray(this.threads), _toConsumableArray(doneThreads))));
             if (this.renderer) {
                 // @todo: Only render when this.redrawRequested or clones rendered.
+                if (this.profiler !== null) {
+                    if (rendererDrawProfilerId === -1) {
+                        rendererDrawProfilerId = this.profiler.idByName('RenderWebGL.draw');
+                    }
+                    this.profiler.start(rendererDrawProfilerId);
+                }
                 this.renderer.draw();
+                if (this.profiler !== null) {
+                    this.profiler.stop();
+                }
             }
 
             if (this._refreshTargets) {
@@ -22520,6 +23536,11 @@ var Runtime = function (_EventEmitter) {
             if (!this._prevMonitorState.equals(this._monitorState)) {
                 this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
                 this._prevMonitorState = this._monitorState;
+            }
+
+            if (this.profiler !== null) {
+                this.profiler.stop();
+                this.profiler.reportFrames();
             }
         }
 
@@ -22726,7 +23747,7 @@ var Runtime = function (_EventEmitter) {
     }, {
         key: 'requestAddMonitor',
         value: function requestAddMonitor(monitor) {
-            this._monitorState = this._monitorState.set(monitor.id, monitor);
+            this._monitorState = this._monitorState.set(monitor.get('id'), monitor);
         }
 
         /**
@@ -22740,8 +23761,9 @@ var Runtime = function (_EventEmitter) {
     }, {
         key: 'requestUpdateMonitor',
         value: function requestUpdateMonitor(monitor) {
-            if (this._monitorState.has(monitor.get('id'))) {
-                this._monitorState = this._monitorState.set(monitor.get('id'), this._monitorState.get(monitor.get('id')).merge(monitor));
+            var id = monitor.get('id');
+            if (this._monitorState.has(id)) {
+                this._monitorState = this._monitorState.set(id, this._monitorState.get(id).merge(monitor));
             }
         }
 
@@ -22755,6 +23777,20 @@ var Runtime = function (_EventEmitter) {
         key: 'requestRemoveMonitor',
         value: function requestRemoveMonitor(monitorId) {
             this._monitorState = this._monitorState.delete(monitorId);
+        }
+
+        /**
+         * Removes all monitors with the given target ID from the state. Does nothing if
+         * the monitor already does not exist in the state.
+         * @param {!string} targetId Remove all monitors with given target ID.
+         */
+
+    }, {
+        key: 'requestRemoveMonitorByTargetId',
+        value: function requestRemoveMonitorByTargetId(targetId) {
+            this._monitorState = this._monitorState.filterNot(function (value) {
+                return value.targetId === targetId;
+            });
         }
 
         /**
@@ -22921,6 +23957,30 @@ var Runtime = function (_EventEmitter) {
             this._steppingInterval = setInterval(function () {
                 _this3._step();
             }, interval);
+        }
+
+        /**
+         * Turn on profiling.
+         * @param {Profiler/FrameCallback} onFrame A callback handle passed a
+         * profiling frame when the profiler reports its collected data.
+         */
+
+    }, {
+        key: 'enableProfiling',
+        value: function enableProfiling(onFrame) {
+            if (Profiler.available()) {
+                this.profiler = new Profiler(onFrame);
+            }
+        }
+
+        /**
+         * Turn off profiling.
+         */
+
+    }, {
+        key: 'disableProfiling',
+        value: function disableProfiling() {
+            this.profiler = null;
         }
     }, {
         key: 'STAGE_WIDTH',
@@ -23109,7 +24169,7 @@ var Runtime = function (_EventEmitter) {
 module.exports = Runtime;
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23119,9 +24179,45 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Timer = __webpack_require__(28);
-var Thread = __webpack_require__(25);
+var Timer = __webpack_require__(25);
+var Thread = __webpack_require__(18);
 var execute = __webpack_require__(72);
+
+/**
+ * Profiler frame name for stepping a single thread.
+ * @const {string}
+ */
+var stepThreadProfilerFrame = 'Sequencer.stepThread';
+
+/**
+ * Profiler frame name for the inner loop of stepThreads.
+ * @const {string}
+ */
+var stepThreadsInnerProfilerFrame = 'Sequencer.stepThreads#inner';
+
+/**
+ * Profiler frame name for execute.
+ * @const {string}
+ */
+var executeProfilerFrame = 'execute';
+
+/**
+ * Profiler frame ID for stepThreadProfilerFrame.
+ * @type {number}
+ */
+var stepThreadProfilerId = -1;
+
+/**
+ * Profiler frame ID for stepThreadsInnerProfilerFrame.
+ * @type {number}
+ */
+var stepThreadsInnerProfilerId = -1;
+
+/**
+ * Profiler frame ID for executeProfilerFrame.
+ * @type {number}
+ */
+var executeProfilerId = -1;
 
 var Sequencer = function () {
     function Sequencer(runtime) {
@@ -23163,22 +24259,33 @@ var Sequencer = function () {
             var numActiveThreads = Infinity;
             // Whether `stepThreads` has run through a full single tick.
             var ranFirstTick = false;
-            var doneThreads = [];
+            var doneThreads = this.runtime.threads.map(function () {
+                return null;
+            });
             // Conditions for continuing to stepping threads:
             // 1. We must have threads in the list, and some must be active.
             // 2. Time elapsed must be less than WORK_TIME.
             // 3. Either turbo mode, or no redraw has been requested by a primitive.
             while (this.runtime.threads.length > 0 && numActiveThreads > 0 && this.timer.timeElapsed() < WORK_TIME && (this.runtime.turboMode || !this.runtime.redrawRequested)) {
+                if (this.runtime.profiler !== null) {
+                    if (stepThreadsInnerProfilerId === -1) {
+                        stepThreadsInnerProfilerId = this.runtime.profiler.idByName(stepThreadsInnerProfilerFrame);
+                    }
+                    this.runtime.profiler.start(stepThreadsInnerProfilerId);
+                }
+
                 numActiveThreads = 0;
                 // Attempt to run each thread one time.
                 for (var i = 0; i < this.runtime.threads.length; i++) {
                     var activeThread = this.runtime.threads[i];
                     if (activeThread.stack.length === 0 || activeThread.status === Thread.STATUS_DONE) {
                         // Finished with this thread.
-                        if (doneThreads.indexOf(activeThread) < 0) {
-                            doneThreads.push(activeThread);
-                        }
+                        doneThreads[i] = activeThread;
                         continue;
+                    }
+                    // A thread was removed, added or this thread was restarted.
+                    if (doneThreads[i] !== null) {
+                        doneThreads[i] = null;
                     }
                     if (activeThread.status === Thread.STATUS_YIELD_TICK && !ranFirstTick) {
                         // Clear single-tick yield from the last call of `stepThreads`.
@@ -23186,7 +24293,16 @@ var Sequencer = function () {
                     }
                     if (activeThread.status === Thread.STATUS_RUNNING || activeThread.status === Thread.STATUS_YIELD) {
                         // Normal-mode thread: step.
+                        if (this.runtime.profiler !== null) {
+                            if (stepThreadProfilerId === -1) {
+                                stepThreadProfilerId = this.runtime.profiler.idByName(stepThreadProfilerFrame);
+                            }
+                            this.runtime.profiler.start(stepThreadProfilerId);
+                        }
                         this.stepThread(activeThread);
+                        if (this.runtime.profiler !== null) {
+                            this.runtime.profiler.stop();
+                        }
                         activeThread.warpTimer = null;
                         if (activeThread.isKilled) {
                             i--; // if the thread is removed from the list (killed), do not increase index
@@ -23199,14 +24315,33 @@ var Sequencer = function () {
                 // We successfully ticked once. Prevents running STATUS_YIELD_TICK
                 // threads on the next tick.
                 ranFirstTick = true;
+
+                if (this.runtime.profiler !== null) {
+                    this.runtime.profiler.stop();
+                }
             }
             // Filter inactive threads from `this.runtime.threads`.
-            this.runtime.threads = this.runtime.threads.filter(function (thread) {
-                if (doneThreads.indexOf(thread) > -1) {
-                    return false;
+            numActiveThreads = 0;
+            for (var _i = 0; _i < this.runtime.threads.length; _i++) {
+                var thread = this.runtime.threads[_i];
+                if (doneThreads[_i] === null) {
+                    this.runtime.threads[numActiveThreads] = thread;
+                    numActiveThreads++;
                 }
-                return true;
-            });
+            }
+            this.runtime.threads.length = numActiveThreads;
+
+            // Filter undefined and null values from `doneThreads`.
+            var numDoneThreads = 0;
+            for (var _i2 = 0; _i2 < doneThreads.length; _i2++) {
+                var maybeThread = doneThreads[_i2];
+                if (maybeThread !== null) {
+                    doneThreads[numDoneThreads] = maybeThread;
+                    numDoneThreads++;
+                }
+            }
+            doneThreads.length = numDoneThreads;
+
             return doneThreads;
         }
 
@@ -23234,7 +24369,22 @@ var Sequencer = function () {
                 // Execute the current block.
                 // Save the current block ID to notice if we did control flow.
                 currentBlockId = thread.peekStack();
+                if (this.runtime.profiler !== null) {
+                    if (executeProfilerId === -1) {
+                        executeProfilerId = this.runtime.profiler.idByName(executeProfilerFrame);
+                    }
+                    // The method commented below has its code inlined underneath to
+                    // reduce the bias recorded for the profiler's calls in this
+                    // time sensitive stepThread method.
+                    //
+                    // this.runtime.profiler.start(executeProfilerId, null);
+                    this.runtime.profiler.records.push(this.runtime.profiler.START, executeProfilerId, null, performance.now());
+                }
                 execute(this, thread);
+                if (this.runtime.profiler !== null) {
+                    // this.runtime.profiler.stop();
+                    this.runtime.profiler.records.push(this.runtime.profiler.STOP, performance.now());
+                }
                 thread.blockGlowInFrame = currentBlockId;
                 // If the thread has yielded or is waiting, yield to other threads.
                 if (thread.status === Thread.STATUS_YIELD) {
@@ -23383,7 +24533,7 @@ var Sequencer = function () {
 module.exports = Sequencer;
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23400,11 +24550,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var EventEmitter = __webpack_require__(5);
 
 var Blocks = __webpack_require__(12);
-var Variable = __webpack_require__(26);
-var List = __webpack_require__(24);
-var uid = __webpack_require__(29);
+var Variable = __webpack_require__(19);
+var uid = __webpack_require__(30);
 
-var _require = __webpack_require__(22),
+var _require = __webpack_require__(26),
     Map = _require.Map;
 
 /**
@@ -23503,7 +24652,7 @@ var Target = function (_EventEmitter) {
             var variable = this.lookupVariableById(id);
             if (variable) return variable;
             // No variable with this name exists - create it locally.
-            var newVariable = new Variable(id, name, 0, false);
+            var newVariable = new Variable(id, name, Variable.SCALAR_TYPE, false);
             this.variables[id] = newVariable;
             return newVariable;
         }
@@ -23535,27 +24684,19 @@ var Target = function (_EventEmitter) {
         /**
         * Look up a list object for this target, and create it if one doesn't exist.
         * Search begins for local lists; then look for globals.
+        * @param {!string} id Id of the list.
         * @param {!string} name Name of the list.
         * @return {!List} List object.
          */
 
     }, {
         key: 'lookupOrCreateList',
-        value: function lookupOrCreateList(name) {
-            // If we have a local copy, return it.
-            if (this.lists.hasOwnProperty(name)) {
-                return this.lists[name];
-            }
-            // If the stage has a global copy, return it.
-            if (this.runtime && !this.isStage) {
-                var stage = this.runtime.getTargetForStage();
-                if (stage.lists.hasOwnProperty(name)) {
-                    return stage.lists[name];
-                }
-            }
-            // No list with this name exists - create it locally.
-            var newList = new List(name, []);
-            this.lists[name] = newList;
+        value: function lookupOrCreateList(id, name) {
+            var list = this.lookupVariableById(id);
+            if (list) return list;
+            // No variable with this name exists - create it locally.
+            var newList = new Variable(id, name, Variable.LIST_TYPE, false);
+            this.variables[id] = newList;
             return newList;
         }
 
@@ -23564,15 +24705,14 @@ var Target = function (_EventEmitter) {
          * dictionary of variables.
          * @param {string} id Id of variable
          * @param {string} name Name of variable.
+         * @param {string} type Type of variable, '' or 'list'
          */
 
     }, {
         key: 'createVariable',
-        value: function createVariable(id, name) {
-            var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-
+        value: function createVariable(id, name, type) {
             if (!this.variables.hasOwnProperty(id)) {
-                var newVariable = new Variable(id, name, 0, false, type);
+                var newVariable = new Variable(id, name, type, false);
                 this.variables[id] = newVariable;
             }
         }
@@ -23619,6 +24759,7 @@ var Target = function (_EventEmitter) {
             if (this.variables.hasOwnProperty(id)) {
                 delete this.variables[id];
                 if (this.runtime) {
+                    this.runtime.monitorBlocks.deleteBlock(id);
                     this.runtime.requestRemoveMonitor(id);
                 }
             }
@@ -23676,7 +24817,7 @@ var Target = function (_EventEmitter) {
 module.exports = Target;
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23686,19 +24827,21 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var dispatch = __webpack_require__(38);
-var log = __webpack_require__(2);
+var dispatch = __webpack_require__(37);
+var log = __webpack_require__(3);
 
-var BlockType = __webpack_require__(16);
+var BlockType = __webpack_require__(13);
 
 // These extensions are currently built into the VM repository but should not be loaded at startup.
 // TODO: move these out into a separate repository?
 // TODO: change extension spec so that library info, including extension ID, can be collected through static methods
-var Scratch3PenBlocks = __webpack_require__(65);
-var Scratch3WeDo2Blocks = __webpack_require__(69);
+var Scratch3PenBlocks = __webpack_require__(64);
+var Scratch3WeDo2Blocks = __webpack_require__(68);
+var Scratch3MusicBlocks = __webpack_require__(79);
 var builtinExtensions = {
     pen: Scratch3PenBlocks,
-    wedo2: Scratch3WeDo2Blocks
+    wedo2: Scratch3WeDo2Blocks,
+    music: Scratch3MusicBlocks
 };
 
 /**
@@ -23718,6 +24861,7 @@ var builtinExtensions = {
  * @property {object.<string,ArgumentInfo>|undefined} arguments - information about this block's arguments, if any
  * @property {string|Function|undefined} func - the method for this block on the extension service (default: opcode)
  * @property {Array.<string>|undefined} filter - the list of targets for which this block should appear (default: all)
+ * @property {Boolean|undefined} hideFromPalette - true if should not be appear in the palette. (default false)
  */
 
 /**
@@ -23761,6 +24905,13 @@ var ExtensionManager = function () {
         this.pendingWorkers = [];
 
         /**
+         * Set of loaded extension URLs/IDs (equivalent for built-in extensions).
+         * @type {Set.<string>}
+         * @private
+         */
+        this._loadedExtensions = new Set();
+
+        /**
          * Keep a reference to the runtime so we can construct internal extension objects.
          * TODO: remove this in favor of extensions accessing the runtime as a service.
          * @type {Runtime}
@@ -23773,26 +24924,49 @@ var ExtensionManager = function () {
     }
 
     /**
-     * Load an extension by URL or internal extension ID
-     * @param {string} extensionURL - the URL for the extension to load OR the ID of an internal extension
-     * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
+     * Check whether an extension is registered or is in the process of loading. This is intended to control loading or
+     * adding extensions so it may return `true` before the extension is ready to be used. Use the promise returned by
+     * `loadExtensionURL` if you need to wait until the extension is truly ready.
+     * @param {string} extensionID - the ID of the extension.
+     * @returns {boolean} - true if loaded, false otherwise.
      */
 
 
     _createClass(ExtensionManager, [{
+        key: 'isExtensionLoaded',
+        value: function isExtensionLoaded(extensionID) {
+            return this._loadedExtensions.has(extensionID);
+        }
+
+        /**
+         * Load an extension by URL or internal extension ID
+         * @param {string} extensionURL - the URL for the extension to load OR the ID of an internal extension
+         * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
+         */
+
+    }, {
         key: 'loadExtensionURL',
         value: function loadExtensionURL(extensionURL) {
             var _this = this;
 
             if (builtinExtensions.hasOwnProperty(extensionURL)) {
+                /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
+                if (this.isExtensionLoaded(extensionURL)) {
+                    var message = 'Rejecting attempt to load a second extension with ID ' + extensionURL;
+                    log.warn(message);
+                    return Promise.reject(new Error(message));
+                }
+
                 var extension = builtinExtensions[extensionURL];
                 var extensionInstance = new extension(this.runtime);
-                return this._registerInternalExtension(extensionInstance);
+                return this._registerInternalExtension(extensionInstance).then(function () {
+                    _this._loadedExtensions.add(extensionURL);
+                });
             }
 
             return new Promise(function (resolve, reject) {
                 // If we `require` this at the global level it breaks non-webpack targets, including tests
-                var ExtensionWorker = __webpack_require__(162);
+                var ExtensionWorker = __webpack_require__(164);
 
                 _this.pendingExtensions.push({ extensionURL: extensionURL, resolve: resolve, reject: reject });
                 dispatch.addWorker(new ExtensionWorker());
@@ -23806,6 +24980,12 @@ var ExtensionManager = function () {
             this.pendingWorkers[id] = workerInfo;
             return [id, workerInfo.extensionURL];
         }
+
+        /**
+         * Collect extension metadata from the specified service and begin the extension registration process.
+         * @param {string} serviceName - the name of the service hosting the extension.
+         */
+
     }, {
         key: 'registerExtensionService',
         value: function registerExtensionService(serviceName) {
@@ -23815,6 +24995,13 @@ var ExtensionManager = function () {
                 _this2._registerExtensionInfo(serviceName, info);
             });
         }
+
+        /**
+         * Called by an extension worker to indicate that the worker has finished initialization.
+         * @param {int} id - the worker ID.
+         * @param {*?} e - the error encountered during initialization, if any.
+         */
+
     }, {
         key: 'onWorkerInit',
         value: function onWorkerInit(id, e) {
@@ -23837,11 +25024,20 @@ var ExtensionManager = function () {
         key: '_registerInternalExtension',
         value: function _registerInternalExtension(extensionObject) {
             var extensionInfo = extensionObject.getInfo();
-            var serviceName = 'extension.internal.' + extensionInfo.id;
+            var fakeWorkerId = this.nextExtensionWorker++;
+            var serviceName = 'extension.' + fakeWorkerId + '.' + extensionInfo.id;
             return dispatch.setService(serviceName, extensionObject).then(function () {
                 return dispatch.call('extensions', 'registerExtensionService', serviceName);
             });
         }
+
+        /**
+         * Sanitize extension info then register its primitives with the VM.
+         * @param {string} serviceName - the name of the service hosting the extension
+         * @param {ExtensionInfo} extensionInfo - the extension's metadata
+         * @private
+         */
+
     }, {
         key: '_registerExtensionInfo',
         value: function _registerExtensionInfo(serviceName, extensionInfo) {
@@ -23936,7 +25132,7 @@ var ExtensionManager = function () {
 module.exports = ExtensionManager;
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23946,7 +25142,852 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Timer = __webpack_require__(28);
+var ArgumentType = __webpack_require__(20);
+var BlockType = __webpack_require__(13);
+var Clone = __webpack_require__(14);
+var Cast = __webpack_require__(2);
+var MathUtil = __webpack_require__(8);
+var Timer = __webpack_require__(25);
+
+/**
+ * Class for the music-related blocks in Scratch 3.0
+ * @param {Runtime} runtime - the runtime instantiating this block package.
+ * @constructor
+ */
+
+var Scratch3MusicBlocks = function () {
+    function Scratch3MusicBlocks(runtime) {
+        _classCallCheck(this, Scratch3MusicBlocks);
+
+        /**
+         * The runtime instantiating this block package.
+         * @type {Runtime}
+         */
+        this.runtime = runtime;
+
+        /**
+         * The current tempo in beats per minute. The tempo is a global property of the project,
+         * not a property of each sprite, so it is not stored in the MusicState object.
+         * @type {number}
+         */
+        this.tempo = 60;
+
+        /**
+         * The number of drum and instrument sounds currently being played simultaneously.
+         * @type {number}
+         * @private
+         */
+        this._concurrencyCounter = 0;
+
+        /**
+         * An array of audio buffers, one for each drum sound.
+         * @type {Array}
+         * @private
+         */
+        this._drumBuffers = [];
+
+        /**
+         * An array of arrays of audio buffers. Each instrument has one or more audio buffers.
+         * @type {Array[]}
+         * @private
+         */
+        this._instrumentBufferArrays = [];
+
+        this._loadAllSounds();
+    }
+
+    /**
+     * Download and decode the full set of drum and instrument sounds, and
+     * store the audio buffers in arrays.
+     */
+
+
+    _createClass(Scratch3MusicBlocks, [{
+        key: '_loadAllSounds',
+        value: function _loadAllSounds() {
+            var _this = this;
+
+            var loadingPromises = [];
+            this.DRUM_INFO.forEach(function (drumInfo, index) {
+                var fileName = 'drums/' + drumInfo.fileName;
+                var promise = _this._loadSound(fileName, index, _this._drumBuffers);
+                loadingPromises.push(promise);
+            });
+            this.INSTRUMENT_INFO.forEach(function (instrumentInfo, instrumentIndex) {
+                _this._instrumentBufferArrays[instrumentIndex] = [];
+                instrumentInfo.samples.forEach(function (sample, noteIndex) {
+                    var fileName = 'instruments/' + instrumentInfo.dirName + '/' + sample;
+                    var promise = _this._loadSound(fileName, noteIndex, _this._instrumentBufferArrays[instrumentIndex]);
+                    loadingPromises.push(promise);
+                });
+            });
+            Promise.all(loadingPromises).then(function () {
+                // @TODO: Update the extension status indicator.
+            });
+        }
+
+        /**
+         * Download and decode a sound, and store the buffer in an array.
+         * @param {string} fileName - the audio file name.
+         * @param {number} index - the index at which to store the audio buffer.
+         * @param {array} bufferArray - the array of buffers in which to store it.
+         * @return {Promise} - a promise which will resolve once the sound has loaded.
+         */
+
+    }, {
+        key: '_loadSound',
+        value: function _loadSound(fileName, index, bufferArray) {
+            var _this2 = this;
+
+            if (!this.runtime.storage) return;
+            if (!this.runtime.audioEngine) return;
+            return this.runtime.storage.load(this.runtime.storage.AssetType.Sound, fileName, 'mp3').then(function (soundAsset) {
+                return _this2.runtime.audioEngine.audioContext.decodeAudioData(soundAsset.data.buffer);
+            }).then(function (buffer) {
+                bufferArray[index] = buffer;
+            });
+        }
+
+        /**
+         * Create data for a menu in scratch-blocks format, consisting of an array of objects with text and
+         * value properties. The text is a translated string, and the value is one-indexed.
+         * @param  {object[]} info - An array of info objects each having a name property.
+         * @return {array} - An array of objects with text and value properties.
+         * @private
+         */
+
+    }, {
+        key: '_buildMenu',
+        value: function _buildMenu(info) {
+            return info.map(function (entry, index) {
+                var obj = {};
+                obj.text = entry.name;
+                obj.value = index + 1;
+                return obj;
+            });
+        }
+
+        /**
+         * An array of info about each drum.
+         * @type {object[]} an array of objects.
+         * @param {string} name - the translatable name to display in the drums menu.
+         * @param {string} fileName - the name of the audio file containing the drum sound.
+         */
+
+    }, {
+        key: '_getMusicState',
+
+
+        /**
+         * @param {Target} target - collect music state for this target.
+         * @returns {MusicState} the mutable music state associated with that target. This will be created if necessary.
+         * @private
+         */
+        value: function _getMusicState(target) {
+            var musicState = target.getCustomState(Scratch3MusicBlocks.STATE_KEY);
+            if (!musicState) {
+                musicState = Clone.simple(Scratch3MusicBlocks.DEFAULT_MUSIC_STATE);
+                target.setCustomState(Scratch3MusicBlocks.STATE_KEY, musicState);
+            }
+            return musicState;
+        }
+
+        /**
+         * @returns {object} metadata for this extension and its blocks.
+         */
+
+    }, {
+        key: 'getInfo',
+        value: function getInfo() {
+            return {
+                id: 'music',
+                name: 'Music',
+                blocks: [{
+                    opcode: 'playDrumForBeats',
+                    blockType: BlockType.COMMAND,
+                    text: 'play drum [DRUM] for [BEATS] beats',
+                    arguments: {
+                        DRUM: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'drums',
+                            defaultValue: 1
+                        },
+                        BEATS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25
+                        }
+                    }
+                }, {
+                    opcode: 'restForBeats',
+                    blockType: BlockType.COMMAND,
+                    text: 'rest for [BEATS] beats',
+                    arguments: {
+                        BEATS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25
+                        }
+                    }
+                }, {
+                    opcode: 'playNoteForBeats',
+                    blockType: BlockType.COMMAND,
+                    text: 'play note [NOTE] for [BEATS] beats',
+                    arguments: {
+                        NOTE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 60
+                        },
+                        BEATS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25
+                        }
+                    }
+                }, {
+                    opcode: 'setInstrument',
+                    blockType: BlockType.COMMAND,
+                    text: 'set instrument to [INSTRUMENT]',
+                    arguments: {
+                        INSTRUMENT: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'instruments',
+                            defaultValue: 1
+                        }
+                    }
+                }, {
+                    opcode: 'setTempo',
+                    blockType: BlockType.COMMAND,
+                    text: 'set tempo to [TEMPO]',
+                    arguments: {
+                        TEMPO: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 60
+                        }
+                    }
+                }, {
+                    opcode: 'changeTempo',
+                    blockType: BlockType.COMMAND,
+                    text: 'change tempo by [TEMPO]',
+                    arguments: {
+                        TEMPO: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 20
+                        }
+                    }
+                }, {
+                    opcode: 'getTempo',
+                    text: 'tempo',
+                    blockType: BlockType.REPORTER
+                }],
+                menus: {
+                    drums: this._buildMenu(this.DRUM_INFO),
+                    instruments: this._buildMenu(this.INSTRUMENT_INFO)
+                }
+            };
+        }
+
+        /**
+         * Play a drum sound for some number of beats.
+         * @param {object} args - the block arguments.
+         * @param {object} util - utility object provided by the runtime.
+         * @property {int} DRUM - the number of the drum to play.
+         * @property {number} BEATS - the duration in beats of the drum sound.
+         */
+
+    }, {
+        key: 'playDrumForBeats',
+        value: function playDrumForBeats(args, util) {
+            if (this._stackTimerNeedsInit(util)) {
+                var drum = Cast.toNumber(args.DRUM);
+                drum = Math.round(drum);
+                drum -= 1; // drums are one-indexed
+                drum = MathUtil.wrapClamp(drum, 0, this.DRUM_INFO.length - 1);
+                var beats = Cast.toNumber(args.BEATS);
+                beats = this._clampBeats(beats);
+                this._playDrumNum(util, drum);
+                this._startStackTimer(util, this._beatsToSec(beats));
+            } else {
+                this._checkStackTimer(util);
+            }
+        }
+
+        /**
+         * Play a drum sound using its 0-indexed number.
+         * @param {object} util - utility object provided by the runtime.
+         * @param  {number} drumNum - the number of the drum to play.
+         * @private
+         */
+
+    }, {
+        key: '_playDrumNum',
+        value: function _playDrumNum(util, drumNum) {
+            var _this3 = this;
+
+            if (util.runtime.audioEngine === null) return;
+            if (util.target.audioPlayer === null) return;
+            // If we're playing too many sounds, do not play the drum sound.
+            if (this._concurrencyCounter > Scratch3MusicBlocks.CONCURRENCY_LIMIT) {
+                return;
+            }
+            var outputNode = util.target.audioPlayer.getInputNode();
+            var context = util.runtime.audioEngine.audioContext;
+            var bufferSource = context.createBufferSource();
+            bufferSource.buffer = this._drumBuffers[drumNum];
+            bufferSource.connect(outputNode);
+            bufferSource.start();
+            this._concurrencyCounter++;
+            bufferSource.onended = function () {
+                _this3._concurrencyCounter--;
+            };
+        }
+
+        /**
+         * Rest for some number of beats.
+         * @param {object} args - the block arguments.
+         * @param {object} util - utility object provided by the runtime.
+         * @property {number} BEATS - the duration in beats of the rest.
+         */
+
+    }, {
+        key: 'restForBeats',
+        value: function restForBeats(args, util) {
+            if (this._stackTimerNeedsInit(util)) {
+                var beats = Cast.toNumber(args.BEATS);
+                beats = this._clampBeats(beats);
+                this._startStackTimer(util, this._beatsToSec(beats));
+            } else {
+                this._checkStackTimer(util);
+            }
+        }
+
+        /**
+         * Play a note using the current musical instrument for some number of beats.
+         * This function processes the arguments, and handles the timing of the block's execution.
+         * @param {object} args - the block arguments.
+         * @param {object} util - utility object provided by the runtime.
+         * @property {number} NOTE - the pitch of the note to play, interpreted as a MIDI note number.
+         * @property {number} BEATS - the duration in beats of the note.
+         */
+
+    }, {
+        key: 'playNoteForBeats',
+        value: function playNoteForBeats(args, util) {
+            if (this._stackTimerNeedsInit(util)) {
+                var note = Cast.toNumber(args.NOTE);
+                note = MathUtil.clamp(note, Scratch3MusicBlocks.MIDI_NOTE_RANGE.min, Scratch3MusicBlocks.MIDI_NOTE_RANGE.max);
+                var beats = Cast.toNumber(args.BEATS);
+                beats = this._clampBeats(beats);
+                // If the duration is 0, do not play the note. In Scratch 2.0, "play drum for 0 beats" plays the drum,
+                // but "play note for 0 beats" is silent.
+                if (beats === 0) return;
+
+                var durationSec = this._beatsToSec(beats);
+
+                this._playNote(util, note, durationSec);
+
+                this._startStackTimer(util, durationSec);
+            } else {
+                this._checkStackTimer(util);
+            }
+        }
+
+        /**
+         * Play a note using the current instrument for a duration in seconds.
+         * This function actually plays the sound, and handles the timing of the sound, including the
+         * "release" portion of the sound, which continues briefly after the block execution has finished.
+         * @param {object} util - utility object provided by the runtime.
+         * @param {number} note - the pitch of the note to play, interpreted as a MIDI note number.
+         * @param {number} durationSec - the duration in seconds to play the note.
+         * @private
+         */
+
+    }, {
+        key: '_playNote',
+        value: function _playNote(util, note, durationSec) {
+            var _this4 = this;
+
+            if (util.runtime.audioEngine === null) return;
+            if (util.target.audioPlayer === null) return;
+
+            // If we're playing too many sounds, do not play the note.
+            if (this._concurrencyCounter > Scratch3MusicBlocks.CONCURRENCY_LIMIT) {
+                return;
+            }
+
+            // Determine which of the audio samples for this instrument to play
+            var musicState = this._getMusicState(util.target);
+            var inst = musicState.currentInstrument;
+            var instrumentInfo = this.INSTRUMENT_INFO[inst];
+            var sampleArray = instrumentInfo.samples;
+            var sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
+
+            // Create the audio buffer to play the note, and set its pitch
+            var context = util.runtime.audioEngine.audioContext;
+            var bufferSource = context.createBufferSource();
+            bufferSource.buffer = this._instrumentBufferArrays[inst][sampleIndex];
+            var sampleNote = sampleArray[sampleIndex];
+            bufferSource.playbackRate.value = this._ratioForPitchInterval(note - sampleNote);
+
+            // Create a gain node for this note, and connect it to the sprite's audioPlayer.
+            var gainNode = context.createGain();
+            bufferSource.connect(gainNode);
+            var outputNode = util.target.audioPlayer.getInputNode();
+            gainNode.connect(outputNode);
+
+            // Start playing the note
+            bufferSource.start();
+
+            // Schedule the release of the note, ramping its gain down to zero,
+            // and then stopping the sound.
+            var releaseDuration = this.INSTRUMENT_INFO[inst].releaseTime;
+            if (typeof releaseDuration === 'undefined') {
+                releaseDuration = 0.01;
+            }
+            var releaseStart = context.currentTime + durationSec;
+            var releaseEnd = releaseStart + releaseDuration;
+            gainNode.gain.setValueAtTime(1, releaseStart);
+            gainNode.gain.linearRampToValueAtTime(0.0001, releaseEnd);
+            bufferSource.stop(releaseEnd);
+
+            // Update the concurrency counter
+            this._concurrencyCounter++;
+            bufferSource.onended = function () {
+                _this4._concurrencyCounter--;
+            };
+        }
+
+        /**
+         * The samples array for each instrument is the set of pitches of the available audio samples.
+         * This function selects the best one to use to play a given input note, and returns its index
+         * in the samples array.
+         * @param  {number} note - the input note to select a sample for.
+         * @param  {number[]} samples - an array of the pitches of the available samples.
+         * @return {index} the index of the selected sample in the samples array.
+         * @private
+         */
+
+    }, {
+        key: '_selectSampleIndexForNote',
+        value: function _selectSampleIndexForNote(note, samples) {
+            // Step backwards through the array of samples, i.e. in descending pitch, in order to find
+            // the sample that is the closest one below (or matching) the pitch of the input note.
+            for (var i = samples.length - 1; i >= 0; i--) {
+                if (note >= samples[i]) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        /**
+         * Calcuate the frequency ratio for a given musical interval.
+         * @param  {number} interval - the pitch interval to convert.
+         * @return {number} a ratio corresponding to the input interval.
+         * @private
+         */
+
+    }, {
+        key: '_ratioForPitchInterval',
+        value: function _ratioForPitchInterval(interval) {
+            return Math.pow(2, interval / 12);
+        }
+
+        /**
+         * Clamp a duration in beats to the allowed min and max duration.
+         * @param  {number} beats - a duration in beats.
+         * @return {number} - the clamped duration.
+         * @private
+         */
+
+    }, {
+        key: '_clampBeats',
+        value: function _clampBeats(beats) {
+            return MathUtil.clamp(beats, Scratch3MusicBlocks.BEAT_RANGE.min, Scratch3MusicBlocks.BEAT_RANGE.max);
+        }
+
+        /**
+         * Convert a number of beats to a number of seconds, using the current tempo.
+         * @param  {number} beats - number of beats to convert to secs.
+         * @return {number} seconds - number of seconds `beats` will last.
+         * @private
+         */
+
+    }, {
+        key: '_beatsToSec',
+        value: function _beatsToSec(beats) {
+            return 60 / this.tempo * beats;
+        }
+
+        /**
+         * Check if the stack timer needs initialization.
+         * @param {object} util - utility object provided by the runtime.
+         * @return {boolean} - true if the stack timer needs to be initialized.
+         * @private
+         */
+
+    }, {
+        key: '_stackTimerNeedsInit',
+        value: function _stackTimerNeedsInit(util) {
+            return !util.stackFrame.timer;
+        }
+
+        /**
+         * Start the stack timer and the yield the thread if necessary.
+         * @param {object} util - utility object provided by the runtime.
+         * @param {number} duration - a duration in seconds to set the timer for.
+         * @private
+         */
+
+    }, {
+        key: '_startStackTimer',
+        value: function _startStackTimer(util, duration) {
+            util.stackFrame.timer = new Timer();
+            util.stackFrame.timer.start();
+            util.stackFrame.duration = duration;
+            util.yield();
+        }
+
+        /**
+         * Check the stack timer, and if its time is not up yet, yield the thread.
+         * @param {object} util - utility object provided by the runtime.
+         * @private
+         */
+
+    }, {
+        key: '_checkStackTimer',
+        value: function _checkStackTimer(util) {
+            var timeElapsed = util.stackFrame.timer.timeElapsed();
+            if (timeElapsed < util.stackFrame.duration * 1000) {
+                util.yield();
+            }
+        }
+
+        /**
+         * Select an instrument for playing notes.
+         * @param {object} args - the block arguments.
+         * @param {object} util - utility object provided by the runtime.
+         * @property {int} INSTRUMENT - the number of the instrument to select.
+         */
+
+    }, {
+        key: 'setInstrument',
+        value: function setInstrument(args, util) {
+            var musicState = this._getMusicState(util.target);
+            var instNum = Cast.toNumber(args.INSTRUMENT);
+            instNum = Math.round(instNum);
+            instNum -= 1; // instruments are one-indexed
+            instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
+            musicState.currentInstrument = instNum;
+        }
+
+        /**
+         * Set the current tempo to a new value.
+         * @param {object} args - the block arguments.
+         * @property {number} TEMPO - the tempo, in beats per minute.
+         */
+
+    }, {
+        key: 'setTempo',
+        value: function setTempo(args) {
+            var tempo = Cast.toNumber(args.TEMPO);
+            this._updateTempo(tempo);
+        }
+
+        /**
+         * Change the current tempo by some amount.
+         * @param {object} args - the block arguments.
+         * @property {number} TEMPO - the amount to change the tempo, in beats per minute.
+         */
+
+    }, {
+        key: 'changeTempo',
+        value: function changeTempo(args) {
+            var change = Cast.toNumber(args.TEMPO);
+            var tempo = change + this.tempo;
+            this._updateTempo(tempo);
+        }
+
+        /**
+         * Update the current tempo, clamping it to the min and max allowable range.
+         * @param {number} tempo - the tempo to set, in beats per minute.
+         * @private
+         */
+
+    }, {
+        key: '_updateTempo',
+        value: function _updateTempo(tempo) {
+            tempo = MathUtil.clamp(tempo, Scratch3MusicBlocks.TEMPO_RANGE.min, Scratch3MusicBlocks.TEMPO_RANGE.max);
+            this.tempo = tempo;
+        }
+
+        /**
+         * Get the current tempo.
+         * @return {number} - the current tempo, in beats per minute.
+         */
+
+    }, {
+        key: 'getTempo',
+        value: function getTempo() {
+            return this.tempo;
+        }
+    }, {
+        key: 'DRUM_INFO',
+        get: function get() {
+            return [{
+                name: '(1) Snare Drum',
+                fileName: '1-snare'
+            }, {
+                name: '(2) Bass Drum',
+                fileName: '2-bass-drum'
+            }, {
+                name: '(3) Side Stick',
+                fileName: '3-side-stick'
+            }, {
+                name: '(4) Crash Cymbal',
+                fileName: '4-crash-cymbal'
+            }, {
+                name: '(5) Open Hi-Hat',
+                fileName: '5-open-hi-hat'
+            }, {
+                name: '(6) Closed Hi-Hat',
+                fileName: '6-closed-hi-hat'
+            }, {
+                name: '(7) Tambourine',
+                fileName: '7-tambourine'
+            }, {
+                name: '(8) Hand Clap',
+                fileName: '8-hand-clap'
+            }, {
+                name: '(9) Claves',
+                fileName: '9-claves'
+            }, {
+                name: '(10) Wood Block',
+                fileName: '10-wood-block'
+            }, {
+                name: '(11) Cowbell',
+                fileName: '11-cowbell'
+            }, {
+                name: '(12) Triangle',
+                fileName: '12-triangle'
+            }, {
+                name: '(13) Bongo',
+                fileName: '13-bongo'
+            }, {
+                name: '(14) Conga',
+                fileName: '14-conga'
+            }, {
+                name: '(15) Cabasa',
+                fileName: '15-cabasa'
+            }, {
+                name: '(16) Guiro',
+                fileName: '16-guiro'
+            }, {
+                name: '(17) Vibraslap',
+                fileName: '17-vibraslap'
+            }, {
+                name: '(18) Cuica',
+                fileName: '18-cuica'
+            }];
+        }
+
+        /**
+         * An array of info about each instrument.
+         * @type {object[]} an array of objects.
+         * @param {string} name - the translatable name to display in the instruments menu.
+         * @param {string} dirName - the name of the directory containing audio samples for this instrument.
+         * @param {number} [releaseTime] - an optional duration for the release portion of each note.
+         * @param {number[]} samples - an array of numbers representing the MIDI note number for each
+         *                           sampled sound used to play this instrument.
+         */
+
+    }, {
+        key: 'INSTRUMENT_INFO',
+        get: function get() {
+            return [{
+                name: '(1) Piano',
+                dirName: '1-piano',
+                releaseTime: 0.5,
+                samples: [24, 36, 48, 60, 72, 84, 96, 108]
+            }, {
+                name: '(2) Electric Piano',
+                dirName: '2-electric-piano',
+                releaseTime: 0.5,
+                samples: [60]
+            }, {
+                name: '(3) Organ',
+                dirName: '3-organ',
+                releaseTime: 0.5,
+                samples: [60]
+            }, {
+                name: '(4) Guitar',
+                dirName: '4-guitar',
+                releaseTime: 0.5,
+                samples: [60]
+            }, {
+                name: '(5) Electric Guitar',
+                dirName: '5-electric-guitar',
+                releaseTime: 0.5,
+                samples: [60]
+            }, {
+                name: '(6) Bass',
+                dirName: '6-bass',
+                releaseTime: 0.25,
+                samples: [36, 48]
+            }, {
+                name: '(7) Pizzicato',
+                dirName: '7-pizzicato',
+                releaseTime: 0.25,
+                samples: [60]
+            }, {
+                name: '(8) Cello',
+                dirName: '8-cello',
+                releaseTime: 0.1,
+                samples: [36, 48, 60]
+            }, {
+                name: '(9) Trombone',
+                dirName: '9-trombone',
+                samples: [36, 48, 60]
+            }, {
+                name: '(10) Clarinet',
+                dirName: '10-clarinet',
+                samples: [48, 60]
+            }, {
+                name: '(11) Saxophone',
+                dirName: '11-saxophone',
+                samples: [36, 60, 84]
+            }, {
+                name: '(12) Flute',
+                dirName: '12-flute',
+                samples: [60, 72]
+            }, {
+                name: '(13) Wooden Flute',
+                dirName: '13-wooden-flute',
+                samples: [60, 72]
+            }, {
+                name: '(14) Bassoon',
+                dirName: '14-bassoon',
+                samples: [36, 48, 60]
+            }, {
+                name: '(15) Choir',
+                dirName: '15-choir',
+                releaseTime: 0.25,
+                samples: [48, 60, 72]
+            }, {
+                name: '(16) Vibraphone',
+                dirName: '16-vibraphone',
+                releaseTime: 0.5,
+                samples: [60, 72]
+            }, {
+                name: '(17) Music Box',
+                dirName: '17-music-box',
+                releaseTime: 0.25,
+                samples: [60]
+            }, {
+                name: '(18) Steel Drum',
+                dirName: '18-steel-drum',
+                releaseTime: 0.5,
+                samples: [60]
+            }, {
+                name: '(19) Marimba',
+                dirName: '19-marimba',
+                samples: [60]
+            }, {
+                name: '(20) Synth Lead',
+                dirName: '20-synth-lead',
+                releaseTime: 0.1,
+                samples: [60]
+            }, {
+                name: '(21) Synth Pad',
+                dirName: '21-synth-pad',
+                releaseTime: 0.25,
+                samples: [60]
+            }];
+        }
+
+        /**
+         * The key to load & store a target's music-related state.
+         * @type {string}
+         */
+
+    }], [{
+        key: 'STATE_KEY',
+        get: function get() {
+            return 'Scratch.music';
+        }
+
+        /**
+         * The default music-related state, to be used when a target has no existing music state.
+         * @type {MusicState}
+         */
+
+    }, {
+        key: 'DEFAULT_MUSIC_STATE',
+        get: function get() {
+            return {
+                currentInstrument: 0
+            };
+        }
+
+        /**
+         * The minimum and maximum MIDI note numbers, for clamping the input to play note.
+         * @type {{min: number, max: number}}
+         */
+
+    }, {
+        key: 'MIDI_NOTE_RANGE',
+        get: function get() {
+            return { min: 0, max: 130 };
+        }
+
+        /**
+         * The minimum and maximum beat values, for clamping the duration of play note, play drum and rest.
+         * 100 beats at the default tempo of 60bpm is 100 seconds.
+         * @type {{min: number, max: number}}
+         */
+
+    }, {
+        key: 'BEAT_RANGE',
+        get: function get() {
+            return { min: 0, max: 100 };
+        }
+
+        /** The minimum and maximum tempo values, in bpm.
+         * @type {{min: number, max: number}}
+         */
+
+    }, {
+        key: 'TEMPO_RANGE',
+        get: function get() {
+            return { min: 20, max: 500 };
+        }
+
+        /**
+         * The maximum number of sounds to allow to play simultaneously.
+         * @type {number}
+         */
+
+    }, {
+        key: 'CONCURRENCY_LIMIT',
+        get: function get() {
+            return 30;
+        }
+    }]);
+
+    return Scratch3MusicBlocks;
+}();
+
+module.exports = Scratch3MusicBlocks;
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Timer = __webpack_require__(25);
 
 var Clock = function () {
     function Clock(runtime) {
@@ -23997,7 +26038,7 @@ var Clock = function () {
 module.exports = Clock;
 
 /***/ }),
-/* 79 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24007,8 +26048,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var got = __webpack_require__(109);
-var io = __webpack_require__(150);
+var got = __webpack_require__(111);
+var io = __webpack_require__(152);
 var querystring = __webpack_require__(33);
 
 /**
@@ -24463,7 +26504,7 @@ var DeviceManager = function () {
 module.exports = DeviceManager;
 
 /***/ }),
-/* 80 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24473,7 +26514,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(3);
+var Cast = __webpack_require__(2);
 
 var Keyboard = function () {
     function Keyboard(runtime) {
@@ -24606,7 +26647,7 @@ var Keyboard = function () {
 module.exports = Keyboard;
 
 /***/ }),
-/* 81 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24616,7 +26657,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var MathUtil = __webpack_require__(10);
+var MathUtil = __webpack_require__(8);
 
 var Mouse = function () {
     function Mouse(runtime) {
@@ -24718,7 +26759,7 @@ var Mouse = function () {
 module.exports = Mouse;
 
 /***/ }),
-/* 82 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24734,19 +26775,18 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 var Blocks = __webpack_require__(12);
-var RenderedTarget = __webpack_require__(19);
-var Sprite = __webpack_require__(40);
-var Color = __webpack_require__(21);
-var log = __webpack_require__(2);
-var uid = __webpack_require__(29);
-var specMap = __webpack_require__(83);
-var Variable = __webpack_require__(26);
-var List = __webpack_require__(24);
+var RenderedTarget = __webpack_require__(23);
+var Sprite = __webpack_require__(39);
+var Color = __webpack_require__(24);
+var log = __webpack_require__(3);
+var uid = __webpack_require__(30);
+var specMap = __webpack_require__(85);
+var Variable = __webpack_require__(19);
 
-var _require = __webpack_require__(17),
+var _require = __webpack_require__(21),
     loadCostume = _require.loadCostume;
 
-var _require2 = __webpack_require__(18),
+var _require2 = __webpack_require__(22),
     loadSound = _require2.loadSound;
 
 /**
@@ -24785,6 +26825,20 @@ var parseProcedureArgMap = function parseProcedureArgMap(procCode) {
 };
 
 /**
+ * Generate a list of "argument IDs" for procdefs and caller mutations.
+ * IDs just end up being `input0`, `input1`, ... which is good enough.
+ * @param {string} procCode Scratch 2.0 procedure string.
+ * @return {Array.<string>} Array of argument id strings.
+ */
+var parseProcedureArgIds = function parseProcedureArgIds(procCode) {
+    return parseProcedureArgMap(procCode).map(function (arg) {
+        return arg.inputName;
+    }).filter(function (name) {
+        return name;
+    }); // Filter out unnamed inputs which are labels
+};
+
+/**
  * Flatten a block tree into a block list.
  * Children are temporarily stored on the `block.children` property.
  * @param {Array.<object>} blocks list generated by `parseBlockList`.
@@ -24810,15 +26864,16 @@ var flatten = function flatten(blocks) {
  * or a list of blocks in an argument (e.g., move [pick random...]).
  * @param {Array.<object>} blockList SB2 JSON-format block list.
  * @param {Function} getVariableId function to retreive a variable's ID based on name
+ * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
  * @return {Array.<object>} Scratch VM-format block list.
  */
-var parseBlockList = function parseBlockList(blockList, getVariableId) {
+var parseBlockList = function parseBlockList(blockList, getVariableId, extensions) {
     var resultingList = [];
     var previousBlock = null; // For setting next.
     for (var i = 0; i < blockList.length; i++) {
         var block = blockList[i];
         // eslint-disable-next-line no-use-before-define
-        var parsedBlock = parseBlock(block, getVariableId);
+        var parsedBlock = parseBlock(block, getVariableId, extensions);
         if (typeof parsedBlock === 'undefined') continue;
         if (previousBlock) {
             parsedBlock.parent = previousBlock.id;
@@ -24836,14 +26891,15 @@ var parseBlockList = function parseBlockList(blockList, getVariableId) {
  * @param {!object} scripts Scripts object from SB2 JSON.
  * @param {!Blocks} blocks Blocks object to load parsed blocks into.
  * @param {Function} getVariableId function to retreive a variable's ID based on name
+ * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
  */
-var parseScripts = function parseScripts(scripts, blocks, getVariableId) {
+var parseScripts = function parseScripts(scripts, blocks, getVariableId, extensions) {
     for (var i = 0; i < scripts.length; i++) {
         var script = scripts[i];
         var scriptX = script[0];
         var scriptY = script[1];
         var blockList = script[2];
-        var parsedBlockList = parseBlockList(blockList, getVariableId);
+        var parsedBlockList = parseBlockList(blockList, getVariableId, extensions);
         if (parsedBlockList[0]) {
             // Adjust script coordinates to account for
             // larger block size in scratch-blocks.
@@ -24890,12 +26946,14 @@ var generateVariableIdGetter = function () {
 
 /**
  * Parse a single "Scratch object" and create all its in-memory VM objects.
- * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
- * @param {!Runtime} runtime Runtime object to load all structures into.
- * @param {boolean} topLevel Whether this is the top-level object (stage).
- * @return {?Promise} Promise that resolves to the loaded targets when ready.
+ * TODO: parse the "info" section, especially "savedExtensions"
+ * @param {!object} object - From-JSON "Scratch object:" sprite, stage, watcher.
+ * @param {!Runtime} runtime - Runtime object to load all structures into.
+ * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
+ * @param {boolean} topLevel - Whether this is the top-level object (stage).
+ * @return {!Promise.<Array.<Target>>} Promise for the loaded targets when ready, or null for unsupported objects.
  */
-var parseScratchObject = function parseScratchObject(object, runtime, topLevel) {
+var parseScratchObject = function parseScratchObject(object, runtime, extensions, topLevel) {
     if (!object.hasOwnProperty('objName')) {
         // Watcher/monitor - skip this object until those are implemented in VM.
         // @todo
@@ -24951,21 +27009,24 @@ var parseScratchObject = function parseScratchObject(object, runtime, topLevel) 
     if (object.hasOwnProperty('variables')) {
         for (var j = 0; j < object.variables.length; j++) {
             var variable = object.variables[j];
-            var newVariable = new Variable(getVariableId(variable.name), variable.name, variable.value, variable.isPersistent, variable.type);
+            var newVariable = new Variable(getVariableId(variable.name), variable.name, Variable.SCALAR_TYPE, variable.isPersistent);
+            newVariable.value = variable.value;
             target.variables[newVariable.id] = newVariable;
         }
     }
 
     // If included, parse any and all scripts/blocks on the object.
     if (object.hasOwnProperty('scripts')) {
-        parseScripts(object.scripts, blocks, getVariableId);
+        parseScripts(object.scripts, blocks, getVariableId, extensions);
     }
 
     if (object.hasOwnProperty('lists')) {
         for (var k = 0; k < object.lists.length; k++) {
             var list = object.lists[k];
             // @todo: monitor properties.
-            target.lists[list.listName] = new List(list.listName, list.contents);
+            var _newVariable = new Variable(getVariableId(list.listName), list.listName, Variable.LIST_TYPE, false);
+            _newVariable.value = list.contents;
+            target.variables[_newVariable.id] = _newVariable;
         }
     }
     if (object.hasOwnProperty('scratchX')) {
@@ -25014,7 +27075,7 @@ var parseScratchObject = function parseScratchObject(object, runtime, topLevel) 
     var childrenPromises = [];
     if (object.children) {
         for (var m = 0; m < object.children.length; m++) {
-            childrenPromises.push(parseScratchObject(object.children[m], runtime, false));
+            childrenPromises.push(parseScratchObject(object.children[m], runtime, extensions, false));
         }
     }
 
@@ -25035,27 +27096,43 @@ var parseScratchObject = function parseScratchObject(object, runtime, topLevel) 
  * @param {!object} json SB2-format JSON to load.
  * @param {!Runtime} runtime Runtime object to load all structures into.
  * @param {boolean=} optForceSprite If set, treat as sprite (Sprite2).
- * @return {?Promise} Promise that resolves to the loaded targets when ready.
+ * @return {Promise.<ImportedProject>} Promise that resolves to the loaded targets when ready.
  */
 var sb2import = function sb2import(json, runtime, optForceSprite) {
-    return parseScratchObject(json, runtime, !optForceSprite);
+    var extensions = {
+        extensionIDs: new Set(),
+        extensionURLs: new Map()
+    };
+    return parseScratchObject(json, runtime, extensions, !optForceSprite).then(function (targets) {
+        return {
+            targets: targets,
+            extensions: extensions
+        };
+    });
 };
 
 /**
  * Parse a single SB2 JSON-formatted block and its children.
  * @param {!object} sb2block SB2 JSON-formatted block.
- * @param {Function} getVariableId function to retreive a variable's ID based on name
- * @return {object} Scratch VM format block.
+ * @param {Function} getVariableId function to retrieve a variable's ID based on name
+ * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
+ * @return {object} Scratch VM format block, or null if unsupported object.
  */
-var parseBlock = function parseBlock(sb2block, getVariableId) {
+var parseBlock = function parseBlock(sb2block, getVariableId, extensions) {
     // First item in block object is the old opcode (e.g., 'forward:').
     var oldOpcode = sb2block[0];
     // Convert the block using the specMap. See sb2specmap.js.
     if (!oldOpcode || !specMap[oldOpcode]) {
         log.warn('Couldn\'t find SB2 block: ', oldOpcode);
-        return;
+        return null;
     }
     var blockMetadata = specMap[oldOpcode];
+    // If the block is from an extension, record it.
+    var dotIndex = blockMetadata.opcode.indexOf('.');
+    if (dotIndex >= 0) {
+        var extension = blockMetadata.opcode.substring(0, dotIndex);
+        extensions.extensionIDs.add(extension);
+    }
     // Block skeleton.
     var activeBlock = {
         id: uid(), // Generate a new block unique ID.
@@ -25092,10 +27169,10 @@ var parseBlock = function parseBlock(sb2block, getVariableId) {
                 var innerBlocks = void 0;
                 if (_typeof(providedArg[0]) === 'object' && providedArg[0]) {
                     // Block list occupies the input.
-                    innerBlocks = parseBlockList(providedArg, getVariableId);
+                    innerBlocks = parseBlockList(providedArg, getVariableId, extensions);
                 } else {
                     // Single block occupies the input.
-                    innerBlocks = [parseBlock(providedArg, getVariableId)];
+                    innerBlocks = [parseBlock(providedArg, getVariableId, extensions)];
                 }
                 var previousBlock = null;
                 for (var j = 0; j < innerBlocks.length; j++) {
@@ -25170,9 +27247,13 @@ var parseBlock = function parseBlock(sb2block, getVariableId) {
                 value: providedArg
             };
 
-            if (expectedArg.fieldName === 'VARIABLE') {
+            if (expectedArg.fieldName === 'VARIABLE' || expectedArg.fieldName === 'LIST') {
                 // Add `id` property to variable fields
                 activeBlock.fields[expectedArg.fieldName].id = getVariableId(providedArg);
+            }
+            var varType = expectedArg.variableType;
+            if (typeof varType === 'string') {
+                activeBlock.fields[expectedArg.fieldName].variableType = varType;
             }
         }
     }
@@ -25201,7 +27282,7 @@ var parseBlock = function parseBlock(sb2block, getVariableId) {
         };
         activeBlock.children = [{
             id: _inputUid,
-            opcode: 'procedures_callnoreturn_internal',
+            opcode: 'procedures_prototype',
             inputs: {},
             fields: {},
             next: null,
@@ -25211,6 +27292,7 @@ var parseBlock = function parseBlock(sb2block, getVariableId) {
                 tagName: 'mutation',
                 proccode: procData[0], // e.g., "abc %n %b %s"
                 argumentnames: JSON.stringify(procData[1]), // e.g. ['arg1', 'arg2']
+                argumentids: JSON.stringify(parseProcedureArgIds(procData[0])),
                 argumentdefaults: JSON.stringify(procData[2]), // e.g., [1, 'abc']
                 warp: procData[3], // Warp mode, e.g., true/false.
                 children: []
@@ -25222,16 +27304,19 @@ var parseBlock = function parseBlock(sb2block, getVariableId) {
         activeBlock.mutation = {
             tagName: 'mutation',
             children: [],
-            proccode: sb2block[1]
+            proccode: sb2block[1],
+            argumentids: JSON.stringify(parseProcedureArgIds(sb2block[1]))
         };
     } else if (oldOpcode === 'getParam') {
-        // Mutation for procedure parameter.
-        activeBlock.mutation = {
-            tagName: 'mutation',
-            children: [],
-            paramname: sb2block[1], // Name of parameter.
-            shape: sb2block[2] // Shape - in 2.0, 'r' or 'b'.
-        };
+        // Assign correct opcode based on the block shape.
+        switch (sb2block[2]) {
+            case 'r':
+                activeBlock.opcode = 'argument_reporter_string_number';
+                break;
+            case 'b':
+                activeBlock.opcode = 'argument_reporter_boolean';
+                break;
+        }
     }
     return activeBlock;
 };
@@ -25241,7 +27326,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 83 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25269,6 +27354,26 @@ module.exports = {
  * I started with the `commands` array in Specs.as, and discarded irrelevant
  * properties. By hand, I matched the opcode name to the 3.0 opcode.
  * Finally, I filled in the expected arguments as below.
+ */
+
+var Variable = __webpack_require__(19);
+
+/**
+ * @typedef {object} SB2SpecMap_blockInfo
+ * @property {string} opcode - the Scratch 3.0 block opcode. Use 'extensionID.opcode' for extension opcodes.
+ * @property {Array.<SB2SpecMap_argInfo>} argMap - metadata for this block's arguments.
+ */
+
+/**
+ * @typedef {object} SB2SpecMap_argInfo
+ * @property {string} type - the type of this arg (such as 'input' or 'field')
+ * @property {string} inputOp - the scratch-blocks shadow type for this arg
+ * @property {string} inputName - the name this argument will take when provided to the block implementation
+ */
+
+/**
+ * Mapping of Scratch 2.0 opcode to Scratch 3.0 block metadata.
+ * @type {object.<SB2SpecMap_blockInfo>}
  */
 var specMap = {
     'forward:': {
@@ -25573,7 +27678,7 @@ var specMap = {
         argMap: []
     },
     'playDrum': {
-        opcode: 'sound_playdrumforbeats',
+        opcode: 'music.playDrumForBeats',
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
@@ -25585,7 +27690,7 @@ var specMap = {
         }]
     },
     'rest:elapsed:from:': {
-        opcode: 'sound_restforbeats',
+        opcode: 'music.restForBeats',
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
@@ -25593,7 +27698,7 @@ var specMap = {
         }]
     },
     'noteOn:duration:elapsed:from:': {
-        opcode: 'sound_playnoteforbeats',
+        opcode: 'music.playNoteForBeats',
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
@@ -25605,7 +27710,7 @@ var specMap = {
         }]
     },
     'instrument:': {
-        opcode: 'sound_setinstrumentto',
+        opcode: 'music.setInstrument',
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
@@ -25633,7 +27738,7 @@ var specMap = {
         argMap: []
     },
     'changeTempoBy:': {
-        opcode: 'sound_changetempoby',
+        opcode: 'music.changeTempo',
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
@@ -25641,7 +27746,7 @@ var specMap = {
         }]
     },
     'setTempoTo:': {
-        opcode: 'sound_settempotobpm',
+        opcode: 'music.setTempo',
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
@@ -25649,7 +27754,7 @@ var specMap = {
         }]
     },
     'tempo': {
-        opcode: 'sound_tempo',
+        opcode: 'music.getTempo',
         argMap: []
     },
     'clearPenTrails': {
@@ -25681,7 +27786,7 @@ var specMap = {
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
-            inputName: 'COLOR'
+            inputName: 'HUE'
         }]
     },
     'setPenHueTo:': {
@@ -25689,7 +27794,7 @@ var specMap = {
         argMap: [{
             type: 'input',
             inputOp: 'math_number',
-            inputName: 'COLOR'
+            inputName: 'HUE'
         }]
     },
     'changePenShadeBy:': {
@@ -26195,14 +28300,16 @@ var specMap = {
         opcode: 'data_variable',
         argMap: [{
             type: 'field',
-            fieldName: 'VARIABLE'
+            fieldName: 'VARIABLE',
+            variableType: Variable.SCALAR_TYPE
         }]
     },
     'setVar:to:': {
         opcode: 'data_setvariableto',
         argMap: [{
             type: 'field',
-            fieldName: 'VARIABLE'
+            fieldName: 'VARIABLE',
+            variableType: Variable.SCALAR_TYPE
         }, {
             type: 'input',
             inputOp: 'text',
@@ -26213,7 +28320,8 @@ var specMap = {
         opcode: 'data_changevariableby',
         argMap: [{
             type: 'field',
-            fieldName: 'VARIABLE'
+            fieldName: 'VARIABLE',
+            variableType: Variable.SCALAR_TYPE
         }, {
             type: 'input',
             inputOp: 'math_number',
@@ -26224,21 +28332,24 @@ var specMap = {
         opcode: 'data_showvariable',
         argMap: [{
             type: 'field',
-            fieldName: 'VARIABLE'
+            fieldName: 'VARIABLE',
+            variableType: Variable.SCALAR_TYPE
         }]
     },
     'hideVariable:': {
         opcode: 'data_hidevariable',
         argMap: [{
             type: 'field',
-            fieldName: 'VARIABLE'
+            fieldName: 'VARIABLE',
+            variableType: Variable.SCALAR_TYPE
         }]
     },
     'contentsOfList:': {
-        opcode: 'data_list',
+        opcode: 'data_listcontents',
         argMap: [{
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'append:toList:': {
@@ -26249,7 +28360,8 @@ var specMap = {
             inputName: 'ITEM'
         }, {
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'deleteLine:ofList:': {
@@ -26260,7 +28372,8 @@ var specMap = {
             inputName: 'INDEX'
         }, {
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'insert:at:ofList:': {
@@ -26275,7 +28388,8 @@ var specMap = {
             inputName: 'INDEX'
         }, {
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'setLine:ofList:to:': {
@@ -26286,7 +28400,8 @@ var specMap = {
             inputName: 'INDEX'
         }, {
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }, {
             type: 'input',
             inputOp: 'text',
@@ -26301,21 +28416,24 @@ var specMap = {
             inputName: 'INDEX'
         }, {
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'lineCountOfList:': {
         opcode: 'data_lengthoflist',
         argMap: [{
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'list:contains:': {
         opcode: 'data_listcontainsitem',
         argMap: [{
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }, {
             type: 'input',
             inputOp: 'text',
@@ -26326,33 +28444,188 @@ var specMap = {
         opcode: 'data_showlist',
         argMap: [{
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'hideList:': {
         opcode: 'data_hidelist',
         argMap: [{
             type: 'field',
-            fieldName: 'LIST'
+            fieldName: 'LIST',
+            variableType: Variable.LIST_TYPE
         }]
     },
     'procDef': {
-        opcode: 'procedures_defnoreturn',
+        opcode: 'procedures_definition',
         argMap: []
     },
     'getParam': {
-        opcode: 'procedures_param',
-        argMap: []
+        // Doesn't map to single opcode. Import step assigns final correct opcode.
+        opcode: 'argument_reporter_string_number',
+        argMap: [{
+            type: 'field',
+            fieldName: 'VALUE'
+        }]
     },
     'call': {
-        opcode: 'procedures_callnoreturn',
+        opcode: 'procedures_call',
         argMap: []
     }
 };
+
+/**
+ * Add to the specMap entries for an opcode from a Scratch 2.0 extension. Two entries will be made with the same
+ * metadata; this is done to support projects saved by both older and newer versions of the Scratch 2.0 editor.
+ * @param {string} sb2Extension - the Scratch 2.0 name of the extension
+ * @param {string} sb2Opcode - the Scratch 2.0 opcode
+ * @param {SB2SpecMap_blockInfo} blockInfo - the Scratch 3.0 block info
+ */
+var addExtensionOp = function addExtensionOp(sb2Extension, sb2Opcode, blockInfo) {
+    /**
+     * This string separates the name of an extension and the name of an opcode in more recent Scratch 2.0 projects.
+     * Earlier projects used '.' as a separator, up until we added the 'LEGO WeDo 2.0' extension...
+     * @type {string}
+     */
+    var sep = '\x1F'; // Unicode Unit Separator
+
+    // make one entry for projects saved by recent versions of the Scratch 2.0 editor
+    specMap['' + sb2Extension + sep + sb2Opcode] = blockInfo;
+
+    // make a second for projects saved by older versions of the Scratch 2.0 editor
+    specMap[sb2Extension + '.' + sb2Opcode] = blockInfo;
+};
+
+var weDo2 = 'LEGO WeDo 2.0';
+
+addExtensionOp(weDo2, 'motorOnFor', {
+    opcode: 'wedo2.motorOnFor',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.motorID',
+        inputName: 'MOTOR_ID'
+    }, {
+        type: 'input',
+        inputOp: 'math_number',
+        inputName: 'DURATION'
+    }]
+});
+
+addExtensionOp(weDo2, 'motorOn', {
+    opcode: 'wedo2.motorOn',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.motorID',
+        inputName: 'MOTOR_ID'
+    }]
+});
+
+addExtensionOp(weDo2, 'motorOff', {
+    opcode: 'wedo2.motorOff',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.motorID',
+        inputName: 'MOTOR_ID'
+    }]
+});
+
+addExtensionOp(weDo2, 'startMotorPower', {
+    opcode: 'wedo2.startMotorPower',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.motorID',
+        inputName: 'MOTOR_ID'
+    }, {
+        type: 'input',
+        inputOp: 'math_number',
+        inputName: 'POWER'
+    }]
+});
+
+addExtensionOp(weDo2, 'setMotorDirection', {
+    opcode: 'wedo2.setMotorDirection',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.motorID',
+        inputName: 'MOTOR_ID'
+    }, {
+        type: 'input',
+        inputOp: 'wedo2.menu.motorDirection',
+        inputName: 'DIRECTION'
+    }]
+});
+
+addExtensionOp(weDo2, 'setLED', {
+    opcode: 'wedo2.setLightHue',
+    argMap: [{
+        type: 'input',
+        inputOp: 'math_number',
+        inputName: 'HUE'
+    }]
+});
+
+addExtensionOp(weDo2, 'playNote', {
+    opcode: 'wedo2.playNoteFor',
+    argMap: [{
+        type: 'input',
+        inputOp: 'math_number',
+        inputName: 'NOTE'
+    }, {
+        type: 'input',
+        inputOp: 'math_number',
+        inputName: 'DURATION'
+    }]
+});
+
+addExtensionOp(weDo2, 'whenDistance', {
+    opcode: 'wedo2.whenDistance',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.lessMore',
+        inputName: 'OP'
+    }, {
+        type: 'input',
+        inputOp: 'math_number',
+        inputName: 'REFERENCE'
+    }]
+});
+
+addExtensionOp(weDo2, 'whenTilted', {
+    opcode: 'wedo2.whenTilted',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.tiltDirectionAny',
+        inputName: 'DIRECTION'
+    }]
+});
+
+addExtensionOp(weDo2, 'getDistance', {
+    opcode: 'wedo2.getDistance',
+    argMap: []
+});
+
+addExtensionOp(weDo2, 'isTilted', {
+    opcode: 'wedo2.isTilted',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.tiltDirectionAny',
+        inputName: 'DIRECTION'
+    }]
+});
+
+addExtensionOp(weDo2, 'getTilt', {
+    opcode: 'wedo2.getTiltAngle',
+    argMap: [{
+        type: 'input',
+        inputOp: 'wedo2.menu.tiltDirection',
+        inputName: 'DIRECTION'
+    }]
+});
+
 module.exports = specMap;
 
 /***/ }),
-/* 84 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26364,17 +28637,28 @@ module.exports = specMap;
  * JSON and then generates all needed scratch-vm runtime structures.
  */
 
-var vmPackage = __webpack_require__(164);
+var vmPackage = __webpack_require__(166);
 var Blocks = __webpack_require__(12);
-var Sprite = __webpack_require__(40);
-var Variable = __webpack_require__(26);
-var List = __webpack_require__(24);
+var Sprite = __webpack_require__(39);
+var Variable = __webpack_require__(19);
 
-var _require = __webpack_require__(17),
+var _require = __webpack_require__(21),
     loadCostume = _require.loadCostume;
 
-var _require2 = __webpack_require__(18),
+var _require2 = __webpack_require__(22),
     loadSound = _require2.loadSound;
+
+/**
+ * @typedef {object} ImportedProject
+ * @property {Array.<Target>} targets - the imported Scratch 3.0 target objects.
+ * @property {ImportedExtensionsInfo} extensionsInfo - the ID of each extension actually used by this project.
+ */
+
+/**
+ * @typedef {object} ImportedExtensionsInfo
+ * @property {Set.<string>} extensionIDs - the ID of each extension actually in use by blocks in this project.
+ * @property {Map.<string, string>} extensionURLs - map of ID => URL from project metadata. May not match extensionIDs.
+ */
 
 /**
  * Serializes the specified VM runtime.
@@ -26408,13 +28692,14 @@ var serialize = function serialize(runtime) {
  * Parse a single "Scratch object" and create all its in-memory VM objects.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
  * @param {!Runtime} runtime Runtime object to load all structures into.
- * @return {?Target} Target created (stage or sprite).
+ * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
+ * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
  */
-var parseScratchObject = function parseScratchObject(object, runtime) {
+var parseScratchObject = function parseScratchObject(object, runtime, extensions) {
     if (!object.hasOwnProperty('name')) {
         // Watcher/monitor - skip this object until those are implemented in VM.
         // @todo
-        return;
+        return Promise.resolve(null);
     }
     // Blocks container for this object.
     var blocks = new Blocks();
@@ -26428,7 +28713,14 @@ var parseScratchObject = function parseScratchObject(object, runtime) {
     }
     if (object.hasOwnProperty('blocks')) {
         for (var blockId in object.blocks) {
-            blocks.createBlock(object.blocks[blockId]);
+            var blockJSON = object.blocks[blockId];
+            blocks.createBlock(blockJSON);
+
+            var dotIndex = blockJSON.opcode.indexOf('.');
+            if (dotIndex >= 0) {
+                var extensionId = blockJSON.opcode.substring(0, dotIndex);
+                extensions.extensionIDs.add(extensionId);
+            }
         }
         // console.log(blocks);
     }
@@ -26467,15 +28759,9 @@ var parseScratchObject = function parseScratchObject(object, runtime) {
     if (object.hasOwnProperty('variables')) {
         for (var j in object.variables) {
             var variable = object.variables[j];
-            var newVariable = new Variable(variable.id, variable.name, variable.value, variable.isPersistent, variable.type);
+            var newVariable = new Variable(variable.id, variable.name, variable.type, variable.isPersistent);
+            newVariable.value = variable.value;
             target.variables[newVariable.id] = newVariable;
-        }
-    }
-    if (object.hasOwnProperty('lists')) {
-        for (var k = 0; k < object.lists.length; k++) {
-            var list = object.lists[k];
-            // @todo: monitor properties.
-            target.lists[list.listName] = new List(list.listName, list.contents);
         }
     }
     if (object.hasOwnProperty('x')) {
@@ -26514,16 +28800,25 @@ var parseScratchObject = function parseScratchObject(object, runtime) {
 };
 
 /**
- * Deserializes the specified representation of a VM runtime and loads it into
- * the provided runtime instance.
- * @param  {object}  json    JSON representation of a VM runtime.
- * @param  {Runtime} runtime Runtime instance
- * @returns {Promise} Promise that resolves to the list of targets after the project is deserialized
+ * Deserialize the specified representation of a VM runtime and loads it into the provided runtime instance.
+ * TODO: parse extension info (also, design extension info storage...)
+ * @param  {object} json - JSON representation of a VM runtime.
+ * @param  {Runtime} runtime - Runtime instance
+ * @returns {Promise.<ImportedProject>} Promise that resolves to the list of targets after the project is deserialized
  */
 var deserialize = function deserialize(json, runtime) {
+    var extensions = {
+        extensionIDs: new Set(),
+        extensionURLs: new Map()
+    };
     return Promise.all((json.targets || []).map(function (target) {
-        return parseScratchObject(target, runtime);
-    }));
+        return parseScratchObject(target, runtime, extensions);
+    })).then(function (targets) {
+        return {
+            targets: targets,
+            extensions: extensions
+        };
+    });
 };
 
 module.exports = {
@@ -26532,7 +28827,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 85 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26566,7 +28861,7 @@ var xmlEscape = function xmlEscape(unsafe) {
 module.exports = xmlEscape;
 
 /***/ }),
-/* 86 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26584,18 +28879,18 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var EventEmitter = __webpack_require__(5);
 
-var centralDispatch = __webpack_require__(38);
-var ExtensionManager = __webpack_require__(77);
-var log = __webpack_require__(2);
-var Runtime = __webpack_require__(74);
-var sb2 = __webpack_require__(82);
-var sb3 = __webpack_require__(84);
-var StringUtil = __webpack_require__(13);
+var centralDispatch = __webpack_require__(37);
+var ExtensionManager = __webpack_require__(78);
+var log = __webpack_require__(3);
+var Runtime = __webpack_require__(75);
+var sb2 = __webpack_require__(84);
+var sb3 = __webpack_require__(86);
+var StringUtil = __webpack_require__(15);
 
-var _require = __webpack_require__(17),
+var _require = __webpack_require__(21),
     loadCostume = _require.loadCostume;
 
-var _require2 = __webpack_require__(18),
+var _require2 = __webpack_require__(22),
     loadSound = _require2.loadSound;
 
 var RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
@@ -26625,7 +28920,7 @@ var VirtualMachine = function (_EventEmitter) {
         /**
          * The "currently editing"/selected target ID for the VM.
          * Block events from any Blockly workspace are routed to this target.
-         * @type {!string}
+         * @type {Target}
          */
         _this.editingTarget = null;
         // Runtime emits are passed along as VM emits.
@@ -26865,32 +29160,57 @@ var VirtualMachine = function (_EventEmitter) {
                 deserializer = sb2;
             }
 
-            return deserializer.deserialize(json, this.runtime).then(function (targets) {
-                _this2.clear();
-                for (var n = 0; n < targets.length; n++) {
-                    if (targets[n] !== null) {
-                        _this2.runtime.targets.push(targets[n]);
-                        targets[n].updateAllDrawableProperties();
-                    }
-                }
+            return deserializer.deserialize(json, this.runtime).then(function (_ref) {
+                var targets = _ref.targets,
+                    extensions = _ref.extensions;
+                return _this2.installTargets(targets, extensions, true);
+            });
+        }
 
-                // Select the first device sprite for editing, by Kane
-                var firstDevice = _this2.runtime.targets.find(function (target) {
-                    return target.sprite.costumes[0].assetId === 'mscratchDevice';
+        /**
+         * Install `deserialize` results: zero or more targets after the extensions (if any) used by those targets.
+         * @param {Array.<Target>} targets - the targets to be installed
+         * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
+         * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
+         * @returns {Promise} resolved once targets have been installed
+         */
+
+    }, {
+        key: 'installTargets',
+        value: function installTargets(targets, extensions, wholeProject) {
+            var _this3 = this;
+
+            var extensionPromises = [];
+            extensions.extensionIDs.forEach(function (extensionID) {
+                if (!_this3.extensionManager.isExtensionLoaded(extensionID)) {
+                    var extensionURL = extensions.extensionURLs.get(extensionID) || extensionID;
+                    extensionPromises.push(_this3.extensionManager.loadExtensionURL(extensionURL));
+                }
+            });
+
+            targets = targets.filter(function (target) {
+                return !!target;
+            });
+
+            return Promise.all(extensionPromises).then(function () {
+                if (wholeProject) {
+                    _this3.clear();
+                }
+                targets.forEach(function (target) {
+                    _this3.runtime.targets.push(target);
+                    /** @type RenderedTarget */target.updateAllDrawableProperties();
                 });
-                if (firstDevice) {
-                    _this2.editingTarget = firstDevice;
-                } else if (_this2.runtime.targets.length > 1) {
-                    // Select the first target for editing, e.g., the first sprite.
-                    _this2.editingTarget = _this2.runtime.targets[1];
+                // Select the first target for editing, e.g., the first sprite.
+                if (wholeProject && targets.length > 1) {
+                    _this3.editingTarget = targets[1];
                 } else {
-                    _this2.editingTarget = _this2.runtime.targets[0];
+                    _this3.editingTarget = targets[0];
                 }
 
                 // Update the VM user's knowledge of targets and blocks on the workspace.
-                _this2.emitTargetsUpdate();
-                _this2.emitWorkspaceUpdate();
-                _this2.runtime.setEditingTarget(_this2.editingTarget);
+                _this3.emitTargetsUpdate();
+                _this3.emitWorkspaceUpdate();
+                _this3.runtime.setEditingTarget(_this3.editingTarget);
             });
         }
 
@@ -26903,7 +29223,7 @@ var VirtualMachine = function (_EventEmitter) {
     }, {
         key: 'addSprite2',
         value: function addSprite2(json) {
-            var _this3 = this;
+            var _this4 = this;
 
             // Validate & parse
             if (typeof json !== 'string') {
@@ -26916,16 +29236,10 @@ var VirtualMachine = function (_EventEmitter) {
                 return;
             }
 
-            // Select new sprite.
-            return sb2.deserialize(json, this.runtime, true).then(function (targets) {
-                _this3.runtime.targets.push(targets[0]);
-                _this3.editingTarget = targets[0];
-                _this3.editingTarget.updateAllDrawableProperties();
-
-                // Update the VM user's knowledge of targets and blocks on the workspace.
-                _this3.emitTargetsUpdate();
-                _this3.emitWorkspaceUpdate();
-                _this3.runtime.setEditingTarget(_this3.editingTarget);
+            return sb2.deserialize(json, this.runtime, true).then(function (_ref2) {
+                var targets = _ref2.targets,
+                    extensions = _ref2.extensions;
+                return _this4.installTargets(targets, extensions, false);
             });
         }
 
@@ -26942,11 +29256,11 @@ var VirtualMachine = function (_EventEmitter) {
     }, {
         key: 'addCostume',
         value: function addCostume(md5ext, costumeObject) {
-            var _this4 = this;
+            var _this5 = this;
 
             loadCostume(md5ext, costumeObject, this.runtime).then(function () {
-                _this4.editingTarget.addCostume(costumeObject);
-                _this4.editingTarget.setCostume(_this4.editingTarget.sprite.costumes.length - 1);
+                _this5.editingTarget.addCostume(costumeObject);
+                _this5.editingTarget.setCostume(_this5.editingTarget.sprite.costumes.length - 1);
             });
         }
 
@@ -26983,11 +29297,11 @@ var VirtualMachine = function (_EventEmitter) {
     }, {
         key: 'addSound',
         value: function addSound(soundObject) {
-            var _this5 = this;
+            var _this6 = this;
 
             return loadSound(soundObject, this.runtime).then(function () {
-                _this5.editingTarget.addSound(soundObject);
-                _this5.emitTargetsUpdate();
+                _this6.editingTarget.addSound(soundObject);
+                _this6.emitTargetsUpdate();
             });
         }
 
@@ -27098,10 +29412,10 @@ var VirtualMachine = function (_EventEmitter) {
     }, {
         key: 'addBackdrop',
         value: function addBackdrop(md5ext, backdropObject) {
-            var _this6 = this;
+            var _this7 = this;
 
             loadCostume(md5ext, backdropObject, this.runtime).then(function () {
-                var stage = _this6.runtime.getTargetForStage();
+                var stage = _this7.runtime.getTargetForStage();
                 stage.sprite.costumes.push(backdropObject);
                 stage.setCostume(stage.sprite.costumes.length - 1);
             });
@@ -27148,11 +29462,11 @@ var VirtualMachine = function (_EventEmitter) {
         key: 'deleteSprite',
         value: function deleteSprite(targetId) {
             var target = this.runtime.getTargetById(targetId);
-            var targetIndexBeforeDelete = this.runtime.targets.map(function (t) {
-                return t.id;
-            }).indexOf(target.id);
 
             if (target) {
+                var targetIndexBeforeDelete = this.runtime.targets.map(function (t) {
+                    return t.id;
+                }).indexOf(target.id);
                 if (!target.isSprite()) {
                     throw new Error('Cannot delete non-sprite targets.');
                 }
@@ -27160,6 +29474,7 @@ var VirtualMachine = function (_EventEmitter) {
                 if (!sprite) {
                     throw new Error('No sprite associated with this target.');
                 }
+                this.runtime.requestRemoveMonitorByTargetId(targetId);
                 var currentEditingTarget = this.editingTarget;
                 for (var i = 0; i < sprite.clones.length; i++) {
                     var clone = sprite.clones[i];
@@ -27168,7 +29483,11 @@ var VirtualMachine = function (_EventEmitter) {
                     // Ensure editing target is switched if we are deleting it.
                     if (clone === currentEditingTarget) {
                         var nextTargetIndex = Math.min(this.runtime.targets.length - 1, targetIndexBeforeDelete);
-                        this.setEditingTarget(this.runtime.targets[nextTargetIndex].id);
+                        if (this.runtime.targets.length > 0) {
+                            this.setEditingTarget(this.runtime.targets[nextTargetIndex].id);
+                        } else {
+                            this.editingTarget = null;
+                        }
                     }
                 }
                 // Sprite object should be deleted by GC.
@@ -27181,12 +29500,14 @@ var VirtualMachine = function (_EventEmitter) {
         /**
          * Duplicate a sprite.
          * @param {string} targetId ID of a target whose sprite to duplicate.
+         * @returns {Promise} Promise that resolves when duplicated target has
+         *     been added to the runtime.
          */
 
     }, {
         key: 'duplicateSprite',
         value: function duplicateSprite(targetId) {
-            var _this7 = this;
+            var _this8 = this;
 
             var target = this.runtime.getTargetById(targetId);
             if (!target) {
@@ -27196,9 +29517,9 @@ var VirtualMachine = function (_EventEmitter) {
             } else if (!target.sprite) {
                 throw new Error('No sprite associated with this target.');
             }
-            target.duplicate().then(function (newTarget) {
-                _this7.runtime.targets.push(newTarget);
-                _this7.setEditingTarget(newTarget.id);
+            return target.duplicate().then(function (newTarget) {
+                _this8.runtime.targets.push(newTarget);
+                _this8.setEditingTarget(newTarget.id);
             });
         }
 
@@ -27443,7 +29764,7 @@ var VirtualMachine = function (_EventEmitter) {
 module.exports = VirtualMachine;
 
 /***/ }),
-/* 87 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27564,7 +29885,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 88 */
+/* 90 */
 /***/ (function(module, exports) {
 
 module.exports = {
@@ -27634,7 +29955,7 @@ module.exports = {
 
 
 /***/ }),
-/* 89 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27659,12 +29980,12 @@ module.exports = Error.captureStackTrace || function (error) {
 
 
 /***/ }),
-/* 90 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var captureStackTrace = __webpack_require__(89);
+var captureStackTrace = __webpack_require__(91);
 
 function inherits(ctor, superCtor) {
 	ctor.super_ = superCtor;
@@ -27710,14 +30031,14 @@ module.exports = function createErrorClass(className, setup) {
 
 
 /***/ }),
-/* 91 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
   Module dependencies
 */
-var ElementType = __webpack_require__(92);
-var entities = __webpack_require__(103);
+var ElementType = __webpack_require__(94);
+var entities = __webpack_require__(105);
 
 /*
   Boolean Attributes
@@ -27894,7 +30215,7 @@ function renderComment(elem) {
 
 
 /***/ }),
-/* 92 */
+/* 94 */
 /***/ (function(module, exports) {
 
 //Types of elements found in the DOM
@@ -27913,14 +30234,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 93 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ElementType = __webpack_require__(15);
+var ElementType = __webpack_require__(17);
 
 var re_whitespace = /\s+/g;
-var NodePrototype = __webpack_require__(41);
-var ElementPrototype = __webpack_require__(94);
+var NodePrototype = __webpack_require__(40);
+var ElementPrototype = __webpack_require__(96);
 
 function DomHandler(callback, options, elementCB){
 	if(typeof callback === "object"){
@@ -28136,11 +30457,11 @@ module.exports = DomHandler;
 
 
 /***/ }),
-/* 94 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // DOM-Level-1-compliant structure
-var NodePrototype = __webpack_require__(41);
+var NodePrototype = __webpack_require__(40);
 var ElementPrototype = module.exports = Object.create(NodePrototype);
 
 var domLvl1 = {
@@ -28162,18 +30483,18 @@ Object.keys(domLvl1).forEach(function(key) {
 
 
 /***/ }),
-/* 95 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var DomUtils = module.exports;
 
 [
+	__webpack_require__(102),
+	__webpack_require__(103),
 	__webpack_require__(100),
 	__webpack_require__(101),
-	__webpack_require__(98),
 	__webpack_require__(99),
-	__webpack_require__(97),
-	__webpack_require__(96)
+	__webpack_require__(98)
 ].forEach(function(ext){
 	Object.keys(ext).forEach(function(key){
 		DomUtils[key] = ext[key].bind(DomUtils);
@@ -28182,7 +30503,7 @@ var DomUtils = module.exports;
 
 
 /***/ }),
-/* 96 */
+/* 98 */
 /***/ (function(module, exports) {
 
 // removeSubsets
@@ -28329,10 +30650,10 @@ exports.uniqueSort = function(nodes) {
 
 
 /***/ }),
-/* 97 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ElementType = __webpack_require__(15);
+var ElementType = __webpack_require__(17);
 var isTag = exports.isTag = ElementType.isTag;
 
 exports.testElement = function(options, element){
@@ -28422,7 +30743,7 @@ exports.getElementsByTagType = function(type, element, recurse, limit){
 
 
 /***/ }),
-/* 98 */
+/* 100 */
 /***/ (function(module, exports) {
 
 exports.removeElement = function(elem){
@@ -28505,10 +30826,10 @@ exports.prepend = function(elem, prev){
 
 
 /***/ }),
-/* 99 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isTag = __webpack_require__(15).isTag;
+var isTag = __webpack_require__(17).isTag;
 
 module.exports = {
 	filter: filter,
@@ -28610,11 +30931,11 @@ function findAll(test, rootElems){
 
 
 /***/ }),
-/* 100 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ElementType = __webpack_require__(15),
-    getOuterHTML = __webpack_require__(91),
+var ElementType = __webpack_require__(17),
+    getOuterHTML = __webpack_require__(93),
     isTag = ElementType.isTag;
 
 module.exports = {
@@ -28639,7 +30960,7 @@ function getText(elem){
 
 
 /***/ }),
-/* 101 */
+/* 103 */
 /***/ (function(module, exports) {
 
 var getChildren = exports.getChildren = function(elem){
@@ -28669,7 +30990,7 @@ exports.getName = function(elem){
 
 
 /***/ }),
-/* 102 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28752,11 +31073,11 @@ module.exports.DuplexWrapper = DuplexWrapper;
 
 
 /***/ }),
-/* 103 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var encode = __webpack_require__(105),
-    decode = __webpack_require__(104);
+var encode = __webpack_require__(107),
+    decode = __webpack_require__(106);
 
 exports.decode = function(data, level){
 	return (!level || level <= 0 ? decode.XML : decode.HTML)(data);
@@ -28791,13 +31112,13 @@ exports.escape = encode.escape;
 
 
 /***/ }),
-/* 104 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var entityMap = __webpack_require__(30),
-    legacyMap = __webpack_require__(43),
-    xmlMap    = __webpack_require__(31),
-    decodeCodePoint = __webpack_require__(42);
+var entityMap = __webpack_require__(31),
+    legacyMap = __webpack_require__(42),
+    xmlMap    = __webpack_require__(32),
+    decodeCodePoint = __webpack_require__(41);
 
 var decodeXMLStrict  = getStrictDecoder(xmlMap),
     decodeHTMLStrict = getStrictDecoder(entityMap);
@@ -28868,15 +31189,15 @@ module.exports = {
 };
 
 /***/ }),
-/* 105 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inverseXML = getInverseObj(__webpack_require__(31)),
+var inverseXML = getInverseObj(__webpack_require__(32)),
     xmlReplacer = getInverseReplacer(inverseXML);
 
 exports.XML = getInverse(inverseXML, xmlReplacer);
 
-var inverseHTML = getInverseObj(__webpack_require__(30)),
+var inverseHTML = getInverseObj(__webpack_require__(31)),
     htmlReplacer = getInverseReplacer(inverseHTML);
 
 exports.HTML = getInverse(inverseHTML, htmlReplacer);
@@ -28947,20 +31268,20 @@ exports.escape = escapeXML;
 
 
 /***/ }),
-/* 106 */
+/* 108 */
 /***/ (function(module, exports) {
 
 module.exports = {"0":65533,"128":8364,"130":8218,"131":402,"132":8222,"133":8230,"134":8224,"135":8225,"136":710,"137":8240,"138":352,"139":8249,"140":338,"142":381,"145":8216,"146":8217,"147":8220,"148":8221,"149":8226,"150":8211,"151":8212,"152":732,"153":8482,"154":353,"155":8250,"156":339,"158":382,"159":376}
 
 /***/ }),
-/* 107 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var util = __webpack_require__(56);
-var isArrayish = __webpack_require__(117);
+var util = __webpack_require__(55);
+var isArrayish = __webpack_require__(119);
 
 var errorEx = function errorEx(name, properties) {
 	if (!name || name.constructor !== String) {
@@ -29093,7 +31414,7 @@ module.exports = errorEx;
 
 
 /***/ }),
-/* 108 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29178,33 +31499,33 @@ function escapeHtml(string) {
 
 
 /***/ }),
-/* 109 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(setImmediate, Buffer) {
 
 var EventEmitter = __webpack_require__(5).EventEmitter;
-var http = __webpack_require__(54);
-var https = __webpack_require__(115);
-var urlLib = __webpack_require__(37);
+var http = __webpack_require__(53);
+var https = __webpack_require__(117);
+var urlLib = __webpack_require__(29);
 var querystring = __webpack_require__(33);
-var objectAssign = __webpack_require__(133);
+var objectAssign = __webpack_require__(135);
 var PassThrough = __webpack_require__(7).PassThrough;
-var duplexer2 = __webpack_require__(102);
-var isStream = __webpack_require__(120);
-var readAllStream = __webpack_require__(142);
-var timedOut = __webpack_require__(154);
-var urlParseLax = __webpack_require__(156);
-var lowercaseKeys = __webpack_require__(121);
-var isRedirect = __webpack_require__(118);
-var PinkiePromise = __webpack_require__(49);
-var unzipResponse = __webpack_require__(165);
-var createErrorClass = __webpack_require__(90);
-var nodeStatusCodes = __webpack_require__(132);
-var parseJson = __webpack_require__(134);
-var isRetryAllowed = __webpack_require__(119);
-var pkg = __webpack_require__(110);
+var duplexer2 = __webpack_require__(104);
+var isStream = __webpack_require__(122);
+var readAllStream = __webpack_require__(144);
+var timedOut = __webpack_require__(156);
+var urlParseLax = __webpack_require__(158);
+var lowercaseKeys = __webpack_require__(123);
+var isRedirect = __webpack_require__(120);
+var PinkiePromise = __webpack_require__(48);
+var unzipResponse = __webpack_require__(167);
+var createErrorClass = __webpack_require__(92);
+var nodeStatusCodes = __webpack_require__(134);
+var parseJson = __webpack_require__(136);
+var isRetryAllowed = __webpack_require__(121);
+var pkg = __webpack_require__(112);
 
 function requestAsEventEmitter(opts) {
 	opts = opts || {};
@@ -29587,13 +31908,13 @@ module.exports = got;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36).setImmediate, __webpack_require__(4).Buffer))
 
 /***/ }),
-/* 110 */
+/* 112 */
 /***/ (function(module, exports) {
 
-module.exports = {"_from":"got@5.7.1","_id":"got@5.7.1","_inBundle":false,"_integrity":"sha1-X4FjWmHkplifGAVp6k44FoClHzU=","_location":"/got","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"got@5.7.1","name":"got","escapedName":"got","rawSpec":"5.7.1","saveSpec":null,"fetchSpec":"5.7.1"},"_requiredBy":["#DEV:/"],"_resolved":"http://registry.npm.taobao.org/got/download/got-5.7.1.tgz","_shasum":"5f81635a61e4a6589f180569ea4e381680a51f35","_spec":"got@5.7.1","_where":"/Users/blockmake/IDE/scratch-vm","browser":{"unzip-response":false},"bugs":{"url":"https://github.com/sindresorhus/got/issues"},"bundleDependencies":false,"dependencies":{"create-error-class":"^3.0.1","duplexer2":"^0.1.4","is-redirect":"^1.0.0","is-retry-allowed":"^1.0.0","is-stream":"^1.0.0","lowercase-keys":"^1.0.0","node-status-codes":"^1.0.0","object-assign":"^4.0.1","parse-json":"^2.1.0","pinkie-promise":"^2.0.0","read-all-stream":"^3.0.0","readable-stream":"^2.0.5","timed-out":"^3.0.0","unzip-response":"^1.0.2","url-parse-lax":"^1.0.0"},"deprecated":false,"description":"Simplified HTTP/HTTPS requests","devDependencies":{"ava":"^0.16.0","coveralls":"^2.11.4","form-data":"^2.1.1","get-port":"^2.0.0","get-stream":"^2.3.0","into-stream":"^2.0.0","nyc":"^8.1.0","pem":"^1.4.4","pify":"^2.3.0","tempfile":"^1.1.1","xo":"0.16.x"},"engines":{"node":">=0.10.0 <7"},"files":["index.js"],"homepage":"https://github.com/sindresorhus/got#readme","keywords":["http","https","get","got","url","uri","request","util","utility","simple","curl","wget","fetch"],"license":"MIT","maintainers":[{"name":"Sindre Sorhus","email":"sindresorhus@gmail.com","url":"sindresorhus.com"},{"name":"Vsevolod Strukchinsky","email":"floatdrop@gmail.com","url":"github.com/floatdrop"}],"name":"got","repository":{"type":"git","url":"git+https://github.com/sindresorhus/got.git"},"scripts":{"coveralls":"nyc report --reporter=text-lcov | coveralls","test":"xo && nyc ava"},"version":"5.7.1","warnings":[{"code":"ENOTSUP","required":{"node":">=0.10.0 <7"},"pkgid":"got@5.7.1"}],"xo":{"ignores":["test/**"]}}
+module.exports = {"name":"got","version":"5.7.1","description":"Simplified HTTP/HTTPS requests","license":"MIT","repository":"sindresorhus/got","maintainers":[{"name":"Sindre Sorhus","email":"sindresorhus@gmail.com","url":"sindresorhus.com"},{"name":"Vsevolod Strukchinsky","email":"floatdrop@gmail.com","url":"github.com/floatdrop"}],"engines":{"node":">=0.10.0 <7"},"browser":{"unzip-response":false},"scripts":{"test":"xo && nyc ava","coveralls":"nyc report --reporter=text-lcov | coveralls"},"files":["index.js"],"keywords":["http","https","get","got","url","uri","request","util","utility","simple","curl","wget","fetch"],"dependencies":{"create-error-class":"^3.0.1","duplexer2":"^0.1.4","is-redirect":"^1.0.0","is-retry-allowed":"^1.0.0","is-stream":"^1.0.0","lowercase-keys":"^1.0.0","node-status-codes":"^1.0.0","object-assign":"^4.0.1","parse-json":"^2.1.0","pinkie-promise":"^2.0.0","read-all-stream":"^3.0.0","readable-stream":"^2.0.5","timed-out":"^3.0.0","unzip-response":"^1.0.2","url-parse-lax":"^1.0.0"},"devDependencies":{"ava":"^0.16.0","coveralls":"^2.11.4","form-data":"^2.1.1","get-port":"^2.0.0","get-stream":"^2.3.0","into-stream":"^2.0.0","nyc":"^8.1.0","pem":"^1.4.4","pify":"^2.3.0","tempfile":"^1.1.1","xo":"0.16.x"},"xo":{"ignores":["test/**"]}}
 
 /***/ }),
-/* 111 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = CollectingHandler;
@@ -29654,7 +31975,7 @@ CollectingHandler.prototype.restart = function(){
 
 
 /***/ }),
-/* 112 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var index = __webpack_require__(11),
@@ -29755,7 +32076,7 @@ module.exports = FeedHandler;
 
 
 /***/ }),
-/* 113 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = ProxyHandler;
@@ -29787,12 +32108,12 @@ Object.keys(EVENTS).forEach(function(name){
 });
 
 /***/ }),
-/* 114 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = Stream;
 
-var Parser = __webpack_require__(46);
+var Parser = __webpack_require__(45);
 
 function Stream(options){
 	Parser.call(this, new Cbs(this), options);
@@ -29827,27 +32148,44 @@ Object.keys(EVENTS).forEach(function(name){
 });
 
 /***/ }),
-/* 115 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var http = __webpack_require__(54);
+var http = __webpack_require__(53)
+var url = __webpack_require__(29)
 
-var https = module.exports;
+var https = module.exports
 
 for (var key in http) {
-    if (http.hasOwnProperty(key)) https[key] = http[key];
-};
+  if (http.hasOwnProperty(key)) https[key] = http[key]
+}
 
 https.request = function (params, cb) {
-    if (!params) params = {};
-    params.scheme = 'https';
-    params.protocol = 'https:';
-    return http.request.call(this, params, cb);
+  params = validateParams(params)
+  return http.request.call(this, params, cb)
+}
+
+https.get = function (params, cb) {
+  params = validateParams(params)
+  return http.get.call(this, params, cb)
+}
+
+function validateParams (params) {
+  if (typeof params === 'string') {
+    params = url.parse(params)
+  }
+  if (!params.protocol) {
+    params.protocol = 'https:'
+  }
+  if (params.protocol !== 'https:') {
+    throw new Error('Protocol "' + params.protocol + '" not supported. Expected "https:"')
+  }
+  return params
 }
 
 
 /***/ }),
-/* 116 */
+/* 118 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -29937,7 +32275,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 117 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29954,7 +32292,7 @@ module.exports = function isArrayish(obj) {
 
 
 /***/ }),
-/* 118 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29975,7 +32313,7 @@ module.exports = function (x) {
 
 
 /***/ }),
-/* 119 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30042,7 +32380,7 @@ module.exports = function (err) {
 
 
 /***/ }),
-/* 120 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30070,7 +32408,7 @@ isStream.transform = function (stream) {
 
 
 /***/ }),
-/* 121 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30088,7 +32426,7 @@ module.exports = function (obj) {
 
 
 /***/ }),
-/* 122 */
+/* 124 */
 /***/ (function(module, exports) {
 
 function M() { this._events = {}; }
@@ -30144,7 +32482,7 @@ module.exports = M;
 
 
 /***/ }),
-/* 123 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // default filter
@@ -30206,11 +32544,11 @@ module.exports = Filter;
 
 
 /***/ }),
-/* 124 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(6),
-    Filter = __webpack_require__(123);
+    Filter = __webpack_require__(125);
 
 var log = new Transform(),
     slice = Array.prototype.slice;
@@ -30257,7 +32595,7 @@ exports.enable = function() {
 
 
 /***/ }),
-/* 125 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(6),
@@ -30277,7 +32615,7 @@ module.exports = logger;
 
 
 /***/ }),
-/* 126 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(6);
@@ -30308,18 +32646,18 @@ logger.write = function(name, level, args) {
 };
 
 logger.formatters = ['color', 'minilog'];
-logger.color = __webpack_require__(127);
-logger.minilog = __webpack_require__(128);
+logger.color = __webpack_require__(129);
+logger.minilog = __webpack_require__(130);
 
 module.exports = logger;
 
 
 /***/ }),
-/* 127 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(6),
-    color = __webpack_require__(48);
+    color = __webpack_require__(47);
 
 var colors = { debug: ['cyan'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
     logger = new Transform();
@@ -30339,11 +32677,11 @@ module.exports = logger;
 
 
 /***/ }),
-/* 128 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(6),
-    color = __webpack_require__(48),
+    color = __webpack_require__(47),
     colors = { debug: ['gray'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
     logger = new Transform();
 
@@ -30371,15 +32709,15 @@ module.exports = logger;
 
 
 /***/ }),
-/* 129 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Minilog = __webpack_require__(124);
+var Minilog = __webpack_require__(126);
 
 var oldEnable = Minilog.enable,
     oldDisable = Minilog.disable,
     isChrome = (typeof navigator != 'undefined' && /chrome/i.test(navigator.userAgent)),
-    console = __webpack_require__(126);
+    console = __webpack_require__(128);
 
 // Use a more capable logging backend if on Chrome
 Minilog.defaultBackend = (isChrome ? console.minilog : console);
@@ -30411,15 +32749,15 @@ Minilog.disable = function() {
 exports = module.exports = Minilog;
 
 exports.backends = {
-  array: __webpack_require__(125),
+  array: __webpack_require__(127),
   browser: Minilog.defaultBackend,
-  localStorage: __webpack_require__(131),
-  jQuery: __webpack_require__(130)
+  localStorage: __webpack_require__(133),
+  jQuery: __webpack_require__(132)
 };
 
 
 /***/ }),
-/* 130 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(6);
@@ -30499,7 +32837,7 @@ module.exports = AjaxLogger;
 
 
 /***/ }),
-/* 131 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(6),
@@ -30519,7 +32857,7 @@ logger.write = function(name, level, args) {
 module.exports = logger;
 
 /***/ }),
-/* 132 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30588,7 +32926,7 @@ module.exports = {
 
 
 /***/ }),
-/* 133 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30685,13 +33023,13 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 134 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var errorEx = __webpack_require__(107);
-var fallback = __webpack_require__(135);
+var errorEx = __webpack_require__(109);
+var fallback = __webpack_require__(137);
 
 var JSONError = errorEx('JSONError', {
 	fileName: errorEx.append('in %s')
@@ -30727,7 +33065,7 @@ module.exports = function (x, reviver, filename) {
 
 
 /***/ }),
-/* 135 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -30738,7 +33076,7 @@ module.exports = function (x, reviver, filename) {
 
 // RTFM: http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
 
-var Uni = __webpack_require__(136)
+var Uni = __webpack_require__(138)
 
 function isHexDigit(x) {
   return (x >= '0' && x <= '9')
@@ -31485,7 +33823,7 @@ module.exports.tokenize = function tokenizeJSON(input, options) {
 
 
 /***/ }),
-/* 136 */
+/* 138 */
 /***/ (function(module, exports) {
 
 
@@ -31562,7 +33900,7 @@ module.exports.NonAsciiIdentifierPart = /[\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u0
 
 
 /***/ }),
-/* 137 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31862,7 +34200,7 @@ module.exports = Promise;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0), __webpack_require__(36).setImmediate))
 
 /***/ }),
-/* 138 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31883,7 +34221,7 @@ module.exports = function (url) {
 
 
 /***/ }),
-/* 139 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! https://mths.be/punycode v1.4.1 by @mathias */
@@ -32419,10 +34757,10 @@ module.exports = function (url) {
 
 }(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(161)(module), __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(163)(module), __webpack_require__(0)))
 
 /***/ }),
-/* 140 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32513,7 +34851,7 @@ var isArray = Array.isArray || function (xs) {
 
 
 /***/ }),
-/* 141 */
+/* 143 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32605,15 +34943,15 @@ var objectKeys = Object.keys || function (obj) {
 
 
 /***/ }),
-/* 142 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(Buffer) {
 
 var Writable = __webpack_require__(7).Writable;
-var inherits = __webpack_require__(56).inherits;
-var Promise = __webpack_require__(49);
+var inherits = __webpack_require__(55).inherits;
+var Promise = __webpack_require__(48);
 
 function BufferStream() {
 	Writable.call(this, { objectMode: true });
@@ -32685,14 +35023,14 @@ module.exports = function read(stream, options, cb) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4).Buffer))
 
 /***/ }),
-/* 143 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(9);
+module.exports = __webpack_require__(10);
 
 
 /***/ }),
-/* 144 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32725,10 +35063,10 @@ module.exports = __webpack_require__(9);
 
 module.exports = PassThrough;
 
-var Transform = __webpack_require__(51);
+var Transform = __webpack_require__(50);
 
 /*<replacement>*/
-var util = __webpack_require__(14);
+var util = __webpack_require__(16);
 util.inherits = __webpack_require__(1);
 /*</replacement>*/
 
@@ -32745,7 +35083,7 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 };
 
 /***/ }),
-/* 145 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32755,7 +35093,7 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Buffer = __webpack_require__(35).Buffer;
+var Buffer = __webpack_require__(28).Buffer;
 /*</replacement>*/
 
 function copyBuffer(src, target, offset) {
@@ -32825,28 +35163,28 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 146 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(7).PassThrough
 
 
 /***/ }),
-/* 147 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(7).Transform
 
 
 /***/ }),
-/* 148 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(34);
 
 
 /***/ }),
-/* 149 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -33036,10 +35374,10 @@ module.exports = __webpack_require__(34);
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0), __webpack_require__(8)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0), __webpack_require__(9)))
 
 /***/ }),
-/* 150 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -41245,7 +43583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 //# sourceMappingURL=socket.io.js.map
 
 /***/ }),
-/* 151 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -41276,10 +43614,10 @@ var inherits = __webpack_require__(1);
 
 inherits(Stream, EE);
 Stream.Readable = __webpack_require__(7);
-Stream.Writable = __webpack_require__(148);
-Stream.Duplex = __webpack_require__(143);
-Stream.Transform = __webpack_require__(147);
-Stream.PassThrough = __webpack_require__(146);
+Stream.Writable = __webpack_require__(150);
+Stream.Duplex = __webpack_require__(145);
+Stream.Transform = __webpack_require__(149);
+Stream.PassThrough = __webpack_require__(148);
 
 // Backwards-compat with node 0.4.x
 Stream.Stream = Stream;
@@ -41378,14 +43716,14 @@ Stream.prototype.pipe = function(dest, options) {
 
 
 /***/ }),
-/* 152 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer, global, process) {var capability = __webpack_require__(55)
+/* WEBPACK VAR INJECTION */(function(Buffer, global, process) {var capability = __webpack_require__(54)
 var inherits = __webpack_require__(1)
-var response = __webpack_require__(153)
+var response = __webpack_require__(155)
 var stream = __webpack_require__(7)
-var toArrayBuffer = __webpack_require__(155)
+var toArrayBuffer = __webpack_require__(157)
 
 var IncomingMessage = response.IncomingMessage
 var rStates = response.readyStates
@@ -41688,13 +44026,13 @@ var unsafeHeaders = [
 	'via'
 ]
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4).Buffer, __webpack_require__(0), __webpack_require__(8)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4).Buffer, __webpack_require__(0), __webpack_require__(9)))
 
 /***/ }),
-/* 153 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process, Buffer, global) {var capability = __webpack_require__(55)
+/* WEBPACK VAR INJECTION */(function(process, Buffer, global) {var capability = __webpack_require__(54)
 var inherits = __webpack_require__(1)
 var stream = __webpack_require__(7)
 
@@ -41877,10 +44215,10 @@ IncomingMessage.prototype._onXHRProgress = function () {
 	}
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(4).Buffer, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), __webpack_require__(4).Buffer, __webpack_require__(0)))
 
 /***/ }),
-/* 154 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -41942,7 +44280,7 @@ module.exports = function (req, time) {
 
 
 /***/ }),
-/* 155 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Buffer = __webpack_require__(4).Buffer
@@ -41975,13 +44313,13 @@ module.exports = function (buf) {
 
 
 /***/ }),
-/* 156 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var url = __webpack_require__(37);
-var prependHttp = __webpack_require__(138);
+var url = __webpack_require__(29);
+var prependHttp = __webpack_require__(140);
 
 module.exports = function (x) {
 	var withProtocol = prependHttp(x);
@@ -41996,7 +44334,7 @@ module.exports = function (x) {
 
 
 /***/ }),
-/* 157 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -42019,7 +44357,7 @@ module.exports = {
 
 
 /***/ }),
-/* 158 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -42093,7 +44431,7 @@ function config (name) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 159 */
+/* 161 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -42122,7 +44460,7 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 160 */
+/* 162 */
 /***/ (function(module, exports) {
 
 module.exports = function isBuffer(arg) {
@@ -42133,7 +44471,7 @@ module.exports = function isBuffer(arg) {
 }
 
 /***/ }),
-/* 161 */
+/* 163 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -42161,7 +44499,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 162 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function() {
@@ -42169,7 +44507,7 @@ module.exports = function() {
 };
 
 /***/ }),
-/* 163 */
+/* 165 */
 /***/ (function(module, exports) {
 
 module.exports = extend
@@ -42194,25 +44532,25 @@ function extend() {
 
 
 /***/ }),
-/* 164 */
-/***/ (function(module, exports) {
-
-module.exports = {"name":"scratch-vm","version":"0.1.0","description":"Virtual Machine for Scratch 3.0","author":"Massachusetts Institute of Technology","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","scripts":{"build":"webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","lint":"eslint .","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\""},"devDependencies":{"adm-zip":"0.4.7","babel-core":"^6.24.1","babel-eslint":"^7.1.1","babel-loader":"^7.0.0","babel-preset-es2015":"^6.24.1","copy-webpack-plugin":"4.0.1","escape-html":"1.0.3","eslint":"^4.5.0","eslint-config-scratch":"^4.0.0","expose-loader":"0.7.3","gh-pages":"^0.12.0","got":"5.7.1","highlightjs":"^9.8.0","htmlparser2":"3.9.2","immutable":"3.8.1","in-publish":"^2.0.0","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","minilog":"3.1.0","promise":"7.1.1","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^0.2.0","script-loader":"0.7.0","socket.io-client":"1.7.3","stats.js":"^0.17.0","tap":"^10.2.0","tiny-worker":"^2.1.1","webpack":"^2.4.1","webpack-dev-server":"^2.4.1","worker-loader":"0.8.1"}}
-
-/***/ }),
-/* 165 */
-/***/ (function(module, exports) {
-
-/* (ignored) */
-
-/***/ }),
 /* 166 */
 /***/ (function(module, exports) {
 
-/* (ignored) */
+module.exports = {"name":"scratch-vm","version":"0.1.0","description":"Virtual Machine for Scratch 3.0","author":"Massachusetts Institute of Technology","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","scripts":{"build":"webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","lint":"eslint .","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\""},"devDependencies":{"adm-zip":"0.4.7","babel-core":"^6.24.1","babel-eslint":"^7.1.1","babel-loader":"^7.0.0","babel-preset-es2015":"^6.24.1","copy-webpack-plugin":"4.2.1","escape-html":"1.0.3","eslint":"^4.5.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.4","gh-pages":"^1.1.0","got":"5.7.1","highlightjs":"^9.8.0","htmlparser2":"3.9.2","immutable":"3.8.1","in-publish":"^2.0.0","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","minilog":"3.1.0","promise":"8.0.1","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^0.3.0","script-loader":"0.7.2","socket.io-client":"2.0.4","stats.js":"^0.17.0","tap":"^10.2.0","tiny-worker":"^2.1.1","webpack":"^2.4.1","webpack-dev-server":"^2.4.1","worker-loader":"1.1.0"}}
 
 /***/ }),
 /* 167 */
+/***/ (function(module, exports) {
+
+/* (ignored) */
+
+/***/ }),
+/* 168 */
+/***/ (function(module, exports) {
+
+/* (ignored) */
+
+/***/ }),
+/* 169 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
