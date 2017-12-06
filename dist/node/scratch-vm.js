@@ -2218,6 +2218,9 @@ var Variable = function () {
             case Variable.LIST_TYPE:
                 this.value = [];
                 break;
+            case Variable.COMM_TYPE:
+                this.value = 0;
+                break;
             default:
                 throw new Error('Invalid variable type: ' + this.type);
         }
@@ -2251,6 +2254,17 @@ var Variable = function () {
         key: 'LIST_TYPE',
         get: function get() {
             return 'list';
+        }
+
+        /**
+         * Type representation for comm variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'COMM_TYPE',
+        get: function get() {
+            return 'comm';
         }
     }]);
 

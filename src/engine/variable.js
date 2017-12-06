@@ -25,6 +25,9 @@ class Variable {
         case Variable.LIST_TYPE:
             this.value = [];
             break;
+        case Variable.COMM_TYPE:
+            this.value = 0;
+            break;
         default:
             throw new Error(`Invalid variable type: ${this.type}`);
         }
@@ -50,6 +53,14 @@ class Variable {
      */
     static get LIST_TYPE () {
         return 'list';
+    }
+
+    /**
+     * Type representation for comm variables.
+     * @const {string}
+     */
+    static get COMM_TYPE () {
+        return 'comm';
     }
 }
 
