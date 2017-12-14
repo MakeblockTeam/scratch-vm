@@ -3,6 +3,7 @@ const mutationAdapter = require('./mutation-adapter');
 const xmlEscape = require('../util/xml-escape');
 const MonitorRecord = require('./monitor-record');
 const Clone = require('../util/clone');
+const {Map} = require('immutable');
 
 /**
  * @fileoverview
@@ -400,6 +401,21 @@ class Blocks {
                 }
             } else {
                 block.fields[args.name].value = args.value;
+            }
+            // Modified by Kane monitor block update
+            if (block.isMonitored) {
+                optRuntime.requestUpdateMonitor(Map({
+                    id: block.id,
+                    params: this._getBlockParams(block)
+                }));
+            } else if (block.parent) {
+                const parentBlock = this._blocks[block.parent];
+                if (parentBlock.isMonitored) {
+                    optRuntime.requestUpdateMonitor(Map({
+                        id: parentBlock.id,
+                        params: this._getBlockParams(parentBlock)
+                    }));
+                }
             }
             break;
         case 'mutation':

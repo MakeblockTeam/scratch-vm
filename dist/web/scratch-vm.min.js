@@ -133,7 +133,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Color = __webpack_require__(24);
+var Color = __webpack_require__(25);
 
 /**
  * @fileoverview
@@ -3083,6 +3083,9 @@ var xmlEscape = __webpack_require__(87);
 var MonitorRecord = __webpack_require__(73);
 var Clone = __webpack_require__(14);
 
+var _require = __webpack_require__(18),
+    Map = _require.Map;
+
 /**
  * @fileoverview
  * Store and mutate the VM block representation,
@@ -3524,6 +3527,21 @@ var Blocks = function () {
                         }
                     } else {
                         block.fields[args.name].value = args.value;
+                    }
+                    // Modified by Kane monitor block update
+                    if (block.isMonitored) {
+                        optRuntime.requestUpdateMonitor(Map({
+                            id: block.id,
+                            params: this._getBlockParams(block)
+                        }));
+                    } else if (block.parent) {
+                        var parentBlock = this._blocks[block.parent];
+                        if (parentBlock.isMonitored) {
+                            optRuntime.requestUpdateMonitor(Map({
+                                id: parentBlock.id,
+                                params: this._getBlockParams(parentBlock)
+                            }));
+                        }
                     }
                     break;
                 case 'mutation':
@@ -4129,2080 +4147,6 @@ module.exports = {
 
 /***/ }),
 /* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * A thread is a running stack context and all the metadata needed.
- * @param {?string} firstBlock First block to execute in the thread.
- * @constructor
- */
-var Thread = function () {
-    function Thread(firstBlock) {
-        _classCallCheck(this, Thread);
-
-        /**
-         * ID of top block of the thread
-         * @type {!string}
-         */
-        this.topBlock = firstBlock;
-
-        /**
-         * Stack for the thread. When the sequencer enters a control structure,
-         * the block is pushed onto the stack so we know where to exit.
-         * @type {Array.<string>}
-         */
-        this.stack = [];
-
-        /**
-         * Stack frames for the thread. Store metadata for the executing blocks.
-         * @type {Array.<Object>}
-         */
-        this.stackFrames = [];
-
-        /**
-         * Status of the thread, one of three states (below)
-         * @type {number}
-         */
-        this.status = 0; /* Thread.STATUS_RUNNING */
-
-        /**
-         * Whether the thread is killed in the middle of execution.
-         * @type {boolean}
-         */
-        this.isKilled = false;
-
-        /**
-         * Target of this thread.
-         * @type {?Target}
-         */
-        this.target = null;
-
-        /**
-         * Whether the thread requests its script to glow during this frame.
-         * @type {boolean}
-         */
-        this.requestScriptGlowInFrame = false;
-
-        /**
-         * Which block ID should glow during this frame, if any.
-         * @type {?string}
-         */
-        this.blockGlowInFrame = null;
-
-        /**
-         * A timer for when the thread enters warp mode.
-         * Substitutes the sequencer's count toward WORK_TIME on a per-thread basis.
-         * @type {?Timer}
-         */
-        this.warpTimer = null;
-    }
-
-    /**
-     * Thread status for initialized or running thread.
-     * This is the default state for a thread - execution should run normally,
-     * stepping from block to block.
-     * @const
-     */
-
-
-    _createClass(Thread, [{
-        key: 'pushStack',
-
-
-        /**
-         * Push stack and update stack frames appropriately.
-         * @param {string} blockId Block ID to push to stack.
-         */
-        value: function pushStack(blockId) {
-            this.stack.push(blockId);
-            // Push an empty stack frame, if we need one.
-            // Might not, if we just popped the stack.
-            if (this.stack.length > this.stackFrames.length) {
-                // Copy warp mode from any higher level.
-                var warpMode = false;
-                if (this.stackFrames.length > 0 && this.stackFrames[this.stackFrames.length - 1]) {
-                    warpMode = this.stackFrames[this.stackFrames.length - 1].warpMode;
-                }
-                this.stackFrames.push({
-                    isLoop: false, // Whether this level of the stack is a loop.
-                    warpMode: warpMode, // Whether this level is in warp mode.
-                    reported: {}, // Collects reported input values.
-                    waitingReporter: null, // Name of waiting reporter.
-                    params: {}, // Procedure parameters.
-                    executionContext: {} // A context passed to block implementations.
-                });
-            }
-        }
-
-        /**
-         * Reset the stack frame for use by the next block.
-         * (avoids popping and re-pushing a new stack frame - keeps the warpmode the same
-         * @param {string} blockId Block ID to push to stack.
-         */
-
-    }, {
-        key: 'reuseStackForNextBlock',
-        value: function reuseStackForNextBlock(blockId) {
-            this.stack[this.stack.length - 1] = blockId;
-            var frame = this.stackFrames[this.stackFrames.length - 1];
-            frame.isLoop = false;
-            // frame.warpMode = warpMode;   // warp mode stays the same when reusing the stack frame.
-            frame.reported = {};
-            frame.waitingReporter = null;
-            frame.params = {};
-            frame.executionContext = {};
-        }
-
-        /**
-         * Pop last block on the stack and its stack frame.
-         * @return {string} Block ID popped from the stack.
-         */
-
-    }, {
-        key: 'popStack',
-        value: function popStack() {
-            this.stackFrames.pop();
-            return this.stack.pop();
-        }
-
-        /**
-         * Pop back down the stack frame until we hit a procedure call or the stack frame is emptied
-         */
-
-    }, {
-        key: 'stopThisScript',
-        value: function stopThisScript() {
-            var blockID = this.peekStack();
-            while (blockID !== null) {
-                var block = this.target.blocks.getBlock(blockID);
-                if (typeof block !== 'undefined' && block.opcode === 'procedures_call') {
-                    break;
-                }
-                this.popStack();
-                blockID = this.peekStack();
-            }
-
-            if (this.stack.length === 0) {
-                // Clean up!
-                this.requestScriptGlowInFrame = false;
-                this.status = Thread.STATUS_DONE;
-            }
-        }
-
-        /**
-         * Get top stack item.
-         * @return {?string} Block ID on top of stack.
-         */
-
-    }, {
-        key: 'peekStack',
-        value: function peekStack() {
-            return this.stack.length > 0 ? this.stack[this.stack.length - 1] : null;
-        }
-
-        /**
-         * Get top stack frame.
-         * @return {?object} Last stack frame stored on this thread.
-         */
-
-    }, {
-        key: 'peekStackFrame',
-        value: function peekStackFrame() {
-            return this.stackFrames.length > 0 ? this.stackFrames[this.stackFrames.length - 1] : null;
-        }
-
-        /**
-         * Get stack frame above the current top.
-         * @return {?object} Second to last stack frame stored on this thread.
-         */
-
-    }, {
-        key: 'peekParentStackFrame',
-        value: function peekParentStackFrame() {
-            return this.stackFrames.length > 1 ? this.stackFrames[this.stackFrames.length - 2] : null;
-        }
-
-        /**
-         * Push a reported value to the parent of the current stack frame.
-         * @param {*} value Reported value to push.
-         */
-
-    }, {
-        key: 'pushReportedValue',
-        value: function pushReportedValue(value) {
-            var parentStackFrame = this.peekParentStackFrame();
-            if (parentStackFrame) {
-                var waitingReporter = parentStackFrame.waitingReporter;
-                parentStackFrame.reported[waitingReporter] = value;
-            }
-        }
-
-        /**
-         * Add a parameter to the stack frame.
-         * Use when calling a procedure with parameter values.
-         * @param {!string} paramName Name of parameter.
-         * @param {*} value Value to set for parameter.
-         */
-
-    }, {
-        key: 'pushParam',
-        value: function pushParam(paramName, value) {
-            var stackFrame = this.peekStackFrame();
-            stackFrame.params[paramName] = value;
-        }
-
-        /**
-         * Get a parameter at the lowest possible level of the stack.
-         * @param {!string} paramName Name of parameter.
-         * @return {*} value Value for parameter.
-         */
-
-    }, {
-        key: 'getParam',
-        value: function getParam(paramName) {
-            for (var i = this.stackFrames.length - 1; i >= 0; i--) {
-                var frame = this.stackFrames[i];
-                if (frame.params.hasOwnProperty(paramName)) {
-                    return frame.params[paramName];
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Whether the current execution of a thread is at the top of the stack.
-         * @return {boolean} True if execution is at top of the stack.
-         */
-
-    }, {
-        key: 'atStackTop',
-        value: function atStackTop() {
-            return this.peekStack() === this.topBlock;
-        }
-
-        /**
-         * Switch the thread to the next block at the current level of the stack.
-         * For example, this is used in a standard sequence of blocks,
-         * where execution proceeds from one block to the next.
-         */
-
-    }, {
-        key: 'goToNextBlock',
-        value: function goToNextBlock() {
-            var nextBlockId = this.target.blocks.getNextBlock(this.peekStack());
-            this.reuseStackForNextBlock(nextBlockId);
-        }
-
-        /**
-         * Attempt to determine whether a procedure call is recursive,
-         * by examining the stack.
-         * @param {!string} procedureCode Procedure code of procedure being called.
-         * @return {boolean} True if the call appears recursive.
-         */
-
-    }, {
-        key: 'isRecursiveCall',
-        value: function isRecursiveCall(procedureCode) {
-            var callCount = 5; // Max number of enclosing procedure calls to examine.
-            var sp = this.stack.length - 1;
-            for (var i = sp - 1; i >= 0; i--) {
-                var block = this.target.blocks.getBlock(this.stack[i]);
-                if (block.opcode === 'procedures_call' && block.mutation.proccode === procedureCode) {
-                    return true;
-                }
-                if (--callCount < 0) return false;
-            }
-            return false;
-        }
-    }], [{
-        key: 'STATUS_RUNNING',
-        get: function get() {
-            return 0;
-        }
-
-        /**
-         * Threads are in this state when a primitive is waiting on a promise;
-         * execution is paused until the promise changes thread status.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_PROMISE_WAIT',
-        get: function get() {
-            return 1;
-        }
-
-        /**
-         * Thread status for yield.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_YIELD',
-        get: function get() {
-            return 2;
-        }
-
-        /**
-         * Thread status for a single-tick yield. This will be cleared when the
-         * thread is resumed.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_YIELD_TICK',
-        get: function get() {
-            return 3;
-        }
-
-        /**
-         * Thread status for a finished/done thread.
-         * Thread is in this state when there are no more blocks to execute.
-         * @const
-         */
-
-    }, {
-        key: 'STATUS_DONE',
-        get: function get() {
-            return 4;
-        }
-    }]);
-
-    return Thread;
-}();
-
-module.exports = Thread;
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @fileoverview
- * Object representing a Scratch variable.
- */
-
-var uid = __webpack_require__(30);
-
-var Variable = function () {
-    /**
-     * @param {string} id Id of the variable.
-     * @param {string} name Name of the variable.
-     * @param {string} type Type of the variable, one of '' or 'list'
-     * @param {boolean} isCloud Whether the variable is stored in the cloud.
-     * @constructor
-     */
-    function Variable(id, name, type, isCloud) {
-        _classCallCheck(this, Variable);
-
-        this.id = id || uid();
-        this.name = name;
-        this.type = type;
-        this.isCloud = isCloud;
-        switch (this.type) {
-            case Variable.SCALAR_TYPE:
-                this.value = 0;
-                break;
-            case Variable.LIST_TYPE:
-                this.value = [];
-                break;
-            case Variable.COMM_TYPE:
-                this.value = 0;
-                break;
-            default:
-                throw new Error('Invalid variable type: ' + this.type);
-        }
-    }
-
-    _createClass(Variable, [{
-        key: 'toXML',
-        value: function toXML() {
-            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
-        }
-
-        /**
-         * Type representation for scalar variables.
-         * This is currently represented as ''
-         * for compatibility with blockly.
-         * @const {string}
-         */
-
-    }], [{
-        key: 'SCALAR_TYPE',
-        get: function get() {
-            return '';
-        }
-
-        /**
-         * Type representation for list variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'LIST_TYPE',
-        get: function get() {
-            return 'list';
-        }
-
-        /**
-         * Type representation for comm variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'COMM_TYPE',
-        get: function get() {
-            return 'comm';
-        }
-    }]);
-
-    return Variable;
-}();
-
-module.exports = Variable;
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var ArgumentType = {
-    ANGLE: 'angle',
-    BOOLEAN: 'Boolean',
-    COLOR: 'color',
-    NUMBER: 'number',
-    STRING: 'string'
-};
-
-module.exports = ArgumentType;
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var StringUtil = __webpack_require__(15);
-var log = __webpack_require__(3);
-
-/**
- * Initialize a costume from an asset asynchronously.
- * Do not call this unless there is a renderer attached.
- * @param {!object} costume - the Scratch costume object.
- * @property {int} skinId - the ID of the costume's render skin, once installed.
- * @property {number} rotationCenterX - the X component of the costume's origin.
- * @property {number} rotationCenterY - the Y component of the costume's origin.
- * @property {number} [bitmapResolution] - the resolution scale for a bitmap costume.
- * @param {!Asset} costumeAsset - the asset of the costume loaded from storage.
- * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
- * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
- */
-var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, runtime) {
-    costume.assetId = costumeAsset.assetId;
-    if (!runtime.renderer) {
-        log.error('No rendering module present; cannot load costume: ', costume.name);
-        return costume;
-    }
-    var AssetType = runtime.storage.AssetType;
-    var rotationCenter = [costume.rotationCenterX / costume.bitmapResolution, costume.rotationCenterY / costume.bitmapResolution];
-    if (costumeAsset.assetType === AssetType.ImageVector) {
-        costume.skinId = runtime.renderer.createSVGSkin(costumeAsset.decodeText(), rotationCenter);
-        return costume;
-    }
-
-    return new Promise(function (resolve, reject) {
-        var imageElement = new Image();
-        var onError = function onError() {
-            // eslint-disable-next-line no-use-before-define
-            removeEventListeners();
-            reject();
-        };
-        var onLoad = function onLoad() {
-            // eslint-disable-next-line no-use-before-define
-            removeEventListeners();
-            resolve(imageElement);
-        };
-        var removeEventListeners = function removeEventListeners() {
-            imageElement.removeEventListener('error', onError);
-            imageElement.removeEventListener('load', onLoad);
-        };
-        imageElement.addEventListener('error', onError);
-        imageElement.addEventListener('load', onLoad);
-        imageElement.src = costumeAsset.encodeDataURI();
-    }).then(function (imageElement) {
-        costume.skinId = runtime.renderer.createBitmapSkin(imageElement, costume.bitmapResolution, rotationCenter);
-        return costume;
-    });
-};
-
-/**
- * Load a costume's asset into memory asynchronously.
- * Do not call this unless there is a renderer attached.
- * @param {string} md5ext - the MD5 and extension of the costume to be loaded.
- * @param {!object} costume - the Scratch costume object.
- * @property {int} skinId - the ID of the costume's render skin, once installed.
- * @property {number} rotationCenterX - the X component of the costume's origin.
- * @property {number} rotationCenterY - the Y component of the costume's origin.
- * @property {number} [bitmapResolution] - the resolution scale for a bitmap costume.
- * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
- * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
- */
-var loadCostume = function loadCostume(md5ext, costume, runtime) {
-    if (!runtime.storage) {
-        log.error('No storage module present; cannot load costume asset: ', md5ext);
-        return Promise.resolve(costume);
-    }
-
-    var AssetType = runtime.storage.AssetType;
-    var idParts = StringUtil.splitFirst(md5ext, '.');
-    var md5 = idParts[0];
-    var ext = idParts[1].toLowerCase();
-    var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
-
-    return runtime.storage.load(assetType, md5, ext).then(function (costumeAsset) {
-        costume.dataFormat = ext;
-        return loadCostumeFromAsset(costume, costumeAsset, runtime);
-    });
-};
-
-module.exports = {
-    loadCostume: loadCostume,
-    loadCostumeFromAsset: loadCostumeFromAsset
-};
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var StringUtil = __webpack_require__(15);
-var log = __webpack_require__(3);
-
-/**
- * Initialize a sound from an asset asynchronously.
- * @param {!object} sound - the Scratch sound object.
- * @property {string} md5 - the MD5 and extension of the sound to be loaded.
- * @property {Buffer} data - sound data will be written here once loaded.
- * @param {!Asset} soundAsset - the asset loaded from storage.
- * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
- * @returns {!Promise} - a promise which will resolve to the sound when ready.
- */
-var loadSoundFromAsset = function loadSoundFromAsset(sound, soundAsset, runtime) {
-    sound.assetId = soundAsset.assetId;
-    return runtime.audioEngine.decodeSound(Object.assign({}, sound, { data: soundAsset.data })).then(function (soundId) {
-        sound.soundId = soundId;
-        return sound;
-    });
-};
-
-/**
- * Load a sound's asset into memory asynchronously.
- * @param {!object} sound - the Scratch sound object.
- * @property {string} md5 - the MD5 and extension of the sound to be loaded.
- * @property {Buffer} data - sound data will be written here once loaded.
- * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
- * @returns {!Promise} - a promise which will resolve to the sound when ready.
- */
-var loadSound = function loadSound(sound, runtime) {
-    if (!runtime.storage) {
-        log.error('No storage module present; cannot load sound asset: ', sound.md5);
-        return Promise.resolve(sound);
-    }
-    if (!runtime.audioEngine) {
-        log.error('No audio engine present; cannot load sound asset: ', sound.md5);
-        return Promise.resolve(sound);
-    }
-    var idParts = StringUtil.splitFirst(sound.md5, '.');
-    var md5 = idParts[0];
-    var ext = idParts[1].toLowerCase();
-    return runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext).then(function (soundAsset) {
-        sound.dataFormat = ext;
-        return loadSoundFromAsset(sound, soundAsset, runtime);
-    });
-};
-
-module.exports = {
-    loadSound: loadSound,
-    loadSoundFromAsset: loadSoundFromAsset
-};
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var log = __webpack_require__(3);
-var MathUtil = __webpack_require__(8);
-var StringUtil = __webpack_require__(15);
-var Target = __webpack_require__(77);
-
-/**
- * Rendered target: instance of a sprite (clone), or the stage.
- */
-
-var RenderedTarget = function (_Target) {
-    _inherits(RenderedTarget, _Target);
-
-    /**
-     * @param {!Sprite} sprite Reference to the parent sprite.
-     * @param {Runtime} runtime Reference to the runtime.
-     * @constructor
-     */
-    function RenderedTarget(sprite, runtime) {
-        _classCallCheck(this, RenderedTarget);
-
-        /**
-         * Reference to the sprite that this is a render of.
-         * @type {!Sprite}
-         */
-        var _this = _possibleConstructorReturn(this, (RenderedTarget.__proto__ || Object.getPrototypeOf(RenderedTarget)).call(this, runtime, sprite.blocks));
-
-        _this.sprite = sprite;
-        /**
-         * Reference to the global renderer for this VM, if one exists.
-         * @type {?RenderWebGL}
-         */
-        _this.renderer = null;
-        if (_this.runtime) {
-            _this.renderer = _this.runtime.renderer;
-        }
-        /**
-         * ID of the drawable for this rendered target,
-         * returned by the renderer, if rendered.
-         * @type {?Number}
-         */
-        _this.drawableID = null;
-
-        /**
-         * Drag state of this rendered target. If true, x/y position can't be
-         * changed by blocks.
-         * @type {boolean}
-         */
-        _this.dragging = false;
-
-        /**
-         * Map of current graphic effect values.
-         * @type {!Object.<string, number>}
-         */
-        _this.effects = {
-            color: 0,
-            fisheye: 0,
-            whirl: 0,
-            pixelate: 0,
-            mosaic: 0,
-            brightness: 0,
-            ghost: 0
-        };
-
-        /**
-         * Whether this represents an "original" non-clone rendered-target for a sprite,
-         * i.e., created by the editor and not clone blocks.
-         * @type {boolean}
-         */
-        _this.isOriginal = true;
-
-        /**
-         * Whether this rendered target represents the Scratch stage.
-         * @type {boolean}
-         */
-        _this.isStage = false;
-
-        /**
-         * Scratch X coordinate. Currently should range from -240 to 240.
-         * @type {Number}
-         */
-        _this.x = 0;
-
-        /**
-         * Scratch Y coordinate. Currently should range from -180 to 180.
-         * @type {number}
-         */
-        _this.y = 0;
-
-        /**
-         * Scratch direction. Currently should range from -179 to 180.
-         * @type {number}
-         */
-        _this.direction = 90;
-
-        /**
-         * Whether the rendered target is draggable on the stage
-         * @type {boolean}
-         */
-        _this.draggable = false;
-
-        /**
-         * Whether the rendered target is currently visible.
-         * @type {boolean}
-         */
-        _this.visible = true;
-
-        /**
-         * Size of rendered target as a percent of costume size.
-         * @type {number}
-         */
-        _this.size = 100;
-
-        /**
-         * Currently selected costume index.
-         * @type {number}
-         */
-        _this.currentCostume = 0;
-
-        /**
-         * Current rotation style.
-         * @type {!string}
-         */
-        _this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
-        return _this;
-    }
-
-    /**
-     * Create a drawable with the this.renderer.
-     */
-
-
-    _createClass(RenderedTarget, [{
-        key: 'initDrawable',
-        value: function initDrawable() {
-            if (this.renderer) {
-                this.drawableID = this.renderer.createDrawable();
-            }
-            // If we're a clone, start the hats.
-            if (!this.isOriginal) {
-                this.runtime.startHats('control_start_as_clone', null, this);
-            }
-
-            /**
-            * Audio player
-            */
-            this.audioPlayer = null;
-            if (this.runtime && this.runtime.audioEngine) {
-                this.audioPlayer = this.runtime.audioEngine.createPlayer();
-            }
-        }
-
-        /**
-         * Event which fires when a target moves.
-         * @type {string}
-         */
-
-    }, {
-        key: 'setXY',
-
-
-        /**
-         * Set the X and Y coordinates.
-         * @param {!number} x New X coordinate, in Scratch coordinates.
-         * @param {!number} y New Y coordinate, in Scratch coordinates.
-         * @param {?boolean} force Force setting X/Y, in case of dragging
-         */
-        value: function setXY(x, y, force) {
-            if (this.isStage) return;
-            if (this.dragging && !force) return;
-            var oldX = this.x;
-            var oldY = this.y;
-            if (this.renderer) {
-                var position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
-                this.x = position[0];
-                this.y = position[1];
-
-                this.renderer.updateDrawableProperties(this.drawableID, {
-                    position: position
-                });
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            } else {
-                this.x = x;
-                this.y = y;
-            }
-            this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY);
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Get the rendered direction and scale, after applying rotation style.
-         * @return {object<string, number>} Direction and scale to render.
-         */
-
-    }, {
-        key: '_getRenderedDirectionAndScale',
-        value: function _getRenderedDirectionAndScale() {
-            // Default: no changes to `this.direction` or `this.scale`.
-            var finalDirection = this.direction;
-            var finalScale = [this.size, this.size];
-            if (this.rotationStyle === RenderedTarget.ROTATION_STYLE_NONE) {
-                // Force rendered direction to be 90.
-                finalDirection = 90;
-            } else if (this.rotationStyle === RenderedTarget.ROTATION_STYLE_LEFT_RIGHT) {
-                // Force rendered direction to be 90, and flip drawable if needed.
-                finalDirection = 90;
-                var scaleFlip = this.direction < 0 ? -1 : 1;
-                finalScale = [scaleFlip * this.size, this.size];
-            }
-            return { direction: finalDirection, scale: finalScale };
-        }
-
-        /**
-         * Set the direction.
-         * @param {!number} direction New direction.
-         */
-
-    }, {
-        key: 'setDirection',
-        value: function setDirection(direction) {
-            if (this.isStage) {
-                return;
-            }
-            if (!isFinite(direction)) {
-                return;
-            }
-            // Keep direction between -179 and +180.
-            this.direction = MathUtil.wrapClamp(direction, -179, 180);
-            if (this.renderer) {
-                var renderedDirectionScale = this._getRenderedDirectionAndScale();
-                this.renderer.updateDrawableProperties(this.drawableID, {
-                    direction: renderedDirectionScale.direction,
-                    scale: renderedDirectionScale.scale
-                });
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Set draggability; i.e., whether it's able to be dragged in the player
-         * @param {!boolean} draggable True if should be draggable.
-         */
-
-    }, {
-        key: 'setDraggable',
-        value: function setDraggable(draggable) {
-            if (this.isStage) return;
-            this.draggable = !!draggable;
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Set a say bubble.
-         * @param {?string} type Type of say bubble: "say", "think", or null.
-         * @param {?string} message Message to put in say bubble.
-         */
-
-    }, {
-        key: 'setSay',
-        value: function setSay(type, message) {
-            if (this.isStage) {
-                return;
-            }
-            // @todo: Render to stage.
-            if (!type || !message) {
-                log.info('Clearing say bubble');
-                return;
-            }
-            log.info('Setting say bubble:', type, message);
-        }
-
-        /**
-         * Set visibility; i.e., whether it's shown or hidden.
-         * @param {!boolean} visible True if should be shown.
-         */
-
-    }, {
-        key: 'setVisible',
-        value: function setVisible(visible) {
-            if (this.isStage) {
-                return;
-            }
-            this.visible = !!visible;
-            if (this.renderer) {
-                this.renderer.updateDrawableProperties(this.drawableID, {
-                    visible: this.visible
-                });
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Set size, as a percentage of the costume size.
-         * @param {!number} size Size of rendered target, as % of costume size.
-         */
-
-    }, {
-        key: 'setSize',
-        value: function setSize(size) {
-            if (this.isStage) {
-                return;
-            }
-            if (this.renderer) {
-                // Clamp to scales relative to costume and stage size.
-                // See original ScratchSprite.as:setSize.
-                var costumeSize = this.renderer.getSkinSize(this.drawableID);
-                var origW = costumeSize[0];
-                var origH = costumeSize[1];
-                var minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
-                var maxScale = Math.min(1.5 * this.runtime.STAGE_WIDTH / origW, 1.5 * this.runtime.STAGE_HEIGHT / origH);
-                this.size = MathUtil.clamp(size / 100, minScale, maxScale) * 100;
-                var renderedDirectionScale = this._getRenderedDirectionAndScale();
-                this.renderer.updateDrawableProperties(this.drawableID, {
-                    direction: renderedDirectionScale.direction,
-                    scale: renderedDirectionScale.scale
-                });
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-        }
-
-        /**
-         * Set a particular graphic effect value.
-         * @param {!string} effectName Name of effect (see `RenderedTarget.prototype.effects`).
-         * @param {!number} value Numerical magnitude of effect.
-         */
-
-    }, {
-        key: 'setEffect',
-        value: function setEffect(effectName, value) {
-            if (!this.effects.hasOwnProperty(effectName)) return;
-            this.effects[effectName] = value;
-            if (this.renderer) {
-                var props = {};
-                props[effectName] = this.effects[effectName];
-                this.renderer.updateDrawableProperties(this.drawableID, props);
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-        }
-
-        /**
-         * Clear all graphic effects on this rendered target.
-         */
-
-    }, {
-        key: 'clearEffects',
-        value: function clearEffects() {
-            for (var effectName in this.effects) {
-                if (!this.effects.hasOwnProperty(effectName)) continue;
-                this.effects[effectName] = 0;
-            }
-            if (this.renderer) {
-                this.renderer.updateDrawableProperties(this.drawableID, this.effects);
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-        }
-
-        /**
-         * Set the current costume.
-         * @param {number} index New index of costume.
-         */
-
-    }, {
-        key: 'setCostume',
-        value: function setCostume(index) {
-            // Keep the costume index within possible values.
-            index = Math.round(index);
-            this.currentCostume = MathUtil.wrapClamp(index, 0, this.sprite.costumes.length - 1);
-            if (this.renderer) {
-                var costume = this.sprite.costumes[this.currentCostume];
-                var drawableProperties = {
-                    skinId: costume.skinId,
-                    costumeResolution: costume.bitmapResolution
-                };
-                if (typeof costume.rotationCenterX !== 'undefined' && typeof costume.rotationCenterY !== 'undefined') {
-                    var scale = costume.bitmapResolution || 1;
-                    drawableProperties.rotationCenter = [costume.rotationCenterX / scale, costume.rotationCenterY / scale];
-                }
-                this.renderer.updateDrawableProperties(this.drawableID, drawableProperties);
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Add a costume, taking care to avoid duplicate names.
-         * @param {!object} costumeObject Object representing the costume.
-         */
-
-    }, {
-        key: 'addCostume',
-        value: function addCostume(costumeObject) {
-            var usedNames = this.sprite.costumes.map(function (costume) {
-                return costume.name;
-            });
-            costumeObject.name = StringUtil.unusedName(costumeObject.name, usedNames);
-            this.sprite.costumes.push(costumeObject);
-        }
-
-        /**
-         * Rename a costume, taking care to avoid duplicate names.
-         * @param {int} costumeIndex - the index of the costume to be renamed.
-         * @param {string} newName - the desired new name of the costume (will be modified if already in use).
-         */
-
-    }, {
-        key: 'renameCostume',
-        value: function renameCostume(costumeIndex, newName) {
-            var usedNames = this.sprite.costumes.filter(function (costume, index) {
-                return costumeIndex !== index;
-            }).map(function (costume) {
-                return costume.name;
-            });
-            this.sprite.costumes[costumeIndex].name = StringUtil.unusedName(newName, usedNames);
-        }
-
-        /**
-         * Delete a costume by index.
-         * @param {number} index Costume index to be deleted
-         */
-
-    }, {
-        key: 'deleteCostume',
-        value: function deleteCostume(index) {
-            var originalCostumeCount = this.sprite.costumes.length;
-            if (originalCostumeCount === 1) return;
-
-            this.sprite.costumes = this.sprite.costumes.slice(0, index).concat(this.sprite.costumes.slice(index + 1));
-
-            if (index === this.currentCostume && index === originalCostumeCount - 1) {
-                this.setCostume(index - 1);
-            } else if (index < this.currentCostume) {
-                this.setCostume(this.currentCostume - 1);
-            } else {
-                this.setCostume(this.currentCostume);
-            }
-
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Add a sound, taking care to avoid duplicate names.
-         * @param {!object} soundObject Object representing the sound.
-         */
-
-    }, {
-        key: 'addSound',
-        value: function addSound(soundObject) {
-            var usedNames = this.sprite.sounds.map(function (sound) {
-                return sound.name;
-            });
-            soundObject.name = StringUtil.unusedName(soundObject.name, usedNames);
-            this.sprite.sounds.push(soundObject);
-        }
-
-        /**
-         * Rename a sound, taking care to avoid duplicate names.
-         * @param {int} soundIndex - the index of the sound to be renamed.
-         * @param {string} newName - the desired new name of the sound (will be modified if already in use).
-         */
-
-    }, {
-        key: 'renameSound',
-        value: function renameSound(soundIndex, newName) {
-            var usedNames = this.sprite.sounds.filter(function (sound, index) {
-                return soundIndex !== index;
-            }).map(function (sound) {
-                return sound.name;
-            });
-            this.sprite.sounds[soundIndex].name = StringUtil.unusedName(newName, usedNames);
-        }
-
-        /**
-         * Delete a sound by index.
-         * @param {number} index Sound index to be deleted
-         */
-
-    }, {
-        key: 'deleteSound',
-        value: function deleteSound(index) {
-            this.sprite.sounds = this.sprite.sounds.slice(0, index).concat(this.sprite.sounds.slice(index + 1));
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Update the rotation style.
-         * @param {!string} rotationStyle New rotation style.
-         */
-
-    }, {
-        key: 'setRotationStyle',
-        value: function setRotationStyle(rotationStyle) {
-            if (rotationStyle === RenderedTarget.ROTATION_STYLE_NONE) {
-                this.rotationStyle = RenderedTarget.ROTATION_STYLE_NONE;
-            } else if (rotationStyle === RenderedTarget.ROTATION_STYLE_ALL_AROUND) {
-                this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
-            } else if (rotationStyle === RenderedTarget.ROTATION_STYLE_LEFT_RIGHT) {
-                this.rotationStyle = RenderedTarget.ROTATION_STYLE_LEFT_RIGHT;
-            }
-            if (this.renderer) {
-                var renderedDirectionScale = this._getRenderedDirectionAndScale();
-                this.renderer.updateDrawableProperties(this.drawableID, {
-                    direction: renderedDirectionScale.direction,
-                    scale: renderedDirectionScale.scale
-                });
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Get a costume index of this rendered target, by name of the costume.
-         * @param {?string} costumeName Name of a costume.
-         * @return {number} Index of the named costume, or -1 if not present.
-         */
-
-    }, {
-        key: 'getCostumeIndexByName',
-        value: function getCostumeIndexByName(costumeName) {
-            for (var i = 0; i < this.sprite.costumes.length; i++) {
-                if (this.sprite.costumes[i].name === costumeName) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        /**
-         * Get a costume of this rendered target by id.
-         * @return {object} current costume
-         */
-
-    }, {
-        key: 'getCurrentCostume',
-        value: function getCurrentCostume() {
-            return this.sprite.costumes[this.currentCostume];
-        }
-
-        /**
-         * Get full costume list
-         * @return {object[]} list of costumes
-         */
-
-    }, {
-        key: 'getCostumes',
-        value: function getCostumes() {
-            return this.sprite.costumes;
-        }
-
-        /**
-         * Get full sound list
-         * @return {object[]} list of sounds
-         */
-
-    }, {
-        key: 'getSounds',
-        value: function getSounds() {
-            return this.sprite.sounds;
-        }
-
-        /**
-         * Update all drawable properties for this rendered target.
-         * Use when a batch has changed, e.g., when the drawable is first created.
-         */
-
-    }, {
-        key: 'updateAllDrawableProperties',
-        value: function updateAllDrawableProperties() {
-            if (this.renderer) {
-                var renderedDirectionScale = this._getRenderedDirectionAndScale();
-                var costume = this.sprite.costumes[this.currentCostume];
-                var bitmapResolution = costume.bitmapResolution || 1;
-                var props = {
-                    position: [this.x, this.y],
-                    direction: renderedDirectionScale.direction,
-                    draggable: this.draggable,
-                    scale: renderedDirectionScale.scale,
-                    visible: this.visible,
-                    skinId: costume.skinId,
-                    costumeResolution: bitmapResolution,
-                    rotationCenter: [costume.rotationCenterX / bitmapResolution, costume.rotationCenterY / bitmapResolution]
-                };
-                for (var effectName in this.effects) {
-                    if (!this.effects.hasOwnProperty(effectName)) continue;
-                    props[effectName] = this.effects[effectName];
-                }
-                this.renderer.updateDrawableProperties(this.drawableID, props);
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-            this.runtime.requestTargetsUpdate(this);
-        }
-
-        /**
-         * Return the human-readable name for this rendered target, e.g., the sprite's name.
-         * @override
-         * @returns {string} Human-readable name.
-         */
-
-    }, {
-        key: 'getName',
-        value: function getName() {
-            return this.sprite.name;
-        }
-
-        /**
-         * Return whether this rendered target is a sprite (not a clone, not the stage).
-         * @return {boolean} True if not a clone and not the stage.
-         */
-
-    }, {
-        key: 'isSprite',
-        value: function isSprite() {
-            return !this.isStage && this.isOriginal;
-        }
-
-        /**
-         * Return the rendered target's tight bounding box.
-         * Includes top, left, bottom, right attributes in Scratch coordinates.
-         * @return {?object} Tight bounding box, or null.
-         */
-
-    }, {
-        key: 'getBounds',
-        value: function getBounds() {
-            if (this.renderer) {
-                return this.runtime.renderer.getBounds(this.drawableID);
-            }
-            return null;
-        }
-
-        /**
-         * Return whether touching a point.
-         * @param {number} x X coordinate of test point.
-         * @param {number} y Y coordinate of test point.
-         * @return {boolean} True iff the rendered target is touching the point.
-         */
-
-    }, {
-        key: 'isTouchingPoint',
-        value: function isTouchingPoint(x, y) {
-            if (this.renderer) {
-                // @todo: Update once pick is in Scratch coordinates.
-                // Limits test to this Drawable, so this will return true
-                // even if the clone is obscured by another Drawable.
-                var pickResult = this.runtime.renderer.pick(x + this.runtime.STAGE_WIDTH / 2, -y + this.runtime.STAGE_HEIGHT / 2, null, null, [this.drawableID]);
-                return pickResult === this.drawableID;
-            }
-            return false;
-        }
-
-        /**
-         * Return whether touching a stage edge.
-         * @return {boolean} True iff the rendered target is touching the stage edge.
-         */
-
-    }, {
-        key: 'isTouchingEdge',
-        value: function isTouchingEdge() {
-            if (this.renderer) {
-                var stageWidth = this.runtime.constructor.STAGE_WIDTH;
-                var stageHeight = this.runtime.constructor.STAGE_HEIGHT;
-                var bounds = this.getBounds();
-                if (bounds.left < -stageWidth / 2 || bounds.right > stageWidth / 2 || bounds.top > stageHeight / 2 || bounds.bottom < -stageHeight / 2) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Return whether touching any of a named sprite's clones.
-         * @param {string} spriteName Name of the sprite.
-         * @return {boolean} True iff touching a clone of the sprite.
-         */
-
-    }, {
-        key: 'isTouchingSprite',
-        value: function isTouchingSprite(spriteName) {
-            var firstClone = this.runtime.getSpriteTargetByName(spriteName);
-            if (!firstClone || !this.renderer) {
-                return false;
-            }
-            var drawableCandidates = firstClone.sprite.clones.map(function (clone) {
-                return clone.drawableID;
-            });
-            return this.renderer.isTouchingDrawables(this.drawableID, drawableCandidates);
-        }
-
-        /**
-         * Return whether touching a color.
-         * @param {Array.<number>} rgb [r,g,b], values between 0-255.
-         * @return {Promise.<boolean>} True iff the rendered target is touching the color.
-         */
-
-    }, {
-        key: 'isTouchingColor',
-        value: function isTouchingColor(rgb) {
-            if (this.renderer) {
-                return this.renderer.isTouchingColor(this.drawableID, rgb);
-            }
-            return false;
-        }
-
-        /**
-         * Return whether rendered target's color is touching a color.
-         * @param {object} targetRgb {Array.<number>} [r,g,b], values between 0-255.
-         * @param {object} maskRgb {Array.<number>} [r,g,b], values between 0-255.
-         * @return {Promise.<boolean>} True iff the color is touching the color.
-         */
-
-    }, {
-        key: 'colorIsTouchingColor',
-        value: function colorIsTouchingColor(targetRgb, maskRgb) {
-            if (this.renderer) {
-                return this.renderer.isTouchingColor(this.drawableID, targetRgb, maskRgb);
-            }
-            return false;
-        }
-
-        /**
-         * Move to the front layer.
-         */
-
-    }, {
-        key: 'goToFront',
-        value: function goToFront() {
-            if (this.renderer) {
-                this.renderer.setDrawableOrder(this.drawableID, Infinity);
-            }
-        }
-
-        /**
-         * Move back a number of layers.
-         * @param {number} nLayers How many layers to go back.
-         */
-
-    }, {
-        key: 'goBackLayers',
-        value: function goBackLayers(nLayers) {
-            if (this.renderer) {
-                this.renderer.setDrawableOrder(this.drawableID, -nLayers, true, 1);
-            }
-        }
-
-        /**
-         * Move behind some other rendered target.
-         * @param {!RenderedTarget} other Other rendered target to move behind.
-         */
-
-    }, {
-        key: 'goBehindOther',
-        value: function goBehindOther(other) {
-            if (this.renderer) {
-                var otherLayer = this.renderer.setDrawableOrder(other.drawableID, 0, true);
-                this.renderer.setDrawableOrder(this.drawableID, otherLayer);
-            }
-        }
-
-        /**
-         * Keep a desired position within a fence.
-         * @param {number} newX New desired X position.
-         * @param {number} newY New desired Y position.
-         * @param {object=} optFence Optional fence with left, right, top bottom.
-         * @return {Array.<number>} Fenced X and Y coordinates.
-         */
-
-    }, {
-        key: 'keepInFence',
-        value: function keepInFence(newX, newY, optFence) {
-            var fence = optFence;
-            if (!fence) {
-                fence = {
-                    left: -this.runtime.STAGE_WIDTH / 2,
-                    right: this.runtime.STAGE_WIDTH / 2,
-                    top: this.runtime.STAGE_HEIGHT / 2,
-                    bottom: -this.runtime.STAGE_HEIGHT / 2
-                };
-            }
-            var bounds = this.getBounds();
-            if (!bounds) return;
-            // Adjust the known bounds to the target position.
-            bounds.left += newX - this.x;
-            bounds.right += newX - this.x;
-            bounds.top += newY - this.y;
-            bounds.bottom += newY - this.y;
-            // Find how far we need to move the target position.
-            var dx = 0;
-            var dy = 0;
-            if (bounds.left < fence.left) {
-                dx += fence.left - bounds.left;
-            }
-            if (bounds.right > fence.right) {
-                dx += fence.right - bounds.right;
-            }
-            if (bounds.top > fence.top) {
-                dy += fence.top - bounds.top;
-            }
-            if (bounds.bottom < fence.bottom) {
-                dy += fence.bottom - bounds.bottom;
-            }
-            return [newX + dx, newY + dy];
-        }
-
-        /**
-         * Make a clone, copying any run-time properties.
-         * If we've hit the global clone limit, returns null.
-         * @return {RenderedTarget} New clone.
-         */
-
-    }, {
-        key: 'makeClone',
-        value: function makeClone() {
-            if (!this.runtime.clonesAvailable() || this.isStage) {
-                return null; // Hit max clone limit, or this is the stage.
-            }
-            this.runtime.changeCloneCounter(1);
-            var newClone = this.sprite.createClone();
-            // Copy all properties.
-            newClone.x = this.x;
-            newClone.y = this.y;
-            newClone.direction = this.direction;
-            newClone.draggable = this.draggable;
-            newClone.visible = this.visible;
-            newClone.size = this.size;
-            newClone.currentCostume = this.currentCostume;
-            newClone.rotationStyle = this.rotationStyle;
-            newClone.effects = JSON.parse(JSON.stringify(this.effects));
-            newClone.variables = JSON.parse(JSON.stringify(this.variables));
-            newClone.lists = JSON.parse(JSON.stringify(this.lists));
-            newClone.initDrawable();
-            newClone.updateAllDrawableProperties();
-            // Place behind the current target.
-            newClone.goBehindOther(this);
-            return newClone;
-        }
-
-        /**
-         * Make a duplicate using a duplicate sprite.
-         * @return {RenderedTarget} New clone.
-         */
-
-    }, {
-        key: 'duplicate',
-        value: function duplicate() {
-            var _this2 = this;
-
-            return this.sprite.duplicate().then(function (newSprite) {
-                var newTarget = newSprite.createClone();
-                // Copy all properties.
-                // @todo refactor with clone methods
-                newTarget.x = Math.random() * 400 / 2;
-                newTarget.y = Math.random() * 300 / 2;
-                newTarget.direction = _this2.direction;
-                newTarget.draggable = _this2.draggable;
-                newTarget.visible = _this2.visible;
-                newTarget.size = _this2.size;
-                newTarget.currentCostume = _this2.currentCostume;
-                newTarget.rotationStyle = _this2.rotationStyle;
-                newTarget.effects = JSON.parse(JSON.stringify(_this2.effects));
-                newTarget.variables = JSON.parse(JSON.stringify(_this2.variables));
-                newTarget.lists = JSON.parse(JSON.stringify(_this2.lists));
-                newTarget.initDrawable();
-                newTarget.updateAllDrawableProperties();
-                newTarget.goBehindOther(_this2);
-                return newTarget;
-            });
-        }
-
-        /**
-         * Called when the project receives a "green flag."
-         * For a rendered target, this clears graphic effects.
-         */
-
-    }, {
-        key: 'onGreenFlag',
-        value: function onGreenFlag() {
-            this.clearEffects();
-        }
-
-        /**
-         * Called when the project receives a "stop all"
-         * Stop all sounds and clear graphic effects.
-         */
-
-    }, {
-        key: 'onStopAll',
-        value: function onStopAll() {
-            this.clearEffects();
-            if (this.audioPlayer) {
-                this.audioPlayer.stopAllSounds();
-                this.audioPlayer.clearEffects();
-            }
-        }
-
-        /**
-         * Post/edit sprite info.
-         * @param {object} data An object with sprite info data to set.
-         */
-
-    }, {
-        key: 'postSpriteInfo',
-        value: function postSpriteInfo(data) {
-            var force = data.hasOwnProperty('force') ? data.force : null;
-            if (data.hasOwnProperty('x')) {
-                this.setXY(data.x, this.y, force);
-            }
-            if (data.hasOwnProperty('y')) {
-                this.setXY(this.x, data.y, force);
-            }
-            if (data.hasOwnProperty('direction')) {
-                this.setDirection(data.direction);
-            }
-            if (data.hasOwnProperty('draggable')) {
-                this.setDraggable(data.draggable);
-            }
-            if (data.hasOwnProperty('rotationStyle')) {
-                this.setRotationStyle(data.rotationStyle);
-            }
-            if (data.hasOwnProperty('visible')) {
-                this.setVisible(data.visible);
-            }
-        }
-
-        /**
-         * Put the sprite into the drag state. While in effect, setXY must be forced
-         */
-
-    }, {
-        key: 'startDrag',
-        value: function startDrag() {
-            this.dragging = true;
-        }
-
-        /**
-         * Remove the sprite from the drag state.
-         */
-
-    }, {
-        key: 'stopDrag',
-        value: function stopDrag() {
-            this.dragging = false;
-        }
-
-        /**
-         * Serialize sprite info, used when emitting events about the sprite
-         * @returns {object} Sprite data as a simple object
-         */
-
-    }, {
-        key: 'toJSON',
-        value: function toJSON() {
-            var costumes = this.getCostumes();
-            return {
-                id: this.id,
-                name: this.getName(),
-                isStage: this.isStage,
-                x: this.x,
-                y: this.y,
-                size: this.size,
-                direction: this.direction,
-                draggable: this.draggable,
-                currentCostume: this.currentCostume,
-                costume: costumes[this.currentCostume],
-                costumeCount: costumes.length,
-                visible: this.visible,
-                rotationStyle: this.rotationStyle,
-                blocks: this.blocks._blocks,
-                variables: this.variables,
-                lists: this.lists,
-                costumes: costumes,
-                sounds: this.getSounds()
-            };
-        }
-
-        /**
-         * Dispose, destroying any run-time properties.
-         */
-
-    }, {
-        key: 'dispose',
-        value: function dispose() {
-            for (var key in this.variables) {
-                this.deleteVariable(key);
-            }
-            this.runtime.changeCloneCounter(-1);
-            this.runtime.stopForTarget(this);
-            this.sprite.removeClone(this);
-            if (this.renderer && this.drawableID !== null) {
-                this.renderer.destroyDrawable(this.drawableID);
-                if (this.visible) {
-                    this.runtime.requestRedraw();
-                }
-            }
-        }
-    }], [{
-        key: 'EVENT_TARGET_MOVED',
-        get: function get() {
-            return 'TARGET_MOVED';
-        }
-
-        /**
-         * Rotation style for "all around"/spinning.
-         * @type {string}
-         */
-
-    }, {
-        key: 'ROTATION_STYLE_ALL_AROUND',
-        get: function get() {
-            return 'all around';
-        }
-
-        /**
-         * Rotation style for "left-right"/flipping.
-         * @type {string}
-         */
-
-    }, {
-        key: 'ROTATION_STYLE_LEFT_RIGHT',
-        get: function get() {
-            return 'left-right';
-        }
-
-        /**
-         * Rotation style for "no rotation."
-         * @type {string}
-         */
-
-    }, {
-        key: 'ROTATION_STYLE_NONE',
-        get: function get() {
-            return "don't rotate";
-        }
-    }]);
-
-    return RenderedTarget;
-}(Target);
-
-module.exports = RenderedTarget;
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Color = function () {
-    function Color() {
-        _classCallCheck(this, Color);
-    }
-
-    _createClass(Color, null, [{
-        key: 'decimalToHex',
-
-
-        /**
-         * Convert a Scratch decimal color to a hex string, #RRGGBB.
-         * @param {number} decimal RGB color as a decimal.
-         * @return {string} RGB color as #RRGGBB hex string.
-         */
-        value: function decimalToHex(decimal) {
-            if (decimal < 0) {
-                decimal += 0xFFFFFF + 1;
-            }
-            var hex = Number(decimal).toString(16);
-            hex = '#' + '000000'.substr(0, 6 - hex.length) + hex;
-            return hex;
-        }
-
-        /**
-         * Convert a Scratch decimal color to an RGB color object.
-         * @param {number} decimal RGB color as decimal.
-         * @return {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
-         */
-
-    }, {
-        key: 'decimalToRgb',
-        value: function decimalToRgb(decimal) {
-            var a = decimal >> 24 & 0xFF;
-            var r = decimal >> 16 & 0xFF;
-            var g = decimal >> 8 & 0xFF;
-            var b = decimal & 0xFF;
-            return { r: r, g: g, b: b, a: a > 0 ? a : 255 };
-        }
-
-        /**
-         * Convert a hex color (e.g., F00, #03F, #0033FF) to an RGB color object.
-         * CC-BY-SA Tim Down:
-         * https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-         * @param {!string} hex Hex representation of the color.
-         * @return {RGBObject} null on failure, or rgb: {r: red [0,255], g: green [0,255], b: blue [0,255]}.
-         */
-
-    }, {
-        key: 'hexToRgb',
-        value: function hexToRgb(hex) {
-            var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-            hex = hex.replace(shorthandRegex, function (m, r, g, b) {
-                return r + r + g + g + b + b;
-            });
-            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
-
-        /**
-         * Convert an RGB color object to a hex color.
-         * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
-         * @return {!string} Hex representation of the color.
-         */
-
-    }, {
-        key: 'rgbToHex',
-        value: function rgbToHex(rgb) {
-            return Color.decimalToHex(Color.rgbToDecimal(rgb));
-        }
-
-        /**
-         * Convert an RGB color object to a Scratch decimal color.
-         * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
-         * @return {!number} Number representing the color.
-         */
-
-    }, {
-        key: 'rgbToDecimal',
-        value: function rgbToDecimal(rgb) {
-            return (rgb.r << 16) + (rgb.g << 8) + rgb.b;
-        }
-
-        /**
-        * Convert a hex color (e.g., F00, #03F, #0033FF) to a decimal color number.
-        * @param {!string} hex Hex representation of the color.
-        * @return {!number} Number representing the color.
-        */
-
-    }, {
-        key: 'hexToDecimal',
-        value: function hexToDecimal(hex) {
-            return Color.rgbToDecimal(Color.hexToRgb(hex));
-        }
-
-        /**
-         * Convert an HSV color to RGB format.
-         * @param {HSVObject} hsv - {h: hue [0,360), s: saturation [0,1], v: value [0,1]}
-         * @return {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
-         */
-
-    }, {
-        key: 'hsvToRgb',
-        value: function hsvToRgb(hsv) {
-            var h = hsv.h % 360;
-            if (h < 0) h += 360;
-            var s = Math.max(0, Math.min(hsv.s, 1));
-            var v = Math.max(0, Math.min(hsv.v, 1));
-
-            var i = Math.floor(h / 60);
-            var f = h / 60 - i;
-            var p = v * (1 - s);
-            var q = v * (1 - s * f);
-            var t = v * (1 - s * (1 - f));
-
-            var r = void 0;
-            var g = void 0;
-            var b = void 0;
-
-            switch (i) {
-                default:
-                case 0:
-                    r = v;
-                    g = t;
-                    b = p;
-                    break;
-                case 1:
-                    r = q;
-                    g = v;
-                    b = p;
-                    break;
-                case 2:
-                    r = p;
-                    g = v;
-                    b = t;
-                    break;
-                case 3:
-                    r = p;
-                    g = q;
-                    b = v;
-                    break;
-                case 4:
-                    r = t;
-                    g = p;
-                    b = v;
-                    break;
-                case 5:
-                    r = v;
-                    g = p;
-                    b = q;
-                    break;
-            }
-
-            return {
-                r: Math.floor(r * 255),
-                g: Math.floor(g * 255),
-                b: Math.floor(b * 255)
-            };
-        }
-
-        /**
-         * Convert an RGB color to HSV format.
-         * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
-         * @return {HSVObject} hsv - {h: hue [0,360), s: saturation [0,1], v: value [0,1]}
-         */
-
-    }, {
-        key: 'rgbToHsv',
-        value: function rgbToHsv(rgb) {
-            var r = rgb.r / 255;
-            var g = rgb.g / 255;
-            var b = rgb.b / 255;
-            var x = Math.min(Math.min(r, g), b);
-            var v = Math.max(Math.max(r, g), b);
-
-            // For grays, hue will be arbitrarily reported as zero. Otherwise, calculate
-            var h = 0;
-            var s = 0;
-            if (x !== v) {
-                var f = r === x ? g - b : g === x ? b - r : r - g;
-                var i = r === x ? 3 : g === x ? 5 : 1;
-                h = (i - f / (v - x)) * 60 % 360;
-                s = (v - x) / v;
-            }
-
-            return { h: h, s: s, v: v };
-        }
-
-        /**
-         * Linear interpolation between rgb0 and rgb1.
-         * @param {RGBObject} rgb0 - the color corresponding to fraction1 <= 0.
-         * @param {RGBObject} rgb1 - the color corresponding to fraction1 >= 1.
-         * @param {number} fraction1 - the interpolation parameter. If this is 0.5, for example, mix the two colors equally.
-         * @return {RGBObject} the interpolated color.
-         */
-
-    }, {
-        key: 'mixRgb',
-        value: function mixRgb(rgb0, rgb1, fraction1) {
-            if (fraction1 <= 0) return rgb0;
-            if (fraction1 >= 1) return rgb1;
-            var fraction0 = 1 - fraction1;
-            return {
-                r: fraction0 * rgb0.r + fraction1 * rgb1.r,
-                g: fraction0 * rgb0.g + fraction1 * rgb1.g,
-                b: fraction0 * rgb0.b + fraction1 * rgb1.b
-            };
-        }
-    }, {
-        key: 'RGB_BLACK',
-
-        /**
-         * @typedef {object} RGBObject - An object representing a color in RGB format.
-         * @property {number} r - the red component, in the range [0, 255].
-         * @property {number} g - the green component, in the range [0, 255].
-         * @property {number} b - the blue component, in the range [0, 255].
-         */
-
-        /**
-         * @typedef {object} HSVObject - An object representing a color in HSV format.
-         * @property {number} h - hue, in the range [0-359).
-         * @property {number} s - saturation, in the range [0,1].
-         * @property {number} v - value, in the range [0,1].
-         */
-
-        /** @type {RGBObject} */
-        get: function get() {
-            return { r: 0, g: 0, b: 0 };
-        }
-
-        /** @type {RGBObject} */
-
-    }, {
-        key: 'RGB_WHITE',
-        get: function get() {
-            return { r: 255, g: 255, b: 255 };
-        }
-    }]);
-
-    return Color;
-}();
-
-module.exports = Color;
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @fileoverview
- * A utility for accurately measuring time.
- * To use:
- * ---
- * var timer = new Timer();
- * timer.start();
- * ... pass some time ...
- * var timeDifference = timer.timeElapsed();
- * ---
- * Or, you can use the `time` and `relativeTime`
- * to do some measurement yourself.
- */
-
-var Timer = function () {
-    function Timer() {
-        _classCallCheck(this, Timer);
-
-        /**
-         * Used to store the start time of a timer action.
-         * Updated when calling `timer.start`.
-         */
-        this.startTime = 0;
-    }
-
-    /**
-     * Disable use of self.performance for now as it results in lower performance
-     * However, instancing it like below (caching the self.performance to a local variable) negates most of the issues.
-     * @type {boolean}
-     */
-
-
-    _createClass(Timer, [{
-        key: 'time',
-
-
-        /**
-         * Return the currently known absolute time, in ms precision.
-         * @returns {number} ms elapsed since 1 January 1970 00:00:00 UTC.
-         */
-        value: function time() {
-            return Timer.nowObj.now();
-        }
-
-        /**
-         * Returns a time accurate relative to other times produced by this function.
-         * If possible, will use sub-millisecond precision.
-         * If not, will use millisecond precision.
-         * Not guaranteed to produce the same absolute values per-system.
-         * @returns {number} ms-scale accurate time relative to other relative times.
-         */
-
-    }, {
-        key: 'relativeTime',
-        value: function relativeTime() {
-            return Timer.nowObj.now();
-        }
-
-        /**
-         * Start a timer for measuring elapsed time,
-         * at the most accurate precision possible.
-         */
-
-    }, {
-        key: 'start',
-        value: function start() {
-            this.startTime = Timer.nowObj.now();
-        }
-    }, {
-        key: 'timeElapsed',
-        value: function timeElapsed() {
-            return Timer.nowObj.now() - this.startTime;
-        }
-    }], [{
-        key: 'USE_PERFORMANCE',
-        get: function get() {
-            return false;
-        }
-
-        /**
-         * Legacy object to allow for us to call now to get the old style date time (for backwards compatibility)
-         * @deprecated This is only called via the nowObj.now() if no other means is possible...
-         */
-
-    }, {
-        key: 'legacyDateCode',
-        get: function get() {
-            return {
-                now: function now() {
-                    return new Date().getTime();
-                }
-            };
-        }
-
-        /**
-         * Use this object to route all time functions through single access points.
-         */
-
-    }, {
-        key: 'nowObj',
-        get: function get() {
-            if (Timer.USE_PERFORMANCE && typeof self !== 'undefined' && self.performance && 'now' in self.performance) {
-                return self.performance;
-            } else if (Date.now) {
-                return Date;
-            }
-            return Timer.legacyDateCode;
-        }
-    }]);
-
-    return Timer;
-}();
-
-module.exports = Timer;
-
-/***/ }),
-/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -11186,6 +9130,2080 @@ module.exports = Timer;
 }));
 
 /***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * A thread is a running stack context and all the metadata needed.
+ * @param {?string} firstBlock First block to execute in the thread.
+ * @constructor
+ */
+var Thread = function () {
+    function Thread(firstBlock) {
+        _classCallCheck(this, Thread);
+
+        /**
+         * ID of top block of the thread
+         * @type {!string}
+         */
+        this.topBlock = firstBlock;
+
+        /**
+         * Stack for the thread. When the sequencer enters a control structure,
+         * the block is pushed onto the stack so we know where to exit.
+         * @type {Array.<string>}
+         */
+        this.stack = [];
+
+        /**
+         * Stack frames for the thread. Store metadata for the executing blocks.
+         * @type {Array.<Object>}
+         */
+        this.stackFrames = [];
+
+        /**
+         * Status of the thread, one of three states (below)
+         * @type {number}
+         */
+        this.status = 0; /* Thread.STATUS_RUNNING */
+
+        /**
+         * Whether the thread is killed in the middle of execution.
+         * @type {boolean}
+         */
+        this.isKilled = false;
+
+        /**
+         * Target of this thread.
+         * @type {?Target}
+         */
+        this.target = null;
+
+        /**
+         * Whether the thread requests its script to glow during this frame.
+         * @type {boolean}
+         */
+        this.requestScriptGlowInFrame = false;
+
+        /**
+         * Which block ID should glow during this frame, if any.
+         * @type {?string}
+         */
+        this.blockGlowInFrame = null;
+
+        /**
+         * A timer for when the thread enters warp mode.
+         * Substitutes the sequencer's count toward WORK_TIME on a per-thread basis.
+         * @type {?Timer}
+         */
+        this.warpTimer = null;
+    }
+
+    /**
+     * Thread status for initialized or running thread.
+     * This is the default state for a thread - execution should run normally,
+     * stepping from block to block.
+     * @const
+     */
+
+
+    _createClass(Thread, [{
+        key: 'pushStack',
+
+
+        /**
+         * Push stack and update stack frames appropriately.
+         * @param {string} blockId Block ID to push to stack.
+         */
+        value: function pushStack(blockId) {
+            this.stack.push(blockId);
+            // Push an empty stack frame, if we need one.
+            // Might not, if we just popped the stack.
+            if (this.stack.length > this.stackFrames.length) {
+                // Copy warp mode from any higher level.
+                var warpMode = false;
+                if (this.stackFrames.length > 0 && this.stackFrames[this.stackFrames.length - 1]) {
+                    warpMode = this.stackFrames[this.stackFrames.length - 1].warpMode;
+                }
+                this.stackFrames.push({
+                    isLoop: false, // Whether this level of the stack is a loop.
+                    warpMode: warpMode, // Whether this level is in warp mode.
+                    reported: {}, // Collects reported input values.
+                    waitingReporter: null, // Name of waiting reporter.
+                    params: {}, // Procedure parameters.
+                    executionContext: {} // A context passed to block implementations.
+                });
+            }
+        }
+
+        /**
+         * Reset the stack frame for use by the next block.
+         * (avoids popping and re-pushing a new stack frame - keeps the warpmode the same
+         * @param {string} blockId Block ID to push to stack.
+         */
+
+    }, {
+        key: 'reuseStackForNextBlock',
+        value: function reuseStackForNextBlock(blockId) {
+            this.stack[this.stack.length - 1] = blockId;
+            var frame = this.stackFrames[this.stackFrames.length - 1];
+            frame.isLoop = false;
+            // frame.warpMode = warpMode;   // warp mode stays the same when reusing the stack frame.
+            frame.reported = {};
+            frame.waitingReporter = null;
+            frame.params = {};
+            frame.executionContext = {};
+        }
+
+        /**
+         * Pop last block on the stack and its stack frame.
+         * @return {string} Block ID popped from the stack.
+         */
+
+    }, {
+        key: 'popStack',
+        value: function popStack() {
+            this.stackFrames.pop();
+            return this.stack.pop();
+        }
+
+        /**
+         * Pop back down the stack frame until we hit a procedure call or the stack frame is emptied
+         */
+
+    }, {
+        key: 'stopThisScript',
+        value: function stopThisScript() {
+            var blockID = this.peekStack();
+            while (blockID !== null) {
+                var block = this.target.blocks.getBlock(blockID);
+                if (typeof block !== 'undefined' && block.opcode === 'procedures_call') {
+                    break;
+                }
+                this.popStack();
+                blockID = this.peekStack();
+            }
+
+            if (this.stack.length === 0) {
+                // Clean up!
+                this.requestScriptGlowInFrame = false;
+                this.status = Thread.STATUS_DONE;
+            }
+        }
+
+        /**
+         * Get top stack item.
+         * @return {?string} Block ID on top of stack.
+         */
+
+    }, {
+        key: 'peekStack',
+        value: function peekStack() {
+            return this.stack.length > 0 ? this.stack[this.stack.length - 1] : null;
+        }
+
+        /**
+         * Get top stack frame.
+         * @return {?object} Last stack frame stored on this thread.
+         */
+
+    }, {
+        key: 'peekStackFrame',
+        value: function peekStackFrame() {
+            return this.stackFrames.length > 0 ? this.stackFrames[this.stackFrames.length - 1] : null;
+        }
+
+        /**
+         * Get stack frame above the current top.
+         * @return {?object} Second to last stack frame stored on this thread.
+         */
+
+    }, {
+        key: 'peekParentStackFrame',
+        value: function peekParentStackFrame() {
+            return this.stackFrames.length > 1 ? this.stackFrames[this.stackFrames.length - 2] : null;
+        }
+
+        /**
+         * Push a reported value to the parent of the current stack frame.
+         * @param {*} value Reported value to push.
+         */
+
+    }, {
+        key: 'pushReportedValue',
+        value: function pushReportedValue(value) {
+            var parentStackFrame = this.peekParentStackFrame();
+            if (parentStackFrame) {
+                var waitingReporter = parentStackFrame.waitingReporter;
+                parentStackFrame.reported[waitingReporter] = value;
+            }
+        }
+
+        /**
+         * Add a parameter to the stack frame.
+         * Use when calling a procedure with parameter values.
+         * @param {!string} paramName Name of parameter.
+         * @param {*} value Value to set for parameter.
+         */
+
+    }, {
+        key: 'pushParam',
+        value: function pushParam(paramName, value) {
+            var stackFrame = this.peekStackFrame();
+            stackFrame.params[paramName] = value;
+        }
+
+        /**
+         * Get a parameter at the lowest possible level of the stack.
+         * @param {!string} paramName Name of parameter.
+         * @return {*} value Value for parameter.
+         */
+
+    }, {
+        key: 'getParam',
+        value: function getParam(paramName) {
+            for (var i = this.stackFrames.length - 1; i >= 0; i--) {
+                var frame = this.stackFrames[i];
+                if (frame.params.hasOwnProperty(paramName)) {
+                    return frame.params[paramName];
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Whether the current execution of a thread is at the top of the stack.
+         * @return {boolean} True if execution is at top of the stack.
+         */
+
+    }, {
+        key: 'atStackTop',
+        value: function atStackTop() {
+            return this.peekStack() === this.topBlock;
+        }
+
+        /**
+         * Switch the thread to the next block at the current level of the stack.
+         * For example, this is used in a standard sequence of blocks,
+         * where execution proceeds from one block to the next.
+         */
+
+    }, {
+        key: 'goToNextBlock',
+        value: function goToNextBlock() {
+            var nextBlockId = this.target.blocks.getNextBlock(this.peekStack());
+            this.reuseStackForNextBlock(nextBlockId);
+        }
+
+        /**
+         * Attempt to determine whether a procedure call is recursive,
+         * by examining the stack.
+         * @param {!string} procedureCode Procedure code of procedure being called.
+         * @return {boolean} True if the call appears recursive.
+         */
+
+    }, {
+        key: 'isRecursiveCall',
+        value: function isRecursiveCall(procedureCode) {
+            var callCount = 5; // Max number of enclosing procedure calls to examine.
+            var sp = this.stack.length - 1;
+            for (var i = sp - 1; i >= 0; i--) {
+                var block = this.target.blocks.getBlock(this.stack[i]);
+                if (block.opcode === 'procedures_call' && block.mutation.proccode === procedureCode) {
+                    return true;
+                }
+                if (--callCount < 0) return false;
+            }
+            return false;
+        }
+    }], [{
+        key: 'STATUS_RUNNING',
+        get: function get() {
+            return 0;
+        }
+
+        /**
+         * Threads are in this state when a primitive is waiting on a promise;
+         * execution is paused until the promise changes thread status.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_PROMISE_WAIT',
+        get: function get() {
+            return 1;
+        }
+
+        /**
+         * Thread status for yield.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_YIELD',
+        get: function get() {
+            return 2;
+        }
+
+        /**
+         * Thread status for a single-tick yield. This will be cleared when the
+         * thread is resumed.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_YIELD_TICK',
+        get: function get() {
+            return 3;
+        }
+
+        /**
+         * Thread status for a finished/done thread.
+         * Thread is in this state when there are no more blocks to execute.
+         * @const
+         */
+
+    }, {
+        key: 'STATUS_DONE',
+        get: function get() {
+            return 4;
+        }
+    }]);
+
+    return Thread;
+}();
+
+module.exports = Thread;
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @fileoverview
+ * Object representing a Scratch variable.
+ */
+
+var uid = __webpack_require__(30);
+
+var Variable = function () {
+    /**
+     * @param {string} id Id of the variable.
+     * @param {string} name Name of the variable.
+     * @param {string} type Type of the variable, one of '' or 'list'
+     * @param {boolean} isCloud Whether the variable is stored in the cloud.
+     * @constructor
+     */
+    function Variable(id, name, type, isCloud) {
+        _classCallCheck(this, Variable);
+
+        this.id = id || uid();
+        this.name = name;
+        this.type = type;
+        this.isCloud = isCloud;
+        switch (this.type) {
+            case Variable.SCALAR_TYPE:
+                this.value = 0;
+                break;
+            case Variable.LIST_TYPE:
+                this.value = [];
+                break;
+            case Variable.COMM_TYPE:
+                this.value = 0;
+                break;
+            default:
+                throw new Error('Invalid variable type: ' + this.type);
+        }
+    }
+
+    _createClass(Variable, [{
+        key: 'toXML',
+        value: function toXML() {
+            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
+        }
+
+        /**
+         * Type representation for scalar variables.
+         * This is currently represented as ''
+         * for compatibility with blockly.
+         * @const {string}
+         */
+
+    }], [{
+        key: 'SCALAR_TYPE',
+        get: function get() {
+            return '';
+        }
+
+        /**
+         * Type representation for list variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'LIST_TYPE',
+        get: function get() {
+            return 'list';
+        }
+
+        /**
+         * Type representation for comm variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'COMM_TYPE',
+        get: function get() {
+            return 'comm';
+        }
+    }]);
+
+    return Variable;
+}();
+
+module.exports = Variable;
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var ArgumentType = {
+    ANGLE: 'angle',
+    BOOLEAN: 'Boolean',
+    COLOR: 'color',
+    NUMBER: 'number',
+    STRING: 'string'
+};
+
+module.exports = ArgumentType;
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var StringUtil = __webpack_require__(15);
+var log = __webpack_require__(3);
+
+/**
+ * Initialize a costume from an asset asynchronously.
+ * Do not call this unless there is a renderer attached.
+ * @param {!object} costume - the Scratch costume object.
+ * @property {int} skinId - the ID of the costume's render skin, once installed.
+ * @property {number} rotationCenterX - the X component of the costume's origin.
+ * @property {number} rotationCenterY - the Y component of the costume's origin.
+ * @property {number} [bitmapResolution] - the resolution scale for a bitmap costume.
+ * @param {!Asset} costumeAsset - the asset of the costume loaded from storage.
+ * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
+ * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
+ */
+var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, runtime) {
+    costume.assetId = costumeAsset.assetId;
+    if (!runtime.renderer) {
+        log.error('No rendering module present; cannot load costume: ', costume.name);
+        return costume;
+    }
+    var AssetType = runtime.storage.AssetType;
+    var rotationCenter = [costume.rotationCenterX / costume.bitmapResolution, costume.rotationCenterY / costume.bitmapResolution];
+    if (costumeAsset.assetType === AssetType.ImageVector) {
+        costume.skinId = runtime.renderer.createSVGSkin(costumeAsset.decodeText(), rotationCenter);
+        return costume;
+    }
+
+    return new Promise(function (resolve, reject) {
+        var imageElement = new Image();
+        var onError = function onError() {
+            // eslint-disable-next-line no-use-before-define
+            removeEventListeners();
+            reject();
+        };
+        var onLoad = function onLoad() {
+            // eslint-disable-next-line no-use-before-define
+            removeEventListeners();
+            resolve(imageElement);
+        };
+        var removeEventListeners = function removeEventListeners() {
+            imageElement.removeEventListener('error', onError);
+            imageElement.removeEventListener('load', onLoad);
+        };
+        imageElement.addEventListener('error', onError);
+        imageElement.addEventListener('load', onLoad);
+        imageElement.src = costumeAsset.encodeDataURI();
+    }).then(function (imageElement) {
+        costume.skinId = runtime.renderer.createBitmapSkin(imageElement, costume.bitmapResolution, rotationCenter);
+        return costume;
+    });
+};
+
+/**
+ * Load a costume's asset into memory asynchronously.
+ * Do not call this unless there is a renderer attached.
+ * @param {string} md5ext - the MD5 and extension of the costume to be loaded.
+ * @param {!object} costume - the Scratch costume object.
+ * @property {int} skinId - the ID of the costume's render skin, once installed.
+ * @property {number} rotationCenterX - the X component of the costume's origin.
+ * @property {number} rotationCenterY - the Y component of the costume's origin.
+ * @property {number} [bitmapResolution] - the resolution scale for a bitmap costume.
+ * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
+ * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
+ */
+var loadCostume = function loadCostume(md5ext, costume, runtime) {
+    if (!runtime.storage) {
+        log.error('No storage module present; cannot load costume asset: ', md5ext);
+        return Promise.resolve(costume);
+    }
+
+    var AssetType = runtime.storage.AssetType;
+    var idParts = StringUtil.splitFirst(md5ext, '.');
+    var md5 = idParts[0];
+    var ext = idParts[1].toLowerCase();
+    var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
+
+    return runtime.storage.load(assetType, md5, ext).then(function (costumeAsset) {
+        costume.dataFormat = ext;
+        return loadCostumeFromAsset(costume, costumeAsset, runtime);
+    });
+};
+
+module.exports = {
+    loadCostume: loadCostume,
+    loadCostumeFromAsset: loadCostumeFromAsset
+};
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var StringUtil = __webpack_require__(15);
+var log = __webpack_require__(3);
+
+/**
+ * Initialize a sound from an asset asynchronously.
+ * @param {!object} sound - the Scratch sound object.
+ * @property {string} md5 - the MD5 and extension of the sound to be loaded.
+ * @property {Buffer} data - sound data will be written here once loaded.
+ * @param {!Asset} soundAsset - the asset loaded from storage.
+ * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
+ * @returns {!Promise} - a promise which will resolve to the sound when ready.
+ */
+var loadSoundFromAsset = function loadSoundFromAsset(sound, soundAsset, runtime) {
+    sound.assetId = soundAsset.assetId;
+    return runtime.audioEngine.decodeSound(Object.assign({}, sound, { data: soundAsset.data })).then(function (soundId) {
+        sound.soundId = soundId;
+        return sound;
+    });
+};
+
+/**
+ * Load a sound's asset into memory asynchronously.
+ * @param {!object} sound - the Scratch sound object.
+ * @property {string} md5 - the MD5 and extension of the sound to be loaded.
+ * @property {Buffer} data - sound data will be written here once loaded.
+ * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
+ * @returns {!Promise} - a promise which will resolve to the sound when ready.
+ */
+var loadSound = function loadSound(sound, runtime) {
+    if (!runtime.storage) {
+        log.error('No storage module present; cannot load sound asset: ', sound.md5);
+        return Promise.resolve(sound);
+    }
+    if (!runtime.audioEngine) {
+        log.error('No audio engine present; cannot load sound asset: ', sound.md5);
+        return Promise.resolve(sound);
+    }
+    var idParts = StringUtil.splitFirst(sound.md5, '.');
+    var md5 = idParts[0];
+    var ext = idParts[1].toLowerCase();
+    return runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext).then(function (soundAsset) {
+        sound.dataFormat = ext;
+        return loadSoundFromAsset(sound, soundAsset, runtime);
+    });
+};
+
+module.exports = {
+    loadSound: loadSound,
+    loadSoundFromAsset: loadSoundFromAsset
+};
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var log = __webpack_require__(3);
+var MathUtil = __webpack_require__(8);
+var StringUtil = __webpack_require__(15);
+var Target = __webpack_require__(77);
+
+/**
+ * Rendered target: instance of a sprite (clone), or the stage.
+ */
+
+var RenderedTarget = function (_Target) {
+    _inherits(RenderedTarget, _Target);
+
+    /**
+     * @param {!Sprite} sprite Reference to the parent sprite.
+     * @param {Runtime} runtime Reference to the runtime.
+     * @constructor
+     */
+    function RenderedTarget(sprite, runtime) {
+        _classCallCheck(this, RenderedTarget);
+
+        /**
+         * Reference to the sprite that this is a render of.
+         * @type {!Sprite}
+         */
+        var _this = _possibleConstructorReturn(this, (RenderedTarget.__proto__ || Object.getPrototypeOf(RenderedTarget)).call(this, runtime, sprite.blocks));
+
+        _this.sprite = sprite;
+        /**
+         * Reference to the global renderer for this VM, if one exists.
+         * @type {?RenderWebGL}
+         */
+        _this.renderer = null;
+        if (_this.runtime) {
+            _this.renderer = _this.runtime.renderer;
+        }
+        /**
+         * ID of the drawable for this rendered target,
+         * returned by the renderer, if rendered.
+         * @type {?Number}
+         */
+        _this.drawableID = null;
+
+        /**
+         * Drag state of this rendered target. If true, x/y position can't be
+         * changed by blocks.
+         * @type {boolean}
+         */
+        _this.dragging = false;
+
+        /**
+         * Map of current graphic effect values.
+         * @type {!Object.<string, number>}
+         */
+        _this.effects = {
+            color: 0,
+            fisheye: 0,
+            whirl: 0,
+            pixelate: 0,
+            mosaic: 0,
+            brightness: 0,
+            ghost: 0
+        };
+
+        /**
+         * Whether this represents an "original" non-clone rendered-target for a sprite,
+         * i.e., created by the editor and not clone blocks.
+         * @type {boolean}
+         */
+        _this.isOriginal = true;
+
+        /**
+         * Whether this rendered target represents the Scratch stage.
+         * @type {boolean}
+         */
+        _this.isStage = false;
+
+        /**
+         * Scratch X coordinate. Currently should range from -240 to 240.
+         * @type {Number}
+         */
+        _this.x = 0;
+
+        /**
+         * Scratch Y coordinate. Currently should range from -180 to 180.
+         * @type {number}
+         */
+        _this.y = 0;
+
+        /**
+         * Scratch direction. Currently should range from -179 to 180.
+         * @type {number}
+         */
+        _this.direction = 90;
+
+        /**
+         * Whether the rendered target is draggable on the stage
+         * @type {boolean}
+         */
+        _this.draggable = false;
+
+        /**
+         * Whether the rendered target is currently visible.
+         * @type {boolean}
+         */
+        _this.visible = true;
+
+        /**
+         * Size of rendered target as a percent of costume size.
+         * @type {number}
+         */
+        _this.size = 100;
+
+        /**
+         * Currently selected costume index.
+         * @type {number}
+         */
+        _this.currentCostume = 0;
+
+        /**
+         * Current rotation style.
+         * @type {!string}
+         */
+        _this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
+        return _this;
+    }
+
+    /**
+     * Create a drawable with the this.renderer.
+     */
+
+
+    _createClass(RenderedTarget, [{
+        key: 'initDrawable',
+        value: function initDrawable() {
+            if (this.renderer) {
+                this.drawableID = this.renderer.createDrawable();
+            }
+            // If we're a clone, start the hats.
+            if (!this.isOriginal) {
+                this.runtime.startHats('control_start_as_clone', null, this);
+            }
+
+            /**
+            * Audio player
+            */
+            this.audioPlayer = null;
+            if (this.runtime && this.runtime.audioEngine) {
+                this.audioPlayer = this.runtime.audioEngine.createPlayer();
+            }
+        }
+
+        /**
+         * Event which fires when a target moves.
+         * @type {string}
+         */
+
+    }, {
+        key: 'setXY',
+
+
+        /**
+         * Set the X and Y coordinates.
+         * @param {!number} x New X coordinate, in Scratch coordinates.
+         * @param {!number} y New Y coordinate, in Scratch coordinates.
+         * @param {?boolean} force Force setting X/Y, in case of dragging
+         */
+        value: function setXY(x, y, force) {
+            if (this.isStage) return;
+            if (this.dragging && !force) return;
+            var oldX = this.x;
+            var oldY = this.y;
+            if (this.renderer) {
+                var position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
+                this.x = position[0];
+                this.y = position[1];
+
+                this.renderer.updateDrawableProperties(this.drawableID, {
+                    position: position
+                });
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            } else {
+                this.x = x;
+                this.y = y;
+            }
+            this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY);
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Get the rendered direction and scale, after applying rotation style.
+         * @return {object<string, number>} Direction and scale to render.
+         */
+
+    }, {
+        key: '_getRenderedDirectionAndScale',
+        value: function _getRenderedDirectionAndScale() {
+            // Default: no changes to `this.direction` or `this.scale`.
+            var finalDirection = this.direction;
+            var finalScale = [this.size, this.size];
+            if (this.rotationStyle === RenderedTarget.ROTATION_STYLE_NONE) {
+                // Force rendered direction to be 90.
+                finalDirection = 90;
+            } else if (this.rotationStyle === RenderedTarget.ROTATION_STYLE_LEFT_RIGHT) {
+                // Force rendered direction to be 90, and flip drawable if needed.
+                finalDirection = 90;
+                var scaleFlip = this.direction < 0 ? -1 : 1;
+                finalScale = [scaleFlip * this.size, this.size];
+            }
+            return { direction: finalDirection, scale: finalScale };
+        }
+
+        /**
+         * Set the direction.
+         * @param {!number} direction New direction.
+         */
+
+    }, {
+        key: 'setDirection',
+        value: function setDirection(direction) {
+            if (this.isStage) {
+                return;
+            }
+            if (!isFinite(direction)) {
+                return;
+            }
+            // Keep direction between -179 and +180.
+            this.direction = MathUtil.wrapClamp(direction, -179, 180);
+            if (this.renderer) {
+                var renderedDirectionScale = this._getRenderedDirectionAndScale();
+                this.renderer.updateDrawableProperties(this.drawableID, {
+                    direction: renderedDirectionScale.direction,
+                    scale: renderedDirectionScale.scale
+                });
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Set draggability; i.e., whether it's able to be dragged in the player
+         * @param {!boolean} draggable True if should be draggable.
+         */
+
+    }, {
+        key: 'setDraggable',
+        value: function setDraggable(draggable) {
+            if (this.isStage) return;
+            this.draggable = !!draggable;
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Set a say bubble.
+         * @param {?string} type Type of say bubble: "say", "think", or null.
+         * @param {?string} message Message to put in say bubble.
+         */
+
+    }, {
+        key: 'setSay',
+        value: function setSay(type, message) {
+            if (this.isStage) {
+                return;
+            }
+            // @todo: Render to stage.
+            if (!type || !message) {
+                log.info('Clearing say bubble');
+                return;
+            }
+            log.info('Setting say bubble:', type, message);
+        }
+
+        /**
+         * Set visibility; i.e., whether it's shown or hidden.
+         * @param {!boolean} visible True if should be shown.
+         */
+
+    }, {
+        key: 'setVisible',
+        value: function setVisible(visible) {
+            if (this.isStage) {
+                return;
+            }
+            this.visible = !!visible;
+            if (this.renderer) {
+                this.renderer.updateDrawableProperties(this.drawableID, {
+                    visible: this.visible
+                });
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Set size, as a percentage of the costume size.
+         * @param {!number} size Size of rendered target, as % of costume size.
+         */
+
+    }, {
+        key: 'setSize',
+        value: function setSize(size) {
+            if (this.isStage) {
+                return;
+            }
+            if (this.renderer) {
+                // Clamp to scales relative to costume and stage size.
+                // See original ScratchSprite.as:setSize.
+                var costumeSize = this.renderer.getSkinSize(this.drawableID);
+                var origW = costumeSize[0];
+                var origH = costumeSize[1];
+                var minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
+                var maxScale = Math.min(1.5 * this.runtime.STAGE_WIDTH / origW, 1.5 * this.runtime.STAGE_HEIGHT / origH);
+                this.size = MathUtil.clamp(size / 100, minScale, maxScale) * 100;
+                var renderedDirectionScale = this._getRenderedDirectionAndScale();
+                this.renderer.updateDrawableProperties(this.drawableID, {
+                    direction: renderedDirectionScale.direction,
+                    scale: renderedDirectionScale.scale
+                });
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+        }
+
+        /**
+         * Set a particular graphic effect value.
+         * @param {!string} effectName Name of effect (see `RenderedTarget.prototype.effects`).
+         * @param {!number} value Numerical magnitude of effect.
+         */
+
+    }, {
+        key: 'setEffect',
+        value: function setEffect(effectName, value) {
+            if (!this.effects.hasOwnProperty(effectName)) return;
+            this.effects[effectName] = value;
+            if (this.renderer) {
+                var props = {};
+                props[effectName] = this.effects[effectName];
+                this.renderer.updateDrawableProperties(this.drawableID, props);
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+        }
+
+        /**
+         * Clear all graphic effects on this rendered target.
+         */
+
+    }, {
+        key: 'clearEffects',
+        value: function clearEffects() {
+            for (var effectName in this.effects) {
+                if (!this.effects.hasOwnProperty(effectName)) continue;
+                this.effects[effectName] = 0;
+            }
+            if (this.renderer) {
+                this.renderer.updateDrawableProperties(this.drawableID, this.effects);
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+        }
+
+        /**
+         * Set the current costume.
+         * @param {number} index New index of costume.
+         */
+
+    }, {
+        key: 'setCostume',
+        value: function setCostume(index) {
+            // Keep the costume index within possible values.
+            index = Math.round(index);
+            this.currentCostume = MathUtil.wrapClamp(index, 0, this.sprite.costumes.length - 1);
+            if (this.renderer) {
+                var costume = this.sprite.costumes[this.currentCostume];
+                var drawableProperties = {
+                    skinId: costume.skinId,
+                    costumeResolution: costume.bitmapResolution
+                };
+                if (typeof costume.rotationCenterX !== 'undefined' && typeof costume.rotationCenterY !== 'undefined') {
+                    var scale = costume.bitmapResolution || 1;
+                    drawableProperties.rotationCenter = [costume.rotationCenterX / scale, costume.rotationCenterY / scale];
+                }
+                this.renderer.updateDrawableProperties(this.drawableID, drawableProperties);
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Add a costume, taking care to avoid duplicate names.
+         * @param {!object} costumeObject Object representing the costume.
+         */
+
+    }, {
+        key: 'addCostume',
+        value: function addCostume(costumeObject) {
+            var usedNames = this.sprite.costumes.map(function (costume) {
+                return costume.name;
+            });
+            costumeObject.name = StringUtil.unusedName(costumeObject.name, usedNames);
+            this.sprite.costumes.push(costumeObject);
+        }
+
+        /**
+         * Rename a costume, taking care to avoid duplicate names.
+         * @param {int} costumeIndex - the index of the costume to be renamed.
+         * @param {string} newName - the desired new name of the costume (will be modified if already in use).
+         */
+
+    }, {
+        key: 'renameCostume',
+        value: function renameCostume(costumeIndex, newName) {
+            var usedNames = this.sprite.costumes.filter(function (costume, index) {
+                return costumeIndex !== index;
+            }).map(function (costume) {
+                return costume.name;
+            });
+            this.sprite.costumes[costumeIndex].name = StringUtil.unusedName(newName, usedNames);
+        }
+
+        /**
+         * Delete a costume by index.
+         * @param {number} index Costume index to be deleted
+         */
+
+    }, {
+        key: 'deleteCostume',
+        value: function deleteCostume(index) {
+            var originalCostumeCount = this.sprite.costumes.length;
+            if (originalCostumeCount === 1) return;
+
+            this.sprite.costumes = this.sprite.costumes.slice(0, index).concat(this.sprite.costumes.slice(index + 1));
+
+            if (index === this.currentCostume && index === originalCostumeCount - 1) {
+                this.setCostume(index - 1);
+            } else if (index < this.currentCostume) {
+                this.setCostume(this.currentCostume - 1);
+            } else {
+                this.setCostume(this.currentCostume);
+            }
+
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Add a sound, taking care to avoid duplicate names.
+         * @param {!object} soundObject Object representing the sound.
+         */
+
+    }, {
+        key: 'addSound',
+        value: function addSound(soundObject) {
+            var usedNames = this.sprite.sounds.map(function (sound) {
+                return sound.name;
+            });
+            soundObject.name = StringUtil.unusedName(soundObject.name, usedNames);
+            this.sprite.sounds.push(soundObject);
+        }
+
+        /**
+         * Rename a sound, taking care to avoid duplicate names.
+         * @param {int} soundIndex - the index of the sound to be renamed.
+         * @param {string} newName - the desired new name of the sound (will be modified if already in use).
+         */
+
+    }, {
+        key: 'renameSound',
+        value: function renameSound(soundIndex, newName) {
+            var usedNames = this.sprite.sounds.filter(function (sound, index) {
+                return soundIndex !== index;
+            }).map(function (sound) {
+                return sound.name;
+            });
+            this.sprite.sounds[soundIndex].name = StringUtil.unusedName(newName, usedNames);
+        }
+
+        /**
+         * Delete a sound by index.
+         * @param {number} index Sound index to be deleted
+         */
+
+    }, {
+        key: 'deleteSound',
+        value: function deleteSound(index) {
+            this.sprite.sounds = this.sprite.sounds.slice(0, index).concat(this.sprite.sounds.slice(index + 1));
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Update the rotation style.
+         * @param {!string} rotationStyle New rotation style.
+         */
+
+    }, {
+        key: 'setRotationStyle',
+        value: function setRotationStyle(rotationStyle) {
+            if (rotationStyle === RenderedTarget.ROTATION_STYLE_NONE) {
+                this.rotationStyle = RenderedTarget.ROTATION_STYLE_NONE;
+            } else if (rotationStyle === RenderedTarget.ROTATION_STYLE_ALL_AROUND) {
+                this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
+            } else if (rotationStyle === RenderedTarget.ROTATION_STYLE_LEFT_RIGHT) {
+                this.rotationStyle = RenderedTarget.ROTATION_STYLE_LEFT_RIGHT;
+            }
+            if (this.renderer) {
+                var renderedDirectionScale = this._getRenderedDirectionAndScale();
+                this.renderer.updateDrawableProperties(this.drawableID, {
+                    direction: renderedDirectionScale.direction,
+                    scale: renderedDirectionScale.scale
+                });
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Get a costume index of this rendered target, by name of the costume.
+         * @param {?string} costumeName Name of a costume.
+         * @return {number} Index of the named costume, or -1 if not present.
+         */
+
+    }, {
+        key: 'getCostumeIndexByName',
+        value: function getCostumeIndexByName(costumeName) {
+            for (var i = 0; i < this.sprite.costumes.length; i++) {
+                if (this.sprite.costumes[i].name === costumeName) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        /**
+         * Get a costume of this rendered target by id.
+         * @return {object} current costume
+         */
+
+    }, {
+        key: 'getCurrentCostume',
+        value: function getCurrentCostume() {
+            return this.sprite.costumes[this.currentCostume];
+        }
+
+        /**
+         * Get full costume list
+         * @return {object[]} list of costumes
+         */
+
+    }, {
+        key: 'getCostumes',
+        value: function getCostumes() {
+            return this.sprite.costumes;
+        }
+
+        /**
+         * Get full sound list
+         * @return {object[]} list of sounds
+         */
+
+    }, {
+        key: 'getSounds',
+        value: function getSounds() {
+            return this.sprite.sounds;
+        }
+
+        /**
+         * Update all drawable properties for this rendered target.
+         * Use when a batch has changed, e.g., when the drawable is first created.
+         */
+
+    }, {
+        key: 'updateAllDrawableProperties',
+        value: function updateAllDrawableProperties() {
+            if (this.renderer) {
+                var renderedDirectionScale = this._getRenderedDirectionAndScale();
+                var costume = this.sprite.costumes[this.currentCostume];
+                var bitmapResolution = costume.bitmapResolution || 1;
+                var props = {
+                    position: [this.x, this.y],
+                    direction: renderedDirectionScale.direction,
+                    draggable: this.draggable,
+                    scale: renderedDirectionScale.scale,
+                    visible: this.visible,
+                    skinId: costume.skinId,
+                    costumeResolution: bitmapResolution,
+                    rotationCenter: [costume.rotationCenterX / bitmapResolution, costume.rotationCenterY / bitmapResolution]
+                };
+                for (var effectName in this.effects) {
+                    if (!this.effects.hasOwnProperty(effectName)) continue;
+                    props[effectName] = this.effects[effectName];
+                }
+                this.renderer.updateDrawableProperties(this.drawableID, props);
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+            this.runtime.requestTargetsUpdate(this);
+        }
+
+        /**
+         * Return the human-readable name for this rendered target, e.g., the sprite's name.
+         * @override
+         * @returns {string} Human-readable name.
+         */
+
+    }, {
+        key: 'getName',
+        value: function getName() {
+            return this.sprite.name;
+        }
+
+        /**
+         * Return whether this rendered target is a sprite (not a clone, not the stage).
+         * @return {boolean} True if not a clone and not the stage.
+         */
+
+    }, {
+        key: 'isSprite',
+        value: function isSprite() {
+            return !this.isStage && this.isOriginal;
+        }
+
+        /**
+         * Return the rendered target's tight bounding box.
+         * Includes top, left, bottom, right attributes in Scratch coordinates.
+         * @return {?object} Tight bounding box, or null.
+         */
+
+    }, {
+        key: 'getBounds',
+        value: function getBounds() {
+            if (this.renderer) {
+                return this.runtime.renderer.getBounds(this.drawableID);
+            }
+            return null;
+        }
+
+        /**
+         * Return whether touching a point.
+         * @param {number} x X coordinate of test point.
+         * @param {number} y Y coordinate of test point.
+         * @return {boolean} True iff the rendered target is touching the point.
+         */
+
+    }, {
+        key: 'isTouchingPoint',
+        value: function isTouchingPoint(x, y) {
+            if (this.renderer) {
+                // @todo: Update once pick is in Scratch coordinates.
+                // Limits test to this Drawable, so this will return true
+                // even if the clone is obscured by another Drawable.
+                var pickResult = this.runtime.renderer.pick(x + this.runtime.STAGE_WIDTH / 2, -y + this.runtime.STAGE_HEIGHT / 2, null, null, [this.drawableID]);
+                return pickResult === this.drawableID;
+            }
+            return false;
+        }
+
+        /**
+         * Return whether touching a stage edge.
+         * @return {boolean} True iff the rendered target is touching the stage edge.
+         */
+
+    }, {
+        key: 'isTouchingEdge',
+        value: function isTouchingEdge() {
+            if (this.renderer) {
+                var stageWidth = this.runtime.constructor.STAGE_WIDTH;
+                var stageHeight = this.runtime.constructor.STAGE_HEIGHT;
+                var bounds = this.getBounds();
+                if (bounds.left < -stageWidth / 2 || bounds.right > stageWidth / 2 || bounds.top > stageHeight / 2 || bounds.bottom < -stageHeight / 2) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Return whether touching any of a named sprite's clones.
+         * @param {string} spriteName Name of the sprite.
+         * @return {boolean} True iff touching a clone of the sprite.
+         */
+
+    }, {
+        key: 'isTouchingSprite',
+        value: function isTouchingSprite(spriteName) {
+            var firstClone = this.runtime.getSpriteTargetByName(spriteName);
+            if (!firstClone || !this.renderer) {
+                return false;
+            }
+            var drawableCandidates = firstClone.sprite.clones.map(function (clone) {
+                return clone.drawableID;
+            });
+            return this.renderer.isTouchingDrawables(this.drawableID, drawableCandidates);
+        }
+
+        /**
+         * Return whether touching a color.
+         * @param {Array.<number>} rgb [r,g,b], values between 0-255.
+         * @return {Promise.<boolean>} True iff the rendered target is touching the color.
+         */
+
+    }, {
+        key: 'isTouchingColor',
+        value: function isTouchingColor(rgb) {
+            if (this.renderer) {
+                return this.renderer.isTouchingColor(this.drawableID, rgb);
+            }
+            return false;
+        }
+
+        /**
+         * Return whether rendered target's color is touching a color.
+         * @param {object} targetRgb {Array.<number>} [r,g,b], values between 0-255.
+         * @param {object} maskRgb {Array.<number>} [r,g,b], values between 0-255.
+         * @return {Promise.<boolean>} True iff the color is touching the color.
+         */
+
+    }, {
+        key: 'colorIsTouchingColor',
+        value: function colorIsTouchingColor(targetRgb, maskRgb) {
+            if (this.renderer) {
+                return this.renderer.isTouchingColor(this.drawableID, targetRgb, maskRgb);
+            }
+            return false;
+        }
+
+        /**
+         * Move to the front layer.
+         */
+
+    }, {
+        key: 'goToFront',
+        value: function goToFront() {
+            if (this.renderer) {
+                this.renderer.setDrawableOrder(this.drawableID, Infinity);
+            }
+        }
+
+        /**
+         * Move back a number of layers.
+         * @param {number} nLayers How many layers to go back.
+         */
+
+    }, {
+        key: 'goBackLayers',
+        value: function goBackLayers(nLayers) {
+            if (this.renderer) {
+                this.renderer.setDrawableOrder(this.drawableID, -nLayers, true, 1);
+            }
+        }
+
+        /**
+         * Move behind some other rendered target.
+         * @param {!RenderedTarget} other Other rendered target to move behind.
+         */
+
+    }, {
+        key: 'goBehindOther',
+        value: function goBehindOther(other) {
+            if (this.renderer) {
+                var otherLayer = this.renderer.setDrawableOrder(other.drawableID, 0, true);
+                this.renderer.setDrawableOrder(this.drawableID, otherLayer);
+            }
+        }
+
+        /**
+         * Keep a desired position within a fence.
+         * @param {number} newX New desired X position.
+         * @param {number} newY New desired Y position.
+         * @param {object=} optFence Optional fence with left, right, top bottom.
+         * @return {Array.<number>} Fenced X and Y coordinates.
+         */
+
+    }, {
+        key: 'keepInFence',
+        value: function keepInFence(newX, newY, optFence) {
+            var fence = optFence;
+            if (!fence) {
+                fence = {
+                    left: -this.runtime.STAGE_WIDTH / 2,
+                    right: this.runtime.STAGE_WIDTH / 2,
+                    top: this.runtime.STAGE_HEIGHT / 2,
+                    bottom: -this.runtime.STAGE_HEIGHT / 2
+                };
+            }
+            var bounds = this.getBounds();
+            if (!bounds) return;
+            // Adjust the known bounds to the target position.
+            bounds.left += newX - this.x;
+            bounds.right += newX - this.x;
+            bounds.top += newY - this.y;
+            bounds.bottom += newY - this.y;
+            // Find how far we need to move the target position.
+            var dx = 0;
+            var dy = 0;
+            if (bounds.left < fence.left) {
+                dx += fence.left - bounds.left;
+            }
+            if (bounds.right > fence.right) {
+                dx += fence.right - bounds.right;
+            }
+            if (bounds.top > fence.top) {
+                dy += fence.top - bounds.top;
+            }
+            if (bounds.bottom < fence.bottom) {
+                dy += fence.bottom - bounds.bottom;
+            }
+            return [newX + dx, newY + dy];
+        }
+
+        /**
+         * Make a clone, copying any run-time properties.
+         * If we've hit the global clone limit, returns null.
+         * @return {RenderedTarget} New clone.
+         */
+
+    }, {
+        key: 'makeClone',
+        value: function makeClone() {
+            if (!this.runtime.clonesAvailable() || this.isStage) {
+                return null; // Hit max clone limit, or this is the stage.
+            }
+            this.runtime.changeCloneCounter(1);
+            var newClone = this.sprite.createClone();
+            // Copy all properties.
+            newClone.x = this.x;
+            newClone.y = this.y;
+            newClone.direction = this.direction;
+            newClone.draggable = this.draggable;
+            newClone.visible = this.visible;
+            newClone.size = this.size;
+            newClone.currentCostume = this.currentCostume;
+            newClone.rotationStyle = this.rotationStyle;
+            newClone.effects = JSON.parse(JSON.stringify(this.effects));
+            newClone.variables = JSON.parse(JSON.stringify(this.variables));
+            newClone.lists = JSON.parse(JSON.stringify(this.lists));
+            newClone.initDrawable();
+            newClone.updateAllDrawableProperties();
+            // Place behind the current target.
+            newClone.goBehindOther(this);
+            return newClone;
+        }
+
+        /**
+         * Make a duplicate using a duplicate sprite.
+         * @return {RenderedTarget} New clone.
+         */
+
+    }, {
+        key: 'duplicate',
+        value: function duplicate() {
+            var _this2 = this;
+
+            return this.sprite.duplicate().then(function (newSprite) {
+                var newTarget = newSprite.createClone();
+                // Copy all properties.
+                // @todo refactor with clone methods
+                newTarget.x = Math.random() * 400 / 2;
+                newTarget.y = Math.random() * 300 / 2;
+                newTarget.direction = _this2.direction;
+                newTarget.draggable = _this2.draggable;
+                newTarget.visible = _this2.visible;
+                newTarget.size = _this2.size;
+                newTarget.currentCostume = _this2.currentCostume;
+                newTarget.rotationStyle = _this2.rotationStyle;
+                newTarget.effects = JSON.parse(JSON.stringify(_this2.effects));
+                newTarget.variables = JSON.parse(JSON.stringify(_this2.variables));
+                newTarget.lists = JSON.parse(JSON.stringify(_this2.lists));
+                newTarget.initDrawable();
+                newTarget.updateAllDrawableProperties();
+                newTarget.goBehindOther(_this2);
+                return newTarget;
+            });
+        }
+
+        /**
+         * Called when the project receives a "green flag."
+         * For a rendered target, this clears graphic effects.
+         */
+
+    }, {
+        key: 'onGreenFlag',
+        value: function onGreenFlag() {
+            this.clearEffects();
+        }
+
+        /**
+         * Called when the project receives a "stop all"
+         * Stop all sounds and clear graphic effects.
+         */
+
+    }, {
+        key: 'onStopAll',
+        value: function onStopAll() {
+            this.clearEffects();
+            if (this.audioPlayer) {
+                this.audioPlayer.stopAllSounds();
+                this.audioPlayer.clearEffects();
+            }
+        }
+
+        /**
+         * Post/edit sprite info.
+         * @param {object} data An object with sprite info data to set.
+         */
+
+    }, {
+        key: 'postSpriteInfo',
+        value: function postSpriteInfo(data) {
+            var force = data.hasOwnProperty('force') ? data.force : null;
+            if (data.hasOwnProperty('x')) {
+                this.setXY(data.x, this.y, force);
+            }
+            if (data.hasOwnProperty('y')) {
+                this.setXY(this.x, data.y, force);
+            }
+            if (data.hasOwnProperty('direction')) {
+                this.setDirection(data.direction);
+            }
+            if (data.hasOwnProperty('draggable')) {
+                this.setDraggable(data.draggable);
+            }
+            if (data.hasOwnProperty('rotationStyle')) {
+                this.setRotationStyle(data.rotationStyle);
+            }
+            if (data.hasOwnProperty('visible')) {
+                this.setVisible(data.visible);
+            }
+        }
+
+        /**
+         * Put the sprite into the drag state. While in effect, setXY must be forced
+         */
+
+    }, {
+        key: 'startDrag',
+        value: function startDrag() {
+            this.dragging = true;
+        }
+
+        /**
+         * Remove the sprite from the drag state.
+         */
+
+    }, {
+        key: 'stopDrag',
+        value: function stopDrag() {
+            this.dragging = false;
+        }
+
+        /**
+         * Serialize sprite info, used when emitting events about the sprite
+         * @returns {object} Sprite data as a simple object
+         */
+
+    }, {
+        key: 'toJSON',
+        value: function toJSON() {
+            var costumes = this.getCostumes();
+            return {
+                id: this.id,
+                name: this.getName(),
+                isStage: this.isStage,
+                x: this.x,
+                y: this.y,
+                size: this.size,
+                direction: this.direction,
+                draggable: this.draggable,
+                currentCostume: this.currentCostume,
+                costume: costumes[this.currentCostume],
+                costumeCount: costumes.length,
+                visible: this.visible,
+                rotationStyle: this.rotationStyle,
+                blocks: this.blocks._blocks,
+                variables: this.variables,
+                lists: this.lists,
+                costumes: costumes,
+                sounds: this.getSounds()
+            };
+        }
+
+        /**
+         * Dispose, destroying any run-time properties.
+         */
+
+    }, {
+        key: 'dispose',
+        value: function dispose() {
+            for (var key in this.variables) {
+                this.deleteVariable(key);
+            }
+            this.runtime.changeCloneCounter(-1);
+            this.runtime.stopForTarget(this);
+            this.sprite.removeClone(this);
+            if (this.renderer && this.drawableID !== null) {
+                this.renderer.destroyDrawable(this.drawableID);
+                if (this.visible) {
+                    this.runtime.requestRedraw();
+                }
+            }
+        }
+    }], [{
+        key: 'EVENT_TARGET_MOVED',
+        get: function get() {
+            return 'TARGET_MOVED';
+        }
+
+        /**
+         * Rotation style for "all around"/spinning.
+         * @type {string}
+         */
+
+    }, {
+        key: 'ROTATION_STYLE_ALL_AROUND',
+        get: function get() {
+            return 'all around';
+        }
+
+        /**
+         * Rotation style for "left-right"/flipping.
+         * @type {string}
+         */
+
+    }, {
+        key: 'ROTATION_STYLE_LEFT_RIGHT',
+        get: function get() {
+            return 'left-right';
+        }
+
+        /**
+         * Rotation style for "no rotation."
+         * @type {string}
+         */
+
+    }, {
+        key: 'ROTATION_STYLE_NONE',
+        get: function get() {
+            return "don't rotate";
+        }
+    }]);
+
+    return RenderedTarget;
+}(Target);
+
+module.exports = RenderedTarget;
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Color = function () {
+    function Color() {
+        _classCallCheck(this, Color);
+    }
+
+    _createClass(Color, null, [{
+        key: 'decimalToHex',
+
+
+        /**
+         * Convert a Scratch decimal color to a hex string, #RRGGBB.
+         * @param {number} decimal RGB color as a decimal.
+         * @return {string} RGB color as #RRGGBB hex string.
+         */
+        value: function decimalToHex(decimal) {
+            if (decimal < 0) {
+                decimal += 0xFFFFFF + 1;
+            }
+            var hex = Number(decimal).toString(16);
+            hex = '#' + '000000'.substr(0, 6 - hex.length) + hex;
+            return hex;
+        }
+
+        /**
+         * Convert a Scratch decimal color to an RGB color object.
+         * @param {number} decimal RGB color as decimal.
+         * @return {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+         */
+
+    }, {
+        key: 'decimalToRgb',
+        value: function decimalToRgb(decimal) {
+            var a = decimal >> 24 & 0xFF;
+            var r = decimal >> 16 & 0xFF;
+            var g = decimal >> 8 & 0xFF;
+            var b = decimal & 0xFF;
+            return { r: r, g: g, b: b, a: a > 0 ? a : 255 };
+        }
+
+        /**
+         * Convert a hex color (e.g., F00, #03F, #0033FF) to an RGB color object.
+         * CC-BY-SA Tim Down:
+         * https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+         * @param {!string} hex Hex representation of the color.
+         * @return {RGBObject} null on failure, or rgb: {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+         */
+
+    }, {
+        key: 'hexToRgb',
+        value: function hexToRgb(hex) {
+            var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+                return r + r + g + g + b + b;
+            });
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        /**
+         * Convert an RGB color object to a hex color.
+         * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+         * @return {!string} Hex representation of the color.
+         */
+
+    }, {
+        key: 'rgbToHex',
+        value: function rgbToHex(rgb) {
+            return Color.decimalToHex(Color.rgbToDecimal(rgb));
+        }
+
+        /**
+         * Convert an RGB color object to a Scratch decimal color.
+         * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+         * @return {!number} Number representing the color.
+         */
+
+    }, {
+        key: 'rgbToDecimal',
+        value: function rgbToDecimal(rgb) {
+            return (rgb.r << 16) + (rgb.g << 8) + rgb.b;
+        }
+
+        /**
+        * Convert a hex color (e.g., F00, #03F, #0033FF) to a decimal color number.
+        * @param {!string} hex Hex representation of the color.
+        * @return {!number} Number representing the color.
+        */
+
+    }, {
+        key: 'hexToDecimal',
+        value: function hexToDecimal(hex) {
+            return Color.rgbToDecimal(Color.hexToRgb(hex));
+        }
+
+        /**
+         * Convert an HSV color to RGB format.
+         * @param {HSVObject} hsv - {h: hue [0,360), s: saturation [0,1], v: value [0,1]}
+         * @return {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+         */
+
+    }, {
+        key: 'hsvToRgb',
+        value: function hsvToRgb(hsv) {
+            var h = hsv.h % 360;
+            if (h < 0) h += 360;
+            var s = Math.max(0, Math.min(hsv.s, 1));
+            var v = Math.max(0, Math.min(hsv.v, 1));
+
+            var i = Math.floor(h / 60);
+            var f = h / 60 - i;
+            var p = v * (1 - s);
+            var q = v * (1 - s * f);
+            var t = v * (1 - s * (1 - f));
+
+            var r = void 0;
+            var g = void 0;
+            var b = void 0;
+
+            switch (i) {
+                default:
+                case 0:
+                    r = v;
+                    g = t;
+                    b = p;
+                    break;
+                case 1:
+                    r = q;
+                    g = v;
+                    b = p;
+                    break;
+                case 2:
+                    r = p;
+                    g = v;
+                    b = t;
+                    break;
+                case 3:
+                    r = p;
+                    g = q;
+                    b = v;
+                    break;
+                case 4:
+                    r = t;
+                    g = p;
+                    b = v;
+                    break;
+                case 5:
+                    r = v;
+                    g = p;
+                    b = q;
+                    break;
+            }
+
+            return {
+                r: Math.floor(r * 255),
+                g: Math.floor(g * 255),
+                b: Math.floor(b * 255)
+            };
+        }
+
+        /**
+         * Convert an RGB color to HSV format.
+         * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+         * @return {HSVObject} hsv - {h: hue [0,360), s: saturation [0,1], v: value [0,1]}
+         */
+
+    }, {
+        key: 'rgbToHsv',
+        value: function rgbToHsv(rgb) {
+            var r = rgb.r / 255;
+            var g = rgb.g / 255;
+            var b = rgb.b / 255;
+            var x = Math.min(Math.min(r, g), b);
+            var v = Math.max(Math.max(r, g), b);
+
+            // For grays, hue will be arbitrarily reported as zero. Otherwise, calculate
+            var h = 0;
+            var s = 0;
+            if (x !== v) {
+                var f = r === x ? g - b : g === x ? b - r : r - g;
+                var i = r === x ? 3 : g === x ? 5 : 1;
+                h = (i - f / (v - x)) * 60 % 360;
+                s = (v - x) / v;
+            }
+
+            return { h: h, s: s, v: v };
+        }
+
+        /**
+         * Linear interpolation between rgb0 and rgb1.
+         * @param {RGBObject} rgb0 - the color corresponding to fraction1 <= 0.
+         * @param {RGBObject} rgb1 - the color corresponding to fraction1 >= 1.
+         * @param {number} fraction1 - the interpolation parameter. If this is 0.5, for example, mix the two colors equally.
+         * @return {RGBObject} the interpolated color.
+         */
+
+    }, {
+        key: 'mixRgb',
+        value: function mixRgb(rgb0, rgb1, fraction1) {
+            if (fraction1 <= 0) return rgb0;
+            if (fraction1 >= 1) return rgb1;
+            var fraction0 = 1 - fraction1;
+            return {
+                r: fraction0 * rgb0.r + fraction1 * rgb1.r,
+                g: fraction0 * rgb0.g + fraction1 * rgb1.g,
+                b: fraction0 * rgb0.b + fraction1 * rgb1.b
+            };
+        }
+    }, {
+        key: 'RGB_BLACK',
+
+        /**
+         * @typedef {object} RGBObject - An object representing a color in RGB format.
+         * @property {number} r - the red component, in the range [0, 255].
+         * @property {number} g - the green component, in the range [0, 255].
+         * @property {number} b - the blue component, in the range [0, 255].
+         */
+
+        /**
+         * @typedef {object} HSVObject - An object representing a color in HSV format.
+         * @property {number} h - hue, in the range [0-359).
+         * @property {number} s - saturation, in the range [0,1].
+         * @property {number} v - value, in the range [0,1].
+         */
+
+        /** @type {RGBObject} */
+        get: function get() {
+            return { r: 0, g: 0, b: 0 };
+        }
+
+        /** @type {RGBObject} */
+
+    }, {
+        key: 'RGB_WHITE',
+        get: function get() {
+            return { r: 255, g: 255, b: 255 };
+        }
+    }]);
+
+    return Color;
+}();
+
+module.exports = Color;
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @fileoverview
+ * A utility for accurately measuring time.
+ * To use:
+ * ---
+ * var timer = new Timer();
+ * timer.start();
+ * ... pass some time ...
+ * var timeDifference = timer.timeElapsed();
+ * ---
+ * Or, you can use the `time` and `relativeTime`
+ * to do some measurement yourself.
+ */
+
+var Timer = function () {
+    function Timer() {
+        _classCallCheck(this, Timer);
+
+        /**
+         * Used to store the start time of a timer action.
+         * Updated when calling `timer.start`.
+         */
+        this.startTime = 0;
+    }
+
+    /**
+     * Disable use of self.performance for now as it results in lower performance
+     * However, instancing it like below (caching the self.performance to a local variable) negates most of the issues.
+     * @type {boolean}
+     */
+
+
+    _createClass(Timer, [{
+        key: 'time',
+
+
+        /**
+         * Return the currently known absolute time, in ms precision.
+         * @returns {number} ms elapsed since 1 January 1970 00:00:00 UTC.
+         */
+        value: function time() {
+            return Timer.nowObj.now();
+        }
+
+        /**
+         * Returns a time accurate relative to other times produced by this function.
+         * If possible, will use sub-millisecond precision.
+         * If not, will use millisecond precision.
+         * Not guaranteed to produce the same absolute values per-system.
+         * @returns {number} ms-scale accurate time relative to other relative times.
+         */
+
+    }, {
+        key: 'relativeTime',
+        value: function relativeTime() {
+            return Timer.nowObj.now();
+        }
+
+        /**
+         * Start a timer for measuring elapsed time,
+         * at the most accurate precision possible.
+         */
+
+    }, {
+        key: 'start',
+        value: function start() {
+            this.startTime = Timer.nowObj.now();
+        }
+    }, {
+        key: 'timeElapsed',
+        value: function timeElapsed() {
+            return Timer.nowObj.now() - this.startTime;
+        }
+    }], [{
+        key: 'USE_PERFORMANCE',
+        get: function get() {
+            return false;
+        }
+
+        /**
+         * Legacy object to allow for us to call now to get the old style date time (for backwards compatibility)
+         * @deprecated This is only called via the nowObj.now() if no other means is possible...
+         */
+
+    }, {
+        key: 'legacyDateCode',
+        get: function get() {
+            return {
+                now: function now() {
+                    return new Date().getTime();
+                }
+            };
+        }
+
+        /**
+         * Use this object to route all time functions through single access points.
+         */
+
+    }, {
+        key: 'nowObj',
+        get: function get() {
+            if (Timer.USE_PERFORMANCE && typeof self !== 'undefined' && self.performance && 'now' in self.performance) {
+                return self.performance;
+            } else if (Date.now) {
+                return Date;
+            }
+            return Timer.legacyDateCode;
+        }
+    }]);
+
+    return Timer;
+}();
+
+module.exports = Timer;
+
+/***/ }),
 /* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13319,13 +13337,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var RenderedTarget = __webpack_require__(23);
+var RenderedTarget = __webpack_require__(24);
 var Blocks = __webpack_require__(12);
 
-var _require = __webpack_require__(22),
+var _require = __webpack_require__(23),
     loadSoundFromAsset = _require.loadSoundFromAsset;
 
-var _require2 = __webpack_require__(21),
+var _require2 = __webpack_require__(22),
     loadCostumeFromAsset = _require2.loadCostumeFromAsset;
 
 var StringUtil = __webpack_require__(15);
@@ -17444,7 +17462,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Cast = __webpack_require__(2);
 var Clone = __webpack_require__(14);
-var RenderedTarget = __webpack_require__(23);
+var RenderedTarget = __webpack_require__(24);
 
 /**
  * @typedef {object} BubbleState - the bubble state associated with a particular target.
@@ -17951,7 +17969,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Cast = __webpack_require__(2);
 var MathUtil = __webpack_require__(8);
-var Timer = __webpack_require__(25);
+var Timer = __webpack_require__(26);
 
 var Scratch3MotionBlocks = function () {
     function Scratch3MotionBlocks(runtime) {
@@ -18453,13 +18471,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(20);
+var ArgumentType = __webpack_require__(21);
 var BlockType = __webpack_require__(13);
 var Cast = __webpack_require__(2);
 var Clone = __webpack_require__(14);
-var Color = __webpack_require__(24);
+var Color = __webpack_require__(25);
 var MathUtil = __webpack_require__(8);
-var RenderedTarget = __webpack_require__(23);
+var RenderedTarget = __webpack_require__(24);
 var log = __webpack_require__(3);
 
 /**
@@ -19917,9 +19935,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(20);
+var ArgumentType = __webpack_require__(21);
 var BlockType = __webpack_require__(13);
-var color = __webpack_require__(24);
+var color = __webpack_require__(25);
 var log = __webpack_require__(3);
 
 /**
@@ -21469,7 +21487,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Thread = __webpack_require__(18);
+var Thread = __webpack_require__(19);
 
 /**
  * @fileoverview
@@ -21681,9 +21699,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var BlockUtility = __webpack_require__(71);
 var log = __webpack_require__(3);
-var Thread = __webpack_require__(18);
+var Thread = __webpack_require__(19);
 
-var _require = __webpack_require__(26),
+var _require = __webpack_require__(18),
     Map = _require.Map;
 
 /**
@@ -21982,7 +22000,7 @@ module.exports = execute;
 "use strict";
 
 
-var _require = __webpack_require__(26),
+var _require = __webpack_require__(18),
     Record = _require.Record;
 
 var MonitorRecord = Record({
@@ -22376,16 +22394,16 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var EventEmitter = __webpack_require__(5);
 
-var _require = __webpack_require__(26),
+var _require = __webpack_require__(18),
     OrderedMap = _require.OrderedMap;
 
 var escapeHtml = __webpack_require__(110);
 
-var ArgumentType = __webpack_require__(20);
+var ArgumentType = __webpack_require__(21);
 var Blocks = __webpack_require__(12);
 var BlockType = __webpack_require__(13);
 var Sequencer = __webpack_require__(76);
-var Thread = __webpack_require__(18);
+var Thread = __webpack_require__(19);
 var Profiler = __webpack_require__(74);
 
 // Virtual I/O devices.
@@ -24193,8 +24211,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Timer = __webpack_require__(25);
-var Thread = __webpack_require__(18);
+var Timer = __webpack_require__(26);
+var Thread = __webpack_require__(19);
 var execute = __webpack_require__(72);
 
 /**
@@ -24564,10 +24582,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var EventEmitter = __webpack_require__(5);
 
 var Blocks = __webpack_require__(12);
-var Variable = __webpack_require__(19);
+var Variable = __webpack_require__(20);
 var uid = __webpack_require__(30);
 
-var _require = __webpack_require__(26),
+var _require = __webpack_require__(18),
     Map = _require.Map;
 
 /**
@@ -25156,12 +25174,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(20);
+var ArgumentType = __webpack_require__(21);
 var BlockType = __webpack_require__(13);
 var Clone = __webpack_require__(14);
 var Cast = __webpack_require__(2);
 var MathUtil = __webpack_require__(8);
-var Timer = __webpack_require__(25);
+var Timer = __webpack_require__(26);
 
 /**
  * Class for the music-related blocks in Scratch 3.0
@@ -26001,7 +26019,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Timer = __webpack_require__(25);
+var Timer = __webpack_require__(26);
 
 var Clock = function () {
     function Clock(runtime) {
@@ -26789,18 +26807,18 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 var Blocks = __webpack_require__(12);
-var RenderedTarget = __webpack_require__(23);
+var RenderedTarget = __webpack_require__(24);
 var Sprite = __webpack_require__(39);
-var Color = __webpack_require__(24);
+var Color = __webpack_require__(25);
 var log = __webpack_require__(3);
 var uid = __webpack_require__(30);
 var specMap = __webpack_require__(85);
-var Variable = __webpack_require__(19);
+var Variable = __webpack_require__(20);
 
-var _require = __webpack_require__(21),
+var _require = __webpack_require__(22),
     loadCostume = _require.loadCostume;
 
-var _require2 = __webpack_require__(22),
+var _require2 = __webpack_require__(23),
     loadSound = _require2.loadSound;
 
 /**
@@ -27370,7 +27388,7 @@ module.exports = {
  * Finally, I filled in the expected arguments as below.
  */
 
-var Variable = __webpack_require__(19);
+var Variable = __webpack_require__(20);
 
 /**
  * @typedef {object} SB2SpecMap_blockInfo
@@ -28654,12 +28672,12 @@ module.exports = specMap;
 var vmPackage = __webpack_require__(166);
 var Blocks = __webpack_require__(12);
 var Sprite = __webpack_require__(39);
-var Variable = __webpack_require__(19);
+var Variable = __webpack_require__(20);
 
-var _require = __webpack_require__(21),
+var _require = __webpack_require__(22),
     loadCostume = _require.loadCostume;
 
-var _require2 = __webpack_require__(22),
+var _require2 = __webpack_require__(23),
     loadSound = _require2.loadSound;
 
 /**
@@ -28901,10 +28919,10 @@ var sb2 = __webpack_require__(84);
 var sb3 = __webpack_require__(86);
 var StringUtil = __webpack_require__(15);
 
-var _require = __webpack_require__(21),
+var _require = __webpack_require__(22),
     loadCostume = _require.loadCostume;
 
-var _require2 = __webpack_require__(22),
+var _require2 = __webpack_require__(23),
     loadSound = _require2.loadSound;
 
 var RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
