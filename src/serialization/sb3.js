@@ -45,6 +45,14 @@ const serialize = function (runtime) {
 
     // Assemble payload and return
     obj.meta = meta;
+
+    // 保存mscratch扩展信息
+    if (runtime.mscratchExtensionsState.size > 0) {
+        obj.mscratch = {extensions: {}};
+        runtime.mscratchExtensionsState.forEach((devices, extensionId) => {
+            obj.mscratch.extensions[extensionId] = devices;
+        });
+    }
     return obj;
 };
 
@@ -176,11 +184,14 @@ const deserialize = function (json, runtime) {
         extensionIDs: new Set(),
         extensionURLs: new Map()
     };
+    // 解析json中的mscratch信息
+    const mscratch = json.mscratch;
     return Promise.all(
         (json.targets || []).map(target => parseScratchObject(target, runtime, extensions))
     ).then(targets => ({
         targets,
-        extensions
+        extensions,
+        mscratch
     }));
 };
 
