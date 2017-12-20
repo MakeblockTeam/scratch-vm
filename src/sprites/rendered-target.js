@@ -116,6 +116,12 @@ class RenderedTarget extends Target {
          * @type {!string}
          */
         this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
+
+        /**
+         * 是否是当前编辑的目标
+         * @type {boolean}
+         */
+        this.isEditing = false;
     }
 
     /**
@@ -885,6 +891,7 @@ class RenderedTarget extends Target {
             id: this.id,
             name: this.getName(),
             isStage: this.isStage,
+            isEditing: this.isEditing,
             x: this.x,
             y: this.y,
             size: this.size,

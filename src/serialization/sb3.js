@@ -32,6 +32,8 @@ const {loadSound} = require('../import/load-sound.js');
 const serialize = function (runtime) {
     // Fetch targets
     const obj = Object.create(null);
+    // 保存editingTarget设置
+    runtime._editingTarget.isEditing = true;
     obj.targets = runtime.targets.filter(target => target.isOriginal);
 
     // Assemble metadata
@@ -154,6 +156,9 @@ const parseScratchObject = function (object, runtime, extensions) {
     }
     if (object.hasOwnProperty('isStage')) {
         target.isStage = object.isStage;
+    }
+    if (object.hasOwnProperty('isEditing')) {
+        target.isEditing = object.isEditing;
     }
     Promise.all(costumePromises).then(costumes => {
         sprite.costumes = costumes;

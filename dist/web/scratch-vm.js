@@ -9885,6 +9885,12 @@ var RenderedTarget = function (_Target) {
          * @type {!string}
          */
         _this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
+
+        /**
+         * 是否是当前编辑的目标
+         * @type {boolean}
+         */
+        _this.isEditing = false;
         return _this;
     }
 
@@ -10736,6 +10742,7 @@ var RenderedTarget = function (_Target) {
                 id: this.id,
                 name: this.getName(),
                 isStage: this.isStage,
+                isEditing: this.isEditing,
                 x: this.x,
                 y: this.y,
                 size: this.size,
@@ -28702,6 +28709,7 @@ var _require2 = __webpack_require__(23),
 var serialize = function serialize(runtime) {
     // Fetch targets
     var obj = Object.create(null);
+    runtime._editingTarget.isEditing = true;
     obj.targets = runtime.targets.filter(function (target) {
         return target.isOriginal;
     });
@@ -28819,6 +28827,9 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     }
     if (object.hasOwnProperty('isStage')) {
         target.isStage = object.isStage;
+    }
+    if (object.hasOwnProperty('isEditing')) {
+        target.isEditing = object.isEditing;
     }
     Promise.all(costumePromises).then(function (costumes) {
         sprite.costumes = costumes;
@@ -29234,7 +29245,10 @@ var VirtualMachine = function (_EventEmitter) {
                 });
                 // Select the first target for editing, e.g., the first sprite.
                 if (wholeProject && targets.length > 1) {
-                    _this3.editingTarget = targets[1];
+                    // By Kane: 根据项目信息中添加editing标记设置editingTarget
+                    _this3.editingTarget = targets.find(function (target) {
+                        return target.isEditing;
+                    }) || targets[1];
                 } else {
                     _this3.editingTarget = targets[0];
                 }
