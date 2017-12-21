@@ -22678,6 +22678,12 @@ var Runtime = function (_EventEmitter) {
          * @type {Profiler}
          */
         _this.profiler = null;
+
+        /**
+         * 保存mscratch的扩展状态
+         * [{extensionId, devices}]
+         */
+        _this.mscratchExtensionsState = new Map();
         return _this;
     }
 
@@ -22699,17 +22705,36 @@ var Runtime = function (_EventEmitter) {
          */
 
     }, {
-        key: '_registerBlockPackages',
+        key: 'updateMscratchExtensionState',
 
 
         // -----------------------------------------------------------------------------
         // -----------------------------------------------------------------------------
 
         /**
+         * 更新mscratch扩展状态
+         * @param {object} extension mscratch 扩展信息
+         */
+        value: function updateMscratchExtensionState(extension) {
+            var id = extension.id,
+                devices = extension.devices,
+                isDelete = extension.isDelete;
+
+            if (isDelete) {
+                this.mscratchExtensionsState.delete(id);
+                return;
+            }
+            this.mscratchExtensionsState.set(id, devices);
+        }
+
+        /**
          * Register default block packages with this runtime.
          * @todo Prefix opcodes with package name.
          * @private
          */
+
+    }, {
+        key: '_registerBlockPackages',
         value: function _registerBlockPackages() {
             for (var packageName in defaultBlockPackages) {
                 if (defaultBlockPackages.hasOwnProperty(packageName)) {
@@ -24191,6 +24216,16 @@ var Runtime = function (_EventEmitter) {
         key: 'MAX_CLONES',
         get: function get() {
             return 300;
+        }
+
+        /**
+         * mscratch扩展状态更新事件名
+         */
+
+    }, {
+        key: 'MSCRATCH_EXTENSION_UPDATE',
+        get: function get() {
+            return 'MSCRATCH_EXTENSION_UPDATE';
         }
     }]);
 
@@ -28709,6 +28744,7 @@ var _require2 = __webpack_require__(23),
 var serialize = function serialize(runtime) {
     // Fetch targets
     var obj = Object.create(null);
+    // 保存editingTarget设置
     runtime._editingTarget.isEditing = true;
     obj.targets = runtime.targets.filter(function (target) {
         return target.isOriginal;
@@ -28725,6 +28761,14 @@ var serialize = function serialize(runtime) {
 
     // Assemble payload and return
     obj.meta = meta;
+
+    // 保存mscratch扩展信息
+    if (runtime.mscratchExtensionsState.size > 0) {
+        obj.mscratch = { extensions: {} };
+        runtime.mscratchExtensionsState.forEach(function (devices, extensionId) {
+            obj.mscratch.extensions[extensionId] = devices;
+        });
+    }
     return obj;
 };
 
@@ -28854,12 +28898,15 @@ var deserialize = function deserialize(json, runtime) {
         extensionIDs: new Set(),
         extensionURLs: new Map()
     };
+    // 解析json中的mscratch信息
+    var mscratch = json.mscratch;
     return Promise.all((json.targets || []).map(function (target) {
         return parseScratchObject(target, runtime, extensions);
     })).then(function (targets) {
         return {
             targets: targets,
-            extensions: extensions
+            extensions: extensions,
+            mscratch: mscratch
         };
     });
 };
@@ -28996,6 +29043,13 @@ var VirtualMachine = function (_EventEmitter) {
         });
         _this.runtime.on(Runtime.EXTENSION_ADDED, function (blocksInfo) {
             _this.emit(Runtime.EXTENSION_ADDED, blocksInfo);
+        });
+
+        /**
+         * 监听mscratch extension状态变化
+         */
+        _this.on(Runtime.MSCRATCH_EXTENSION_UPDATE, function (extension) {
+            _this.runtime.updateMscratchExtensionState(extension);
         });
 
         _this.extensionManager = new ExtensionManager(_this.runtime);
@@ -29202,11 +29256,12 @@ var VirtualMachine = function (_EventEmitter) {
             } else {
                 deserializer = sb2;
             }
-
+            // 解析json中的mscratch信息
             return deserializer.deserialize(json, this.runtime).then(function (_ref) {
                 var targets = _ref.targets,
-                    extensions = _ref.extensions;
-                return _this2.installTargets(targets, extensions, true);
+                    extensions = _ref.extensions,
+                    mscratch = _ref.mscratch;
+                return _this2.installTargets(targets, extensions, true, mscratch);
             });
         }
 
@@ -29215,12 +29270,13 @@ var VirtualMachine = function (_EventEmitter) {
          * @param {Array.<Target>} targets - the targets to be installed
          * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
          * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
+         * @param {object} mscratch - mscratch信息.
          * @returns {Promise} resolved once targets have been installed
          */
 
     }, {
         key: 'installTargets',
-        value: function installTargets(targets, extensions, wholeProject) {
+        value: function installTargets(targets, extensions, wholeProject, mscratch) {
             var _this3 = this;
 
             var extensionPromises = [];
@@ -29234,6 +29290,10 @@ var VirtualMachine = function (_EventEmitter) {
             targets = targets.filter(function (target) {
                 return !!target;
             });
+            // 如果导入文件中包含mscratch信息，则触发事件
+            if (mscratch) {
+                this.emitMscratchUpdate(mscratch);
+            }
 
             return Promise.all(extensionPromises).then(function () {
                 if (wholeProject) {
@@ -29717,6 +29777,16 @@ var VirtualMachine = function (_EventEmitter) {
                 // Currently editing target id.
                 editingTarget: this.editingTarget ? this.editingTarget.id : null
             });
+        }
+
+        /**
+         * 通知mscratch加载保存在项目中的信息
+         */
+
+    }, {
+        key: 'emitMscratchUpdate',
+        value: function emitMscratchUpdate(mscratch) {
+            this.emit('MSCRATCH_UPDATE', mscratch);
         }
 
         /**
