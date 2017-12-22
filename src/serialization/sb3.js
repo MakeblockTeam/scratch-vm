@@ -65,7 +65,7 @@ const serialize = function (runtime) {
  * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
  * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
  */
-const parseScratchObject = function (object, runtime, extensions) {
+const parseScratchObject = function (object, runtime, extensions, mscratch) {
     if (!object.hasOwnProperty('name')) {
         // Watcher/monitor - skip this object until those are implemented in VM.
         // @todo
@@ -89,7 +89,10 @@ const parseScratchObject = function (object, runtime, extensions) {
             const dotIndex = blockJSON.opcode.indexOf('.');
             if (dotIndex >= 0) {
                 const extensionId = blockJSON.opcode.substring(0, dotIndex);
-                extensions.extensionIDs.add(extensionId);
+                const isMscratchExtension = mscratch && mscratch.extensions && mscratch.extensions.hasOwnProperty(extensionId);
+                if (!isMscratchExtension) {
+                    extensions.extensionIDs.add(extensionId);
+                }
             }
         }
         // console.log(blocks);
@@ -192,7 +195,7 @@ const deserialize = function (json, runtime) {
     // 解析json中的mscratch信息
     const mscratch = json.mscratch;
     return Promise.all(
-        (json.targets || []).map(target => parseScratchObject(target, runtime, extensions))
+        (json.targets || []).map(target => parseScratchObject(target, runtime, extensions, mscratch))
     ).then(targets => ({
         targets,
         extensions,
