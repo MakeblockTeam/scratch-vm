@@ -33,9 +33,6 @@
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
 /******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -63,14 +60,14 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var microee = __webpack_require__(11);
+var microee = __webpack_require__(12);
 
 // Implements a subset of Node's stream.Transform - in a cross-platform manner.
 function Transform() {}
@@ -182,7 +179,7 @@ exports.style = function(str, style) {
 "use strict";
 
 
-var minilog = __webpack_require__(13);
+var minilog = __webpack_require__(11);
 minilog.enable();
 
 module.exports = minilog('vm');
@@ -192,7 +189,7 @@ module.exports = minilog('vm');
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(0),
-    Filter = __webpack_require__(12);
+    Filter = __webpack_require__(13);
 
 var log = new Transform(),
     slice = Array.prototype.slice;
@@ -242,6 +239,12 @@ exports.enable = function() {
 /* 4 */
 /***/ (function(module, exports) {
 
+module.exports = require("util");
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
 var hex = {
   black: '#000',
   red: '#c23621',
@@ -265,13 +268,127 @@ module.exports = color;
 
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("util");
+"use strict";
+
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/* eslint-env worker */
+
+var ArgumentType = __webpack_require__(7);
+var BlockType = __webpack_require__(8);
+var dispatch = __webpack_require__(9);
+
+var ExtensionWorker = function () {
+    function ExtensionWorker() {
+        var _this = this;
+
+        _classCallCheck(this, ExtensionWorker);
+
+        this.nextExtensionId = 0;
+
+        this.initialRegistrations = [];
+
+        dispatch.waitForConnection.then(function () {
+            dispatch.call('extensions', 'allocateWorker').then(function (x) {
+                var _x = _slicedToArray(x, 2),
+                    id = _x[0],
+                    extension = _x[1];
+
+                _this.workerId = id;
+
+                try {
+                    importScripts(extension);
+
+                    var initialRegistrations = _this.initialRegistrations;
+                    _this.initialRegistrations = null;
+
+                    Promise.all(initialRegistrations).then(function () {
+                        return dispatch.call('extensions', 'onWorkerInit', id);
+                    });
+                } catch (e) {
+                    dispatch.call('extensions', 'onWorkerInit', id, e);
+                }
+            });
+        });
+
+        this.extensions = [];
+    }
+
+    _createClass(ExtensionWorker, [{
+        key: 'register',
+        value: function register(extensionObject) {
+            var extensionId = this.nextExtensionId++;
+            this.extensions.push(extensionObject);
+            var serviceName = 'extension.' + this.workerId + '.' + extensionId;
+            var promise = dispatch.setService(serviceName, extensionObject).then(function () {
+                return dispatch.call('extensions', 'registerExtensionService', serviceName);
+            });
+            if (this.initialRegistrations) {
+                this.initialRegistrations.push(promise);
+            }
+            return promise;
+        }
+    }]);
+
+    return ExtensionWorker;
+}();
+
+global.Scratch = global.Scratch || {};
+global.Scratch.ArgumentType = ArgumentType;
+global.Scratch.BlockType = BlockType;
+
+/**
+ * Expose only specific parts of the worker to extensions.
+ */
+var extensionWorker = new ExtensionWorker();
+global.Scratch.extensions = {
+    register: extensionWorker.register.bind(extensionWorker)
+};
 
 /***/ }),
-/* 6 */
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var ArgumentType = {
+    ANGLE: 'angle',
+    BOOLEAN: 'Boolean',
+    COLOR: 'color',
+    NUMBER: 'number',
+    STRING: 'string'
+};
+
+module.exports = ArgumentType;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var BlockType = {
+    BOOLEAN: 'Boolean',
+    COMMAND: 'command',
+    CONDITIONAL: 'conditional',
+    HAT: 'hat',
+    REPORTER: 'reporter'
+};
+
+module.exports = BlockType;
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -285,7 +402,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var SharedDispatch = __webpack_require__(9);
+var SharedDispatch = __webpack_require__(10);
 
 var log = __webpack_require__(2);
 
@@ -425,41 +542,7 @@ var WorkerDispatch = function (_SharedDispatch) {
 module.exports = new WorkerDispatch();
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var ArgumentType = {
-    ANGLE: 'angle',
-    BOOLEAN: 'Boolean',
-    COLOR: 'color',
-    NUMBER: 'number',
-    STRING: 'string'
-};
-
-module.exports = ArgumentType;
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var BlockType = {
-    BOOLEAN: 'Boolean',
-    COMMAND: 'command',
-    CONDITIONAL: 'conditional',
-    HAT: 'hat',
-    REPORTER: 'reporter'
-};
-
-module.exports = BlockType;
-
-/***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -770,93 +853,45 @@ var SharedDispatch = function () {
 module.exports = SharedDispatch;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+module.exports = __webpack_require__(3);
 
+var consoleLogger = __webpack_require__(14);
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+// if we are running inside Electron then use the web version of console.js
+var isElectron = (typeof window !== 'undefined' && window.process && window.process.type === 'renderer');
+if (isElectron) {
+  consoleLogger = __webpack_require__(22).minilog;
+}
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+// intercept the pipe method and transparently wrap the stringifier, if the
+// destination is a Node core stream
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+module.exports.Stringifier = __webpack_require__(25);
 
-/* eslint-env worker */
-
-var ArgumentType = __webpack_require__(7);
-var BlockType = __webpack_require__(8);
-var dispatch = __webpack_require__(6);
-
-var ExtensionWorker = function () {
-    function ExtensionWorker() {
-        var _this = this;
-
-        _classCallCheck(this, ExtensionWorker);
-
-        this.nextExtensionId = 0;
-
-        this.initialRegistrations = [];
-
-        dispatch.waitForConnection.then(function () {
-            dispatch.call('extensions', 'allocateWorker').then(function (x) {
-                var _x = _slicedToArray(x, 2),
-                    id = _x[0],
-                    extension = _x[1];
-
-                _this.workerId = id;
-
-                try {
-                    importScripts(extension);
-
-                    var initialRegistrations = _this.initialRegistrations;
-                    _this.initialRegistrations = null;
-
-                    Promise.all(initialRegistrations).then(function () {
-                        return dispatch.call('extensions', 'onWorkerInit', id);
-                    });
-                } catch (e) {
-                    dispatch.call('extensions', 'onWorkerInit', id, e);
-                }
-            });
-        });
-
-        this.extensions = [];
-    }
-
-    _createClass(ExtensionWorker, [{
-        key: 'register',
-        value: function register(extensionObject) {
-            var extensionId = this.nextExtensionId++;
-            this.extensions.push(extensionObject);
-            var serviceName = 'extension.' + this.workerId + '.' + extensionId;
-            var promise = dispatch.setService(serviceName, extensionObject).then(function () {
-                return dispatch.call('extensions', 'registerExtensionService', serviceName);
-            });
-            if (this.initialRegistrations) {
-                this.initialRegistrations.push(promise);
-            }
-            return promise;
-        }
-    }]);
-
-    return ExtensionWorker;
-}();
-
-global.Scratch = global.Scratch || {};
-global.Scratch.ArgumentType = ArgumentType;
-global.Scratch.BlockType = BlockType;
-
-/**
- * Expose only specific parts of the worker to extensions.
- */
-var extensionWorker = new ExtensionWorker();
-global.Scratch.extensions = {
-    register: extensionWorker.register.bind(extensionWorker)
+var oldPipe = module.exports.pipe;
+module.exports.pipe = function(dest) {
+  if(dest instanceof __webpack_require__(26)) {
+    return oldPipe.call(module.exports, new (module.exports.Stringifier)).pipe(dest);
+  } else {
+    return oldPipe.call(module.exports, dest);
+  }
 };
 
+module.exports.defaultBackend = consoleLogger;
+module.exports.defaultFormatter = consoleLogger.formatMinilog;
+
+module.exports.backends = {
+  redis: __webpack_require__(27),
+  nodeConsole: consoleLogger,
+  console: consoleLogger
+};
+
+
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 function M() { this._events = {}; }
@@ -912,7 +947,7 @@ module.exports = M;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // default filter
@@ -974,44 +1009,6 @@ module.exports = Filter;
 
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(3);
-
-var consoleLogger = __webpack_require__(14);
-
-// if we are running inside Electron then use the web version of console.js
-var isElectron = (typeof window !== 'undefined' && window.process && window.process.type === 'renderer');
-if (isElectron) {
-  consoleLogger = __webpack_require__(24).minilog;
-}
-
-// intercept the pipe method and transparently wrap the stringifier, if the
-// destination is a Node core stream
-
-module.exports.Stringifier = __webpack_require__(23);
-
-var oldPipe = module.exports.pipe;
-module.exports.pipe = function(dest) {
-  if(dest instanceof __webpack_require__(27)) {
-    return oldPipe.call(module.exports, new (module.exports.Stringifier)).pipe(dest);
-  } else {
-    return oldPipe.call(module.exports, dest);
-  }
-};
-
-module.exports.defaultBackend = consoleLogger;
-module.exports.defaultFormatter = consoleLogger.formatMinilog;
-
-module.exports.backends = {
-  redis: __webpack_require__(22),
-  nodeConsole: consoleLogger,
-  console: consoleLogger
-};
-
-
-/***/ }),
 /* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1042,11 +1039,11 @@ e.formatters = [
 
 e.formatClean = new (__webpack_require__(15));
 e.formatColor = new (__webpack_require__(16));
-e.formatNpm = new (__webpack_require__(19));
-e.formatLearnboost = new (__webpack_require__(17));
-e.formatMinilog = new (__webpack_require__(18));
-e.formatWithStack = new (__webpack_require__(21));
-e.formatTime = new (__webpack_require__(20));
+e.formatNpm = new (__webpack_require__(17));
+e.formatLearnboost = new (__webpack_require__(18));
+e.formatMinilog = new (__webpack_require__(19));
+e.formatWithStack = new (__webpack_require__(20));
+e.formatTime = new (__webpack_require__(21));
 
 module.exports = e;
 
@@ -1095,51 +1092,6 @@ module.exports = FormatColor;
 /* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(0),
-    style = __webpack_require__(1).style;
-
-function FormatLearnboost() {}
-
-Transform.mixin(FormatLearnboost);
-
-FormatLearnboost.prototype.write = function(name, level, args) {
-  var colors = { debug: 'grey', info: 'cyan', warn: 'yellow', error: 'red' };
-  this.emit('item', (name ? style(name +' ', 'grey') : '')
-          + (level ? style(level, colors[level]) + ' ' : '')
-          + args.join(' '));
-};
-
-module.exports = FormatLearnboost;
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Transform = __webpack_require__(0),
-    style = __webpack_require__(1).style,
-    util = __webpack_require__(5);
-
-function FormatMinilog() {}
-
-Transform.mixin(FormatMinilog);
-
-FormatMinilog.prototype.write = function(name, level, args) {
-  var colors = { debug: 'blue', info: 'cyan', warn: 'yellow', error: 'red' };
-  this.emit('item', (name ? style(name +' ', 'grey') : '')
-            + (level ? style(level, colors[level]) + ' ' : '')
-            + args.map(function(item) {
-              return (typeof item == 'string' ? item : util.inspect(item, null, 3, true));
-            }).join(' '));
-};
-
-module.exports = FormatMinilog;
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
 var Transform = __webpack_require__(0);
 
 function FormatNpm() {}
@@ -1162,43 +1114,52 @@ module.exports = FormatNpm;
 
 
 /***/ }),
-/* 20 */
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Transform = __webpack_require__(0),
+    style = __webpack_require__(1).style;
+
+function FormatLearnboost() {}
+
+Transform.mixin(FormatLearnboost);
+
+FormatLearnboost.prototype.write = function(name, level, args) {
+  var colors = { debug: 'grey', info: 'cyan', warn: 'yellow', error: 'red' };
+  this.emit('item', (name ? style(name +' ', 'grey') : '')
+          + (level ? style(level, colors[level]) + ' ' : '')
+          + args.join(' '));
+};
+
+module.exports = FormatLearnboost;
+
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(0),
     style = __webpack_require__(1).style,
-    util = __webpack_require__(5);
+    util = __webpack_require__(4);
 
-function FormatTime() {}
+function FormatMinilog() {}
 
-function timestamp() {
-  var d = new Date();
-  return ('0' + d.getDate()).slice(-2) + '-' +
-    ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
-    d.getFullYear() + ' ' +
-    ('0' + d.getHours()).slice(-2) + ':' +
-    ('0' + d.getMinutes()).slice(-2) + ':' +
-    ('0' + d.getSeconds()).slice(-2) + '.' +
-    ('00' + d.getMilliseconds()).slice(-3);
-}
+Transform.mixin(FormatMinilog);
 
-Transform.mixin(FormatTime);
-
-FormatTime.prototype.write = function(name, level, args) {
+FormatMinilog.prototype.write = function(name, level, args) {
   var colors = { debug: 'blue', info: 'cyan', warn: 'yellow', error: 'red' };
-  this.emit('item', style(timestamp() +' ', 'grey')
-            + (name ? style(name +' ', 'grey') : '')
+  this.emit('item', (name ? style(name +' ', 'grey') : '')
             + (level ? style(level, colors[level]) + ' ' : '')
             + args.map(function(item) {
               return (typeof item == 'string' ? item : util.inspect(item, null, 3, true));
             }).join(' '));
 };
 
-module.exports = FormatTime;
+module.exports = FormatMinilog;
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(0),
@@ -1256,29 +1217,137 @@ module.exports = FormatNpm;
 
 
 /***/ }),
-/* 22 */
-/***/ (function(module, exports) {
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
 
-function RedisBackend(options) {
-  this.client = options.client;
-  this.key = options.key;
+var Transform = __webpack_require__(0),
+    style = __webpack_require__(1).style,
+    util = __webpack_require__(4);
+
+function FormatTime() {}
+
+function timestamp() {
+  var d = new Date();
+  return ('0' + d.getDate()).slice(-2) + '-' +
+    ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+    d.getFullYear() + ' ' +
+    ('0' + d.getHours()).slice(-2) + ':' +
+    ('0' + d.getMinutes()).slice(-2) + ':' +
+    ('0' + d.getSeconds()).slice(-2) + '.' +
+    ('00' + d.getMilliseconds()).slice(-3);
 }
 
-RedisBackend.prototype.write = function(str) {
-  this.client.rpush(this.key, str);
+Transform.mixin(FormatTime);
+
+FormatTime.prototype.write = function(name, level, args) {
+  var colors = { debug: 'blue', info: 'cyan', warn: 'yellow', error: 'red' };
+  this.emit('item', style(timestamp() +' ', 'grey')
+            + (name ? style(name +' ', 'grey') : '')
+            + (level ? style(level, colors[level]) + ' ' : '')
+            + args.map(function(item) {
+              return (typeof item == 'string' ? item : util.inspect(item, null, 3, true));
+            }).join(' '));
 };
 
-RedisBackend.prototype.end = function() {};
+module.exports = FormatTime;
 
-RedisBackend.prototype.clear = function(cb) {
-  this.client.del(this.key, cb);
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Transform = __webpack_require__(0);
+
+var newlines = /\n+$/,
+    logger = new Transform();
+
+logger.write = function(name, level, args) {
+  var i = args.length-1;
+  if (typeof console === 'undefined' || !console.log) {
+    return;
+  }
+  if(console.log.apply) {
+    return console.log.apply(console, [name, level].concat(args));
+  } else if(JSON && JSON.stringify) {
+    // console.log.apply is undefined in IE8 and IE9
+    // for IE8/9: make console.log at least a bit less awful
+    if(args[i] && typeof args[i] == 'string') {
+      args[i] = args[i].replace(newlines, '');
+    }
+    try {
+      for(i = 0; i < args.length; i++) {
+        args[i] = JSON.stringify(args[i]);
+      }
+    } catch(e) {}
+    console.log(args.join(' '));
+  }
 };
 
-module.exports = RedisBackend;
+logger.formatters = ['color', 'minilog'];
+logger.color = __webpack_require__(23);
+logger.minilog = __webpack_require__(24);
+
+module.exports = logger;
 
 
 /***/ }),
 /* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Transform = __webpack_require__(0),
+    color = __webpack_require__(5);
+
+var colors = { debug: ['cyan'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
+    logger = new Transform();
+
+logger.write = function(name, level, args) {
+  var fn = console.log;
+  if(console[level] && console[level].apply) {
+    fn = console[level];
+    fn.apply(console, [ '%c'+name+' %c'+level, color('gray'), color.apply(color, colors[level])].concat(args));
+  }
+};
+
+// NOP, because piping the formatted logs can only cause trouble.
+logger.pipe = function() { };
+
+module.exports = logger;
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Transform = __webpack_require__(0),
+    color = __webpack_require__(5),
+    colors = { debug: ['gray'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
+    logger = new Transform();
+
+logger.write = function(name, level, args) {
+  var fn = console.log;
+  if(level != 'debug' && console[level]) {
+    fn = console[level];
+  }
+
+  var subset = [], i = 0;
+  if(level != 'info') {
+    for(; i < args.length; i++) {
+      if(typeof args[i] != 'string') break;
+    }
+    fn.apply(console, [ '%c'+name +' '+ args.slice(0, i).join(' '), color.apply(color, colors[level]) ].concat(args.slice(i)));
+  } else {
+    fn.apply(console, [ '%c'+name, color.apply(color, colors[level]) ].concat(args));
+  }
+};
+
+// NOP, because piping the formatted logs can only cause trouble.
+logger.pipe = function() { };
+
+module.exports = logger;
+
+
+/***/ }),
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Transform = __webpack_require__(0);
@@ -1316,104 +1385,32 @@ module.exports = Stringify;
 
 
 /***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Transform = __webpack_require__(0);
-
-var newlines = /\n+$/,
-    logger = new Transform();
-
-logger.write = function(name, level, args) {
-  var i = args.length-1;
-  if (typeof console === 'undefined' || !console.log) {
-    return;
-  }
-  if(console.log.apply) {
-    return console.log.apply(console, [name, level].concat(args));
-  } else if(JSON && JSON.stringify) {
-    // console.log.apply is undefined in IE8 and IE9
-    // for IE8/9: make console.log at least a bit less awful
-    if(args[i] && typeof args[i] == 'string') {
-      args[i] = args[i].replace(newlines, '');
-    }
-    try {
-      for(i = 0; i < args.length; i++) {
-        args[i] = JSON.stringify(args[i]);
-      }
-    } catch(e) {}
-    console.log(args.join(' '));
-  }
-};
-
-logger.formatters = ['color', 'minilog'];
-logger.color = __webpack_require__(25);
-logger.minilog = __webpack_require__(26);
-
-module.exports = logger;
-
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Transform = __webpack_require__(0),
-    color = __webpack_require__(4);
-
-var colors = { debug: ['cyan'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
-    logger = new Transform();
-
-logger.write = function(name, level, args) {
-  var fn = console.log;
-  if(console[level] && console[level].apply) {
-    fn = console[level];
-    fn.apply(console, [ '%c'+name+' %c'+level, color('gray'), color.apply(color, colors[level])].concat(args));
-  }
-};
-
-// NOP, because piping the formatted logs can only cause trouble.
-logger.pipe = function() { };
-
-module.exports = logger;
-
-
-/***/ }),
 /* 26 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-var Transform = __webpack_require__(0),
-    color = __webpack_require__(4),
-    colors = { debug: ['gray'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
-    logger = new Transform();
-
-logger.write = function(name, level, args) {
-  var fn = console.log;
-  if(level != 'debug' && console[level]) {
-    fn = console[level];
-  }
-
-  var subset = [], i = 0;
-  if(level != 'info') {
-    for(; i < args.length; i++) {
-      if(typeof args[i] != 'string') break;
-    }
-    fn.apply(console, [ '%c'+name +' '+ args.slice(0, i).join(' '), color.apply(color, colors[level]) ].concat(args.slice(i)));
-  } else {
-    fn.apply(console, [ '%c'+name, color.apply(color, colors[level]) ].concat(args));
-  }
-};
-
-// NOP, because piping the formatted logs can only cause trouble.
-logger.pipe = function() { };
-
-module.exports = logger;
-
+module.exports = require("stream");
 
 /***/ }),
 /* 27 */
 /***/ (function(module, exports) {
 
-module.exports = require("stream");
+function RedisBackend(options) {
+  this.client = options.client;
+  this.key = options.key;
+}
+
+RedisBackend.prototype.write = function(str) {
+  this.client.rpush(this.key, str);
+};
+
+RedisBackend.prototype.end = function() {};
+
+RedisBackend.prototype.clear = function(cb) {
+  this.client.del(this.key, cb);
+};
+
+module.exports = RedisBackend;
+
 
 /***/ })
 /******/ ]);
