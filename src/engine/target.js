@@ -4,6 +4,7 @@ const Blocks = require('./blocks');
 const Variable = require('../engine/variable');
 const uid = require('../util/uid');
 const {Map} = require('immutable');
+const log = require('../util/log');
 
 /**
  * @fileoverview
@@ -93,6 +94,28 @@ class Target extends EventEmitter {
     }
 
     /**
+     * Look up a broadcast message object with the given id and return it
+     * if it exists.
+     * @param {string} id Id of the variable.
+     * @param {string} name Name of the variable.
+     * @return {!Variable} Variable object.
+     */
+    lookupBroadcastMsg (id, name) {
+        const broadcastMsg = this.lookupVariableById(id);
+        if (broadcastMsg) {
+            if (broadcastMsg.name !== name) {
+                log.error(`Found broadcast message with id: ${id}, but` +
+                    `its name, ${broadcastMsg.name} did not match expected name ${name}.`);
+            }
+            if (broadcastMsg.type !== Variable.BROADCAST_MESSAGE_TYPE) {
+                log.error(`Found variable with id: ${id}, but its type ${broadcastMsg.type}` +
+                    `did not match expected type ${Variable.BROADCAST_MESSAGE_TYPE}`);
+            }
+            return broadcastMsg;
+        }
+    }
+
+    /**
      * Look up a variable object.
      * Search begins for local variables; then look for globals.
      * @param {string} id Id of the variable.
@@ -134,7 +157,7 @@ class Target extends EventEmitter {
      * dictionary of variables.
      * @param {string} id Id of variable
      * @param {string} name Name of variable.
-     * @param {string} type Type of variable, '' or 'list'
+     * @param {string} type Type of variable, '', 'broadcast_msg', or 'list'
      */
     createVariable (id, name, type) {
         if (!this.variables.hasOwnProperty(id)) {

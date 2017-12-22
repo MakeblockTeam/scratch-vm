@@ -25,8 +25,13 @@ class Variable {
         case Variable.LIST_TYPE:
             this.value = [];
             break;
+<<<<<<< HEAD
         case Variable.COMM_TYPE:
             this.value = 0;
+=======
+        case Variable.BROADCAST_MESSAGE_TYPE:
+            this.value = this.name;
+>>>>>>> upstream/develop
             break;
         default:
             throw new Error(`Invalid variable type: ${this.type}`);
@@ -56,11 +61,19 @@ class Variable {
     }
 
     /**
+<<<<<<< HEAD
      * Type representation for comm variables.
      * @const {string}
      */
     static get COMM_TYPE () {
         return 'comm';
+=======
+     * Type representation for list variables.
+     * @const {string}
+     */
+    static get BROADCAST_MESSAGE_TYPE () {
+        return 'broadcast_msg';
+>>>>>>> upstream/develop
     }
 }
 

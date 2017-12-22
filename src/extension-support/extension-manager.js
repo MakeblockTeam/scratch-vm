@@ -6,8 +6,8 @@ const BlockType = require('./block-type');
 // These extensions are currently built into the VM repository but should not be loaded at startup.
 // TODO: move these out into a separate repository?
 // TODO: change extension spec so that library info, including extension ID, can be collected through static methods
-const Scratch3PenBlocks = require('../blocks/scratch3_pen');
-const Scratch3WeDo2Blocks = require('../blocks/scratch3_wedo2');
+const Scratch3PenBlocks = require('../extensions/scratch3_pen');
+const Scratch3WeDo2Blocks = require('../extensions/scratch3_wedo2');
 const Scratch3MusicBlocks = require('../extensions/scratch3_music');
 const builtinExtensions = {
     pen: Scratch3PenBlocks,
@@ -78,7 +78,7 @@ class ExtensionManager {
          * @type {Set.<string>}
          * @private
          */
-        this._loadedExtensions = new Set();
+        this._loadedExtensions = new Map();
 
         /**
          * Keep a reference to the runtime so we can construct internal extension objects.
@@ -119,8 +119,8 @@ class ExtensionManager {
 
             const extension = builtinExtensions[extensionURL];
             const extensionInstance = new extension(this.runtime);
-            return this._registerInternalExtension(extensionInstance).then(() => {
-                this._loadedExtensions.add(extensionURL);
+            return this._registerInternalExtension(extensionInstance).then(serviceName => {
+                this._loadedExtensions.set(extensionURL, serviceName);
             });
         }
 
@@ -130,6 +130,21 @@ class ExtensionManager {
 
             this.pendingExtensions.push({extensionURL, resolve, reject});
             dispatch.addWorker(new ExtensionWorker());
+        });
+    }
+
+    /**
+    * regenerate blockinfo for any loaded extensions
+    */
+    refreshBlocks () {
+        this._loadedExtensions.forEach(serviceName => {
+            dispatch.call(serviceName, 'getInfo')
+                .then(info => {
+                    dispatch.call('runtime', '_refreshExtensionPrimitives', info);
+                })
+                .catch(e => {
+                    log.error(`Failed to refresh buildtin extension primitives: ${JSON.stringify(e)}`);
+                });
         });
     }
 
@@ -175,7 +190,10 @@ class ExtensionManager {
         const fakeWorkerId = this.nextExtensionWorker++;
         const serviceName = `extension.${fakeWorkerId}.${extensionInfo.id}`;
         return dispatch.setService(serviceName, extensionObject)
-            .then(() => dispatch.call('extensions', 'registerExtensionService', serviceName));
+            .then(() => {
+                dispatch.call('extensions', 'registerExtensionService', serviceName);
+                return serviceName;
+            });
     }
 
     /**

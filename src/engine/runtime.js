@@ -336,6 +336,15 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Event name when the project is started (threads may not necessarily be
+     * running).
+     * @const {string}
+     */
+    static get PROJECT_START () {
+        return 'PROJECT_START';
+    }
+
+    /**
      * Event name when threads start running.
      * Used by the UI to indicate running status.
      * @const {string}
@@ -392,6 +401,14 @@ class Runtime extends EventEmitter {
      */
     static get EXTENSION_ADDED () {
         return 'EXTENSION_ADDED';
+    }
+
+    /**
+     * Event name for reporting that blocksInfo was updated.
+     * @const {string}
+     */
+    static get BLOCKSINFO_UPDATE () {
+        return 'BLOCKSINFO_UPDATE';
     }
 
     /**
@@ -497,7 +514,8 @@ class Runtime extends EventEmitter {
         const categoryInfo = {
             id: extensionInfo.id,
             name: extensionInfo.name,
-            iconURI: extensionInfo.iconURI,
+            blockIconURI: extensionInfo.blockIconURI,
+            menuIconURI: extensionInfo.menuIconURI,
             color1: '#FF6680',
             color2: '#FF4D6A',
             color3: '#FF3355',
@@ -525,6 +543,41 @@ class Runtime extends EventEmitter {
         }
 
         this.emit(Runtime.EXTENSION_ADDED, categoryInfo.blocks.concat(categoryInfo.menus));
+    }
+
+    /**
+     * Reregister the primitives for an extension
+     * @param  {ExtensionInfo} extensionInfo - new info (results of running getInfo)
+     *                                         for an extension
+     * @private
+     */
+    _refreshExtensionPrimitives (extensionInfo) {
+        let extensionBlocks = [];
+        for (const categoryInfo of this._blockInfo) {
+            if (extensionInfo.id === categoryInfo.id) {
+                categoryInfo.blocks = [];
+                categoryInfo.menus = [];
+                for (const menuName in extensionInfo.menus) {
+                    if (extensionInfo.menus.hasOwnProperty(menuName)) {
+                        const menuItems = extensionInfo.menus[menuName];
+                        const convertedMenu = this._buildMenuForScratchBlocks(menuName, menuItems, categoryInfo);
+                        categoryInfo.menus.push(convertedMenu);
+                    }
+                }
+                for (const blockInfo of extensionInfo.blocks) {
+                    const convertedBlock = this._convertForScratchBlocks(blockInfo, categoryInfo);
+                    const opcode = convertedBlock.json.type;
+                    categoryInfo.blocks.push(convertedBlock);
+                    this._primitives[opcode] = convertedBlock.info.func;
+                    if (blockInfo.blockType === BlockType.HAT) {
+                        this._hats[opcode] = {edgeActivated: true}; /** @TODO let extension specify this */
+                    }
+                }
+                extensionBlocks = extensionBlocks.concat(categoryInfo.blocks, categoryInfo.menus);
+            }
+        }
+
+        this.emit(Runtime.BLOCKSINFO_UPDATE, extensionBlocks);
     }
 
     /**
@@ -589,8 +642,9 @@ class Runtime extends EventEmitter {
             category: categoryInfo.name,
             colour: categoryInfo.color1,
             colourSecondary: categoryInfo.color2,
-            colorTertiary: categoryInfo.color3,
-            args0: []
+            colourTertiary: categoryInfo.color3,
+            args0: [],
+            extensions: ['scratch_extension']
         };
 
         const inputList = [];
@@ -603,16 +657,20 @@ class Runtime extends EventEmitter {
 
         blockJSON.message0 = '';
 
-        // If an icon for the extension exists, prepend it to each block
-        if (categoryInfo.iconURI) {
-            blockJSON.message0 = '%1';
+        // If an icon for the extension exists, prepend it to each block, with a vertical separator.
+        if (categoryInfo.blockIconURI) {
+            blockJSON.message0 = '%1 %2';
             const iconJSON = {
                 type: 'field_image',
-                src: categoryInfo.iconURI,
+                src: categoryInfo.blockIconURI,
                 width: 40,
                 height: 40
             };
+            const separatorJSON = {
+                type: 'field_vertical_separator'
+            };
             blockJSON.args0.push(iconJSON);
+            blockJSON.args0.push(separatorJSON);
         }
 
         blockJSON.message0 += blockInfo.text.replace(/\[(.+?)]/g, (match, placeholder) => {
@@ -721,7 +779,20 @@ class Runtime extends EventEmitter {
         for (const categoryInfo of this._blockInfo) {
             const {name, color1, color2} = categoryInfo;
             const paletteBlocks = categoryInfo.blocks.filter(block => !block.info.hideFromPalette);
-            xmlParts.push(`<category name="${name}" colour="${color1}" secondaryColour="${color2}">`);
+            const colorXML = `colour="${color1}" secondaryColour="${color2}"`;
+
+            // Use a menu icon if there is one. Otherwise, use the block icon. If there's no icon,
+            // the category menu will show its default colored circle.
+            let menuIconURI = '';
+            if (categoryInfo.menuIconURI) {
+                menuIconURI = categoryInfo.menuIconURI;
+            } else if (categoryInfo.blockIconURI) {
+                menuIconURI = categoryInfo.blockIconURI;
+            }
+            const menuIconXML = menuIconURI ?
+                `iconURI="${menuIconURI}"` : '';
+
+            xmlParts.push(`<category name="${name}" ${colorXML} ${menuIconXML}>`);
             xmlParts.push.apply(xmlParts, paletteBlocks.map(block => block.xml));
             xmlParts.push('</category>');
         }
@@ -836,17 +907,14 @@ class Runtime extends EventEmitter {
     }
 
     /**
-     * Remove a thread from the list of threads.
-     * @param {?Thread} thread Thread object to remove from actives
+     * Stop a thread: stop running it immediately, and remove it from the thread list later.
+     * @param {!Thread} thread Thread object to remove from actives
      */
-    _removeThread (thread) {
+    _stopThread (thread) {
+        // Mark the thread for later removal
+        thread.isKilled = true;
         // Inform sequencer to stop executing that thread.
         this.sequencer.retireThread(thread);
-        // Remove from the list.
-        const i = this.threads.indexOf(thread);
-        if (i > -1) {
-            this.threads.splice(i, 1);
-        }
     }
 
     /**
@@ -909,7 +977,7 @@ class Runtime extends EventEmitter {
                     // edge activated hat thread that runs every frame
                     continue;
                 }
-                this._removeThread(this.threads[i]);
+                this._stopThread(this.threads[i]);
                 return;
             }
         }
@@ -1086,8 +1154,7 @@ class Runtime extends EventEmitter {
                 continue;
             }
             if (this.threads[i].target === target) {
-                this.threads[i].isKilled = true;
-                this._removeThread(this.threads[i]);
+                this._stopThread(this.threads[i]);
             }
         }
     }
@@ -1097,6 +1164,7 @@ class Runtime extends EventEmitter {
      */
     greenFlag () {
         this.stopAll();
+        this.emit(Runtime.PROJECT_START);
         this.ioDevices.clock.resetProjectTimer();
         this.clearEdgeActivatedValues();
         // Inform all targets of the green flag.
@@ -1126,11 +1194,7 @@ class Runtime extends EventEmitter {
         }
         this.targets = newTargets;
         // Dispose all threads.
-        const threadsCopy = this.threads.slice();
-        while (threadsCopy.length > 0) {
-            const poppedThread = threadsCopy.pop();
-            this._removeThread(poppedThread);
-        }
+        this.threads.forEach(thread => this._stopThread(thread));
     }
 
     /**
@@ -1144,6 +1208,10 @@ class Runtime extends EventEmitter {
             }
             this.profiler.start(stepProfilerId);
         }
+
+        // Clean up threads that were told to stop during or since the last step
+        this.threads = this.threads.filter(thread => !thread.isKilled);
+
         // Find all edge-activated hats, and add them to threads to be evaluated.
         for (const hatType in this._hats) {
             if (!this._hats.hasOwnProperty(hatType)) continue;

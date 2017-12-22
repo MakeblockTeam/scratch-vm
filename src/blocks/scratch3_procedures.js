@@ -15,8 +15,8 @@ class Scratch3ProcedureBlocks {
         return {
             procedures_definition: this.definition,
             procedures_call: this.call,
-            argument_reporter_string_number: this.param,
-            argument_reporter_boolean: this.param
+            argument_reporter_string_number: this.argumentReporterStringNumber,
+            argument_reporter_boolean: this.argumentReporterBoolean
         };
     }
 
@@ -27,18 +27,20 @@ class Scratch3ProcedureBlocks {
     call (args, util) {
         if (!util.stackFrame.executed) {
             const procedureCode = args.mutation.proccode;
-            const paramNames = util.getProcedureParamNames(procedureCode);
+            const paramNamesAndIds = util.getProcedureParamNamesAndIds(procedureCode);
 
             // If null, procedure could not be found, which can happen if custom
             // block is dragged between sprites without the definition.
             // Match Scratch 2.0 behavior and noop.
-            if (paramNames === null) {
+            if (paramNamesAndIds === null) {
                 return;
             }
 
-            for (let i = 0; i < paramNames.length; i++) {
-                if (args.hasOwnProperty(`input${i}`)) {
-                    util.pushParam(paramNames[i], args[`input${i}`]);
+            const [paramNames, paramIds] = paramNamesAndIds;
+
+            for (let i = 0; i < paramIds.length; i++) {
+                if (args.hasOwnProperty(paramIds[i])) {
+                    util.pushParam(paramNames[i], args[paramIds[i]]);
                 }
             }
 
@@ -47,8 +49,19 @@ class Scratch3ProcedureBlocks {
         }
     }
 
-    param (args, util) {
+    argumentReporterStringNumber (args, util) {
         const value = util.getParam(args.VALUE);
+        if (value === null) {
+            return '';
+        }
+        return value;
+    }
+
+    argumentReporterBoolean (args, util) {
+        const value = util.getParam(args.VALUE);
+        if (value === null) {
+            return false;
+        }
         return value;
     }
 }

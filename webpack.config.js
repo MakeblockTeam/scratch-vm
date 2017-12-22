@@ -10,6 +10,10 @@ const base = {
         port: process.env.PORT || 8073
     },
     devtool: 'cheap-module-source-map',
+    output: {
+        library: 'VirtualMachine',
+        filename: '[name].js'
+    },
     module: {
         rules: [{
             test: /\.js$/,
@@ -37,8 +41,8 @@ module.exports = [
             'scratch-vm.min': './src/index.js'
         },
         output: {
-            path: path.resolve(__dirname, 'dist/web'),
-            filename: '[name].js'
+            libraryTarget: 'umd',
+            path: path.resolve('dist', 'web')
         },
         module: {
             rules: base.module.rules.concat([
@@ -56,10 +60,8 @@ module.exports = [
             'scratch-vm': './src/index.js'
         },
         output: {
-            library: 'VirtualMachine',
             libraryTarget: 'commonjs2',
-            path: path.resolve(__dirname, 'dist/node'),
-            filename: '[name].js'
+            path: path.resolve('dist', 'node')
         },
         plugins: base.plugins.concat([
             new CopyWebpackPlugin([{
@@ -82,6 +84,8 @@ module.exports = [
                 'scratch-blocks/dist/vertical.js',
                 // Audio
                 'scratch-audio',
+                // Storage
+                'scratch-storage',
                 // Renderer
                 'scratch-render'
             ]
@@ -111,6 +115,10 @@ module.exports = [
                 {
                     test: require.resolve('scratch-audio'),
                     loader: 'expose-loader?AudioEngine'
+                },
+                {
+                    test: require.resolve('scratch-storage'),
+                    loader: 'expose-loader?ScratchStorage'
                 },
                 {
                     test: require.resolve('scratch-render'),

@@ -207,7 +207,7 @@ class Blocks {
      * @param {?string} name Name of procedure to query.
      * @return {?Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNames (name) {
+    getProcedureParamNamesAndIds (name) {
         const cachedNames = this._cache.procedureParamNames[name];
         if (typeof cachedNames !== 'undefined') {
             return cachedNames;
@@ -218,9 +218,10 @@ class Blocks {
             const block = this._blocks[id];
             if (block.opcode === 'procedures_prototype' &&
                 block.mutation.proccode === name) {
-                const paramNames = JSON.parse(block.mutation.argumentnames);
-                this._cache.procedureParamNames[name] = paramNames;
-                return paramNames;
+                const names = JSON.parse(block.mutation.argumentnames);
+                const ids = JSON.parse(block.mutation.argumentids);
+                this._cache.procedureParamNames[name] = [names, ids];
+                return this._cache.procedureParamNames[name];
             }
         }
 
@@ -305,7 +306,14 @@ class Blocks {
             // Check if this variable exists on the current target or stage.
             // If not, create it on the stage.
             // TODO create global and local variables when UI provides a way.
-            if (!optRuntime.getEditingTarget().lookupVariableById(e.varId)) {
+            if (optRuntime.getEditingTarget()) {
+                if (!optRuntime.getEditingTarget().lookupVariableById(e.varId)) {
+                    stage.createVariable(e.varId, e.varName, e.varType);
+                }
+            } else if (!stage.lookupVariableById(e.varId)) {
+                // Since getEditingTarget returned null, we now need to
+                // explicitly check if the stage has the variable, and
+                // create one if not.
                 stage.createVariable(e.varId, e.varName, e.varType);
             }
             break;
@@ -380,7 +388,8 @@ class Blocks {
         case 'field':
             // Update block value
             if (!block.fields[args.name]) return;
-            if (args.name === 'VARIABLE' || args.name === 'LIST') {
+            if (args.name === 'VARIABLE' || args.name === 'LIST' ||
+                args.name === 'BROADCAST_OPTION') {
                 // Get variable name using the id in args.value.
                 const variable = optRuntime.getEditingTarget().lookupVariableById(args.value);
                 const targets = optRuntime.targets;
