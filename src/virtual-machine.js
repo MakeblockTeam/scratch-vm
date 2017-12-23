@@ -444,6 +444,8 @@ class VirtualMachine extends EventEmitter {
             storage.DataFormat.SVG,
             (new TextEncoder()).encode(svg)
         );
+        // by Kane, 保存编辑后的svg代码
+        costume.svgXml = svg;
         this.emitTargetsUpdate();
     }
 

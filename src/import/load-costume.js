@@ -66,7 +66,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
-const loadCostume = function (md5ext, costume, runtime) {
+const loadCostume = function (md5ext, costume, runtime, svgXml) {
     if (!runtime.storage) {
         log.error('No storage module present; cannot load costume asset: ', md5ext);
         return Promise.resolve(costume);
@@ -77,7 +77,14 @@ const loadCostume = function (md5ext, costume, runtime) {
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
     const assetType = (ext === 'svg') ? AssetType.ImageVector : AssetType.ImageBitmap;
-
+    // by Kane, 解析svg路径
+    if (svgXml) {
+        costume.dataFormat = ext;
+        const data = new TextEncoder().encode(svgXml);
+        const costumeAsset = new runtime.storage.Asset(assetType, md5, ext, data);
+        runtime.storage.builtinHelper.cache(assetType, ext, data, md5);
+        return loadCostumeFromAsset(costume, costumeAsset, runtime);
+    }
     return runtime.storage.load(assetType, md5, ext).then(costumeAsset => {
         costume.dataFormat = ext;
         return loadCostumeFromAsset(costume, costumeAsset, runtime);

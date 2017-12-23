@@ -18723,7 +18723,7 @@ var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, 
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
-var loadCostume = function loadCostume(md5ext, costume, runtime) {
+var loadCostume = function loadCostume(md5ext, costume, runtime, svgXml) {
     if (!runtime.storage) {
         log.error('No storage module present; cannot load costume asset: ', md5ext);
         return Promise.resolve(costume);
@@ -18734,7 +18734,14 @@ var loadCostume = function loadCostume(md5ext, costume, runtime) {
     var md5 = idParts[0];
     var ext = idParts[1].toLowerCase();
     var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
-
+    // by Kane, 解析svg路径
+    if (svgXml) {
+        costume.dataFormat = ext;
+        var data = new TextEncoder().encode(svgXml);
+        var costumeAsset = new runtime.storage.Asset(assetType, md5, ext, data);
+        runtime.storage.builtinHelper.cache(assetType, ext, data, md5);
+        return loadCostumeFromAsset(costume, costumeAsset, runtime);
+    }
     return runtime.storage.load(assetType, md5, ext).then(function (costumeAsset) {
         costume.dataFormat = ext;
         return loadCostumeFromAsset(costume, costumeAsset, runtime);
@@ -31282,6 +31289,8 @@ var VirtualMachine = function (_EventEmitter) {
             }
             var storage = this.runtime.storage;
             costume.assetId = storage.builtinHelper.cache(storage.AssetType.ImageVector, storage.DataFormat.SVG, new TextEncoder().encode(svg));
+            // by Kane, 保存编辑后的svg代码
+            costume.svgXml = svg;
             this.emitTargetsUpdate();
         }
 
@@ -63527,7 +63536,7 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
         var dataFormat = costumeSource.dataFormat || costumeSource.assetType && costumeSource.assetType.runtimeFormat || // older format
         'png'; // if all else fails, guess that it might be a PNG
         var costumeMd5 = costumeSource.assetId + '.' + dataFormat;
-        return loadCostume(costumeMd5, costume, runtime);
+        return loadCostume(costumeMd5, costume, runtime, costumeSource.svgXml); // by Kane
     });
     // Sounds from JSON
     var soundPromises = (object.sounds || []).map(function (soundSource) {

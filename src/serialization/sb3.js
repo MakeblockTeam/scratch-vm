@@ -112,7 +112,7 @@ const parseScratchObject = function (object, runtime, extensions, mscratch) {
             (costumeSource.assetType && costumeSource.assetType.runtimeFormat) || // older format
             'png'; // if all else fails, guess that it might be a PNG
         const costumeMd5 = `${costumeSource.assetId}.${dataFormat}`;
-        return loadCostume(costumeMd5, costume, runtime);
+        return loadCostume(costumeMd5, costume, runtime, costumeSource.svgXml); // by Kane
     });
     // Sounds from JSON
     const soundPromises = (object.sounds || []).map(soundSource => {
