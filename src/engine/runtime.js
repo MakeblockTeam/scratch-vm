@@ -275,6 +275,7 @@ class Runtime extends EventEmitter {
          * [{extensionId, devices}]
          */
         this.mscratchExtensionsState = new Map();
+        this.mscratchSounds = new Map();
     }
 
     setStageSize (width, height) {
@@ -454,6 +455,26 @@ class Runtime extends EventEmitter {
             return;
         }
         this.mscratchExtensionsState.set(id, devices);
+    }
+
+    /**
+     * 添加mscratch 录音
+     * @param {string} assetId mscratch 音频信息
+     * @param {buffer} data mscratch 音频信息
+     */
+    addMscratchSound (assetId, data) {
+        this.mscratchSounds.set(assetId, data);
+    }
+
+    /**
+     * 添加mscratch 录音
+     * @param {string} assetId mscratch 音频信息
+     * @param {buffer} data mscratch 音频信息
+     */
+    deleteMscratchSound (assetId) {
+        if (this.mscratchSounds.has(assetId)) {
+            this.mscratchSounds.delete(assetId);
+        }
     }
 
 

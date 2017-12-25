@@ -38805,6 +38805,7 @@ var Runtime = function (_EventEmitter) {
          * [{extensionId, devices}]
          */
         _this.mscratchExtensionsState = new Map();
+        _this.mscratchSounds = new Map();
         return _this;
     }
 
@@ -38846,6 +38847,32 @@ var Runtime = function (_EventEmitter) {
                 return;
             }
             this.mscratchExtensionsState.set(id, devices);
+        }
+
+        /**
+         * 添加mscratch 录音
+         * @param {string} assetId mscratch 音频信息
+         * @param {buffer} data mscratch 音频信息
+         */
+
+    }, {
+        key: 'addMscratchSound',
+        value: function addMscratchSound(assetId, data) {
+            this.mscratchSounds.set(assetId, data);
+        }
+
+        /**
+         * 添加mscratch 录音
+         * @param {string} assetId mscratch 音频信息
+         * @param {buffer} data mscratch 音频信息
+         */
+
+    }, {
+        key: 'deleteMscratchSound',
+        value: function deleteMscratchSound(assetId) {
+            if (this.mscratchSounds.has(assetId)) {
+                this.mscratchSounds.delete(assetId);
+            }
         }
 
         /**
@@ -63475,10 +63502,24 @@ var serialize = function serialize(runtime) {
     obj.meta = meta;
 
     // 保存mscratch扩展信息
+    // 扩展信息
     if (runtime.mscratchExtensionsState.size > 0) {
-        obj.mscratch = { extensions: {} };
+        if (!obj.mscratch) {
+            obj.mscratch = new Object(null);
+        }
+        obj.mscratch.extensions = new Object(null);
         runtime.mscratchExtensionsState.forEach(function (devices, extensionId) {
             obj.mscratch.extensions[extensionId] = devices;
+        });
+    }
+    // 录音信息
+    if (runtime.mscratchSounds.size > 0) {
+        if (!obj.mscratch) {
+            obj.mscratch = new Object(null);
+        }
+        obj.mscratch.sounds = [];
+        runtime.mscratchSounds.forEach(function (data, assetId) {
+            obj.mscratch.sounds.push({ assetId: assetId, data: data });
         });
     }
     return obj;
