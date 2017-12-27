@@ -63484,7 +63484,9 @@ var serialize = function serialize(runtime) {
     // Fetch targets
     var obj = Object.create(null);
     // 保存editingTarget设置
-    runtime._editingTarget.isEditing = true;
+    if (runtime._editingTarget) {
+        runtime._editingTarget.isEditing = true;
+    }
     obj.targets = runtime.targets.filter(function (target) {
         return target.isOriginal;
     });
