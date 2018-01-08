@@ -77,8 +77,8 @@ module.exports = require("util");
 // Copyright (c) 2012, Mark Cavage. All rights reserved.
 // Copyright 2015 Joyent, Inc.
 
-var assert = __webpack_require__(37);
-var Stream = __webpack_require__(9).Stream;
+var assert = __webpack_require__(38);
+var Stream = __webpack_require__(10).Stream;
 var util = __webpack_require__(0);
 
 
@@ -598,7 +598,7 @@ module.exports = Key;
 var assert = __webpack_require__(1);
 var algs = __webpack_require__(5);
 var crypto = __webpack_require__(2);
-var Fingerprint = __webpack_require__(38);
+var Fingerprint = __webpack_require__(39);
 var Signature = __webpack_require__(15);
 var DiffieHellman = __webpack_require__(105).DiffieHellman;
 var errs = __webpack_require__(14);
@@ -619,7 +619,7 @@ var formats = {};
 formats['auto'] = __webpack_require__(108);
 formats['pem'] = __webpack_require__(16);
 formats['pkcs1'] = __webpack_require__(69);
-formats['pkcs8'] = __webpack_require__(40);
+formats['pkcs8'] = __webpack_require__(41);
 formats['rfc4253'] = __webpack_require__(21);
 formats['ssh'] = __webpack_require__(110);
 formats['ssh-private'] = __webpack_require__(53);
@@ -1052,7 +1052,7 @@ module.exports = PrivateKey;
 var assert = __webpack_require__(1);
 var algs = __webpack_require__(5);
 var crypto = __webpack_require__(2);
-var Fingerprint = __webpack_require__(38);
+var Fingerprint = __webpack_require__(39);
 var Signature = __webpack_require__(15);
 var errs = __webpack_require__(14);
 var util = __webpack_require__(0);
@@ -1079,7 +1079,7 @@ var formats = {};
 formats['auto'] = __webpack_require__(108);
 formats['pem'] = __webpack_require__(16);
 formats['pkcs1'] = __webpack_require__(69);
-formats['pkcs8'] = __webpack_require__(40);
+formats['pkcs8'] = __webpack_require__(41);
 formats['rfc4253'] = __webpack_require__(21);
 formats['ssh-private'] = __webpack_require__(53);
 formats['openssh'] = formats['ssh-private'];
@@ -1393,12 +1393,6 @@ module.exports = minilog('vm');
 
 /***/ }),
 /* 9 */
-/***/ (function(module, exports) {
-
-module.exports = require("stream");
-
-/***/ }),
-/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1408,7 +1402,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Color = __webpack_require__(43);
+var Color = __webpack_require__(44);
 
 /**
  * @fileoverview
@@ -1635,6 +1629,12 @@ var Cast = function () {
 }();
 
 module.exports = Cast;
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+module.exports = require("stream");
 
 /***/ }),
 /* 11 */
@@ -2152,7 +2152,7 @@ var Key = __webpack_require__(4);
 var PrivateKey = __webpack_require__(6);
 
 var pkcs1 = __webpack_require__(69);
-var pkcs8 = __webpack_require__(40);
+var pkcs8 = __webpack_require__(41);
 var sshpriv = __webpack_require__(53);
 var rfc4253 = __webpack_require__(21);
 
@@ -6619,7 +6619,7 @@ function objectToString(o) {
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(45);
+var processNextTick = __webpack_require__(46);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -12949,12 +12949,119 @@ module.exports = {
 
 /***/ }),
 /* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @fileoverview
+ * Object representing a Scratch variable.
+ */
+
+var uid = __webpack_require__(59);
+
+var Variable = function () {
+    /**
+     * @param {string} id Id of the variable.
+     * @param {string} name Name of the variable.
+     * @param {string} type Type of the variable, one of '' or 'list'
+     * @param {boolean} isCloud Whether the variable is stored in the cloud.
+     * @constructor
+     */
+    function Variable(id, name, type, isCloud) {
+        _classCallCheck(this, Variable);
+
+        this.id = id || uid();
+        this.name = name;
+        this.type = type;
+        this.isCloud = isCloud;
+        switch (this.type) {
+            case Variable.SCALAR_TYPE:
+                this.value = 0;
+                break;
+            case Variable.LIST_TYPE:
+                this.value = [];
+                break;
+            case Variable.COMM_TYPE:
+                this.value = 0;
+            case Variable.BROADCAST_MESSAGE_TYPE:
+                this.value = this.name;
+                break;
+            default:
+                throw new Error('Invalid variable type: ' + this.type);
+        }
+    }
+
+    _createClass(Variable, [{
+        key: 'toXML',
+        value: function toXML() {
+            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
+        }
+
+        /**
+         * Type representation for scalar variables.
+         * This is currently represented as ''
+         * for compatibility with blockly.
+         * @const {string}
+         */
+
+    }], [{
+        key: 'SCALAR_TYPE',
+        get: function get() {
+            return '';
+        }
+
+        /**
+         * Type representation for list variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'LIST_TYPE',
+        get: function get() {
+            return 'list';
+        }
+
+        /**
+         * Type representation for comm variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'COMM_TYPE',
+        get: function get() {
+            return 'comm';
+        }
+        /**
+         * Type representation for list variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'BROADCAST_MESSAGE_TYPE',
+        get: function get() {
+            return 'broadcast_msg';
+        }
+    }]);
+
+    return Variable;
+}();
+
+module.exports = Variable;
+
+/***/ }),
+/* 35 */
 /***/ (function(module, exports) {
 
 module.exports = require("http");
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13935,19 +14042,19 @@ exports.shallow = function (source) {
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports) {
 
 module.exports = require("querystring");
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports) {
 
 module.exports = require("assert");
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright 2015 Joyent, Inc.
@@ -13959,7 +14066,7 @@ var algs = __webpack_require__(5);
 var crypto = __webpack_require__(2);
 var errs = __webpack_require__(14);
 var Key = __webpack_require__(4);
-var Certificate = __webpack_require__(39);
+var Certificate = __webpack_require__(40);
 var utils = __webpack_require__(3);
 
 var FingerprintFormatError = errs.FingerprintFormatError;
@@ -14114,7 +14221,7 @@ Fingerprint._oldVersionDetect = function (obj) {
 
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright 2016 Joyent, Inc.
@@ -14124,14 +14231,14 @@ module.exports = Certificate;
 var assert = __webpack_require__(1);
 var algs = __webpack_require__(5);
 var crypto = __webpack_require__(2);
-var Fingerprint = __webpack_require__(38);
+var Fingerprint = __webpack_require__(39);
 var Signature = __webpack_require__(15);
 var errs = __webpack_require__(14);
 var util = __webpack_require__(0);
 var utils = __webpack_require__(3);
 var Key = __webpack_require__(4);
 var PrivateKey = __webpack_require__(6);
-var Identity = __webpack_require__(41);
+var Identity = __webpack_require__(42);
 
 var formats = {};
 formats['openssh'] = __webpack_require__(228);
@@ -14497,7 +14604,7 @@ Certificate._oldVersionDetect = function (obj) {
 
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright 2015 Joyent, Inc.
@@ -15008,7 +15115,7 @@ function writePkcs8ECDSAPrivate(key, der) {
 
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright 2017 Joyent, Inc.
@@ -15018,7 +15125,7 @@ module.exports = Identity;
 var assert = __webpack_require__(1);
 var algs = __webpack_require__(5);
 var crypto = __webpack_require__(2);
-var Fingerprint = __webpack_require__(38);
+var Fingerprint = __webpack_require__(39);
 var Signature = __webpack_require__(15);
 var errs = __webpack_require__(14);
 var util = __webpack_require__(0);
@@ -15291,7 +15398,7 @@ Identity._oldVersionDetect = function (obj) {
 
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15308,7 +15415,7 @@ var ArgumentType = {
 module.exports = ArgumentType;
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15566,7 +15673,7 @@ var Color = function () {
 module.exports = Color;
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15776,7 +15883,7 @@ var RenderedTarget = function (_Target) {
                 this.x = x;
                 this.y = y;
             }
-            this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY);
+            this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY, force);
             this.runtime.requestTargetsUpdate(this);
         }
 
@@ -16341,13 +16448,38 @@ var RenderedTarget = function (_Target) {
         }
 
         /**
-         * Move back a number of layers.
-         * @param {number} nLayers How many layers to go back.
+         * Move to the back layer.
          */
 
     }, {
-        key: 'goBackLayers',
-        value: function goBackLayers(nLayers) {
+        key: 'goToBack',
+        value: function goToBack() {
+            if (this.renderer) {
+                this.renderer.setDrawableOrder(this.drawableID, -Infinity, false, 1);
+            }
+        }
+
+        /**
+         * Move forward a number of layers.
+         * @param {number} nLayers How many layers to go forward.
+         */
+
+    }, {
+        key: 'goForwardLayers',
+        value: function goForwardLayers(nLayers) {
+            if (this.renderer) {
+                this.renderer.setDrawableOrder(this.drawableID, nLayers, true, 1);
+            }
+        }
+
+        /**
+         * Move backward a number of layers.
+         * @param {number} nLayers How many layers to go backward.
+         */
+
+    }, {
+        key: 'goBackwardLayers',
+        value: function goBackwardLayers(nLayers) {
             if (this.renderer) {
                 this.renderer.setDrawableOrder(this.drawableID, -nLayers, true, 1);
             }
@@ -16512,11 +16644,10 @@ var RenderedTarget = function (_Target) {
         key: 'postSpriteInfo',
         value: function postSpriteInfo(data) {
             var force = data.hasOwnProperty('force') ? data.force : null;
-            if (data.hasOwnProperty('x')) {
-                this.setXY(data.x, this.y, force);
-            }
-            if (data.hasOwnProperty('y')) {
-                this.setXY(this.x, data.y, force);
+            var isXChanged = data.hasOwnProperty('x');
+            var isYChanged = data.hasOwnProperty('y');
+            if (isXChanged || isYChanged) {
+                this.setXY(isXChanged ? data.x : this.x, isYChanged ? data.y : this.y, force);
             }
             if (data.hasOwnProperty('direction')) {
                 this.setDirection(data.direction);
@@ -16653,7 +16784,7 @@ var RenderedTarget = function (_Target) {
 module.exports = RenderedTarget;
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16701,113 +16832,6 @@ function nextTick(fn, arg1, arg2, arg3) {
   }
 }
 
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @fileoverview
- * Object representing a Scratch variable.
- */
-
-var uid = __webpack_require__(59);
-
-var Variable = function () {
-    /**
-     * @param {string} id Id of the variable.
-     * @param {string} name Name of the variable.
-     * @param {string} type Type of the variable, one of '' or 'list'
-     * @param {boolean} isCloud Whether the variable is stored in the cloud.
-     * @constructor
-     */
-    function Variable(id, name, type, isCloud) {
-        _classCallCheck(this, Variable);
-
-        this.id = id || uid();
-        this.name = name;
-        this.type = type;
-        this.isCloud = isCloud;
-        switch (this.type) {
-            case Variable.SCALAR_TYPE:
-                this.value = 0;
-                break;
-            case Variable.LIST_TYPE:
-                this.value = [];
-                break;
-            case Variable.COMM_TYPE:
-                this.value = 0;
-            case Variable.BROADCAST_MESSAGE_TYPE:
-                this.value = this.name;
-                break;
-            default:
-                throw new Error('Invalid variable type: ' + this.type);
-        }
-    }
-
-    _createClass(Variable, [{
-        key: 'toXML',
-        value: function toXML() {
-            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
-        }
-
-        /**
-         * Type representation for scalar variables.
-         * This is currently represented as ''
-         * for compatibility with blockly.
-         * @const {string}
-         */
-
-    }], [{
-        key: 'SCALAR_TYPE',
-        get: function get() {
-            return '';
-        }
-
-        /**
-         * Type representation for list variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'LIST_TYPE',
-        get: function get() {
-            return 'list';
-        }
-
-        /**
-         * Type representation for comm variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'COMM_TYPE',
-        get: function get() {
-            return 'comm';
-        }
-        /**
-         * Type representation for list variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'BROADCAST_MESSAGE_TYPE',
-        get: function get() {
-            return 'broadcast_msg';
-        }
-    }]);
-
-    return Variable;
-}();
-
-module.exports = Variable;
 
 /***/ }),
 /* 47 */
@@ -18982,7 +19006,7 @@ exports.defer = defer
 
 // Load modules
 
-const Hoek = __webpack_require__(35);
+const Hoek = __webpack_require__(36);
 
 
 // Declare internals
@@ -19561,11 +19585,11 @@ exports.timestampMessage = function (credentials, localtimeOffsetMsec) {
 // Copyright 2015 Joyent, Inc.
 
 var Key = __webpack_require__(4);
-var Fingerprint = __webpack_require__(38);
+var Fingerprint = __webpack_require__(39);
 var Signature = __webpack_require__(15);
 var PrivateKey = __webpack_require__(6);
-var Certificate = __webpack_require__(39);
-var Identity = __webpack_require__(41);
+var Certificate = __webpack_require__(40);
+var Identity = __webpack_require__(42);
 var errs = __webpack_require__(14);
 
 module.exports = {
@@ -19682,7 +19706,7 @@ var Key = __webpack_require__(4);
 var PrivateKey = __webpack_require__(6);
 var pem = __webpack_require__(16);
 
-var pkcs8 = __webpack_require__(40);
+var pkcs8 = __webpack_require__(41);
 var readECDSACurve = pkcs8.readECDSACurve;
 
 function read(buf, options) {
@@ -22878,7 +22902,7 @@ Object.keys(domLvl1).forEach(function(key) {
 module.exports = Stream;
 
 var Parser = __webpack_require__(83),
-    WritableStream = __webpack_require__(9).Writable || __webpack_require__(170).Writable,
+    WritableStream = __webpack_require__(10).Writable || __webpack_require__(170).Writable,
     StringDecoder = __webpack_require__(96).StringDecoder,
     Buffer = __webpack_require__(91).Buffer;
 
@@ -22931,7 +22955,7 @@ WritableStream.prototype._write = function(chunk, encoding, cb){
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(45);
+var processNextTick = __webpack_require__(46);
 /*</replacement>*/
 
 module.exports = Readable;
@@ -23918,7 +23942,7 @@ function indexOf(xs, x) {
 /* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(9);
+module.exports = __webpack_require__(10);
 
 
 /***/ }),
@@ -23936,7 +23960,7 @@ module.exports = require("buffer");
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(45);
+var processNextTick = __webpack_require__(46);
 /*</replacement>*/
 
 // undocumented cb() API, needed for core, not for public API
@@ -24039,7 +24063,7 @@ module.exports = {
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(45);
+var processNextTick = __webpack_require__(46);
 /*</replacement>*/
 
 module.exports = Writable;
@@ -25556,7 +25580,7 @@ exports.pathMatch = pathMatch;
 const Dgram = __webpack_require__(213);
 const Dns = __webpack_require__(214);
 
-const Hoek = __webpack_require__(35);
+const Hoek = __webpack_require__(36);
 
 
 // Declare internals
@@ -26550,7 +26574,7 @@ module.exports = {
 };
 
 var nacl;
-var stream = __webpack_require__(9);
+var stream = __webpack_require__(10);
 var util = __webpack_require__(0);
 var assert = __webpack_require__(1);
 var Signature = __webpack_require__(15);
@@ -27423,10 +27447,10 @@ var utils = __webpack_require__(3);
 var Key = __webpack_require__(4);
 var PrivateKey = __webpack_require__(6);
 var pem = __webpack_require__(16);
-var Identity = __webpack_require__(41);
+var Identity = __webpack_require__(42);
 var Signature = __webpack_require__(15);
-var Certificate = __webpack_require__(39);
-var pkcs8 = __webpack_require__(40);
+var Certificate = __webpack_require__(40);
+var pkcs8 = __webpack_require__(41);
 
 /*
  * This file is based on RFC5280 (X.509).
@@ -28142,7 +28166,7 @@ function writeBitField(setBits, bitIndex) {
  * extsprintf.js: extended POSIX-style sprintf
  */
 
-var mod_assert = __webpack_require__(37);
+var mod_assert = __webpack_require__(38);
 var mod_util = __webpack_require__(0);
 
 /*
@@ -28529,7 +28553,7 @@ module.exports = require("tls");
 /***/ (function(module, exports, __webpack_require__) {
 
 var util = __webpack_require__(0);
-var Stream = __webpack_require__(9).Stream;
+var Stream = __webpack_require__(10).Stream;
 var DelayedStream = __webpack_require__(240);
 
 module.exports = CombinedStream;
@@ -29043,7 +29067,7 @@ function descending(a, b)
 /* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var stream = __webpack_require__(9)
+var stream = __webpack_require__(10)
 
 
 function isStream (obj) {
@@ -30580,7 +30604,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var RenderedTarget = __webpack_require__(44);
+var RenderedTarget = __webpack_require__(45);
 var Blocks = __webpack_require__(31);
 
 var _require = __webpack_require__(55),
@@ -30754,6 +30778,7 @@ var sb2 = __webpack_require__(327);
 var sb3 = __webpack_require__(329);
 var StringUtil = __webpack_require__(30);
 var formatMessage = __webpack_require__(78);
+var Variable = __webpack_require__(34);
 
 var _require = __webpack_require__(56),
     loadCostume = _require.loadCostume;
@@ -31602,14 +31627,42 @@ var VirtualMachine = function (_EventEmitter) {
     }, {
         key: 'emitWorkspaceUpdate',
         value: function emitWorkspaceUpdate() {
-            // modefied by Kane, 修复删除变量后切换角色出现undefined变量的bug
-            for (var variable in this.editingTarget.variables) {
-                if (this.editingTarget.variables[variable].name === undefined) {
-                    delete this.editingTarget.variables[variable];
+            // // modefied by Kane, 修复删除变量后切换角色出现undefined变量的bug
+            // for (let variable in this.editingTarget.variables) {
+            //     if (this.editingTarget.variables[variable].name === undefined) {
+            //         delete this.editingTarget.variables[variable];
+            //     }
+            // }
+            // // 角色有可能在stage加载前加载 by Kane
+            // const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
+            // Create a list of broadcast message Ids according to the stage variables
+            var stageVariables = this.runtime.getTargetForStage().variables;
+            var messageIds = [];
+            for (var varId in stageVariables) {
+                if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
+                    messageIds.push(varId);
                 }
             }
-            // 角色有可能在stage加载前加载 by Kane
-            var stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
+            // Go through all blocks on all targets, removing referenced
+            // broadcast ids from the list.
+            for (var i = 0; i < this.runtime.targets.length; i++) {
+                var currTarget = this.runtime.targets[i];
+                var currBlocks = currTarget.blocks._blocks;
+                for (var blockId in currBlocks) {
+                    if (currBlocks[blockId].fields.BROADCAST_OPTION) {
+                        var id = currBlocks[blockId].fields.BROADCAST_OPTION.id;
+                        var index = messageIds.indexOf(id);
+                        if (index !== -1) {
+                            messageIds = messageIds.slice(0, index).concat(messageIds.slice(index + 1));
+                        }
+                    }
+                }
+            }
+            // Anything left in messageIds is not referenced by a block, so delete it.
+            for (var _i = 0; _i < messageIds.length; _i++) {
+                var _id = messageIds[_i];
+                delete this.runtime.getTargetForStage().variables[_id];
+            }
             var variableMap = Object.assign({}, stageVariables, this.editingTarget.variables);
 
             var variables = Object.keys(variableMap).map(function (k) {
@@ -32024,7 +32077,7 @@ module.exports.Stringifier = __webpack_require__(155);
 
 var oldPipe = module.exports.pipe;
 module.exports.pipe = function(dest) {
-  if(dest instanceof __webpack_require__(9)) {
+  if(dest instanceof __webpack_require__(10)) {
     return oldPipe.call(module.exports, new (module.exports.Stringifier)).pipe(dest);
   } else {
     return oldPipe.call(module.exports, dest);
@@ -32900,14 +32953,14 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(42);
+var ArgumentType = __webpack_require__(43);
 var BlockType = __webpack_require__(28);
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 var Clone = __webpack_require__(29);
-var Color = __webpack_require__(43);
+var Color = __webpack_require__(44);
 var formatMessage = __webpack_require__(78);
 var MathUtil = __webpack_require__(18);
-var RenderedTarget = __webpack_require__(44);
+var RenderedTarget = __webpack_require__(45);
 var log = __webpack_require__(8);
 
 /**
@@ -33058,17 +33111,21 @@ var Scratch3PenBlocks = function () {
          * @param {RenderedTarget} target - the target which has moved.
          * @param {number} oldX - the previous X position.
          * @param {number} oldY - the previous Y position.
+         * @param {boolean} isForce - whether the movement was forced.
          * @private
          */
 
     }, {
         key: '_onTargetMoved',
-        value: function _onTargetMoved(target, oldX, oldY) {
-            var penSkinId = this._getPenLayerID();
-            if (penSkinId >= 0) {
-                var penState = this._getPenState(target);
-                this.runtime.renderer.penLine(penSkinId, penState.penAttributes, oldX, oldY, target.x, target.y);
-                this.runtime.requestRedraw();
+        value: function _onTargetMoved(target, oldX, oldY, isForce) {
+            // Only move the pen if the movement isn't forced (ie. dragged).
+            if (!isForce) {
+                var penSkinId = this._getPenLayerID();
+                if (penSkinId >= 0) {
+                    var penState = this._getPenState(target);
+                    this.runtime.renderer.penLine(penSkinId, penState.penAttributes, oldX, oldY, target.x, target.y);
+                    this.runtime.requestRedraw();
+                }
             }
         }
 
@@ -33342,7 +33399,7 @@ var Scratch3PenBlocks = function () {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.setHue',
-                        default: 'set pen hue to [HUE]',
+                        default: 'set pen color to [HUE]',
                         description: 'legacy pen blocks - set pen color to number'
                     }),
                     arguments: {
@@ -33357,7 +33414,7 @@ var Scratch3PenBlocks = function () {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.changeHue',
-                        default: 'change pen hue by [HUE]',
+                        default: 'change pen color by [HUE]',
                         description: 'legacy pen blocks - change pen color'
                     }),
                     arguments: {
@@ -33603,6 +33660,8 @@ var Scratch3PenBlocks = function () {
             var hueValue = Cast.toNumber(args.HUE);
             var colorValue = hueValue / 2;
             this._setOrChangeColorParam(ColorParam.COLOR, colorValue, penState, false);
+
+            this._legacyUpdatePenColor(penState);
         }
 
         /**
@@ -33619,6 +33678,8 @@ var Scratch3PenBlocks = function () {
             var hueChange = Cast.toNumber(args.HUE);
             var colorChange = hueChange / 2;
             this._setOrChangeColorParam(ColorParam.COLOR, colorChange, penState, true);
+
+            this._legacyUpdatePenColor(penState);
         }
 
         /**
@@ -33641,25 +33702,10 @@ var Scratch3PenBlocks = function () {
             newShade = newShade % 200;
             if (newShade < 0) newShade += 200;
 
-            // Create the new color in RGB using the scratch 2 "shade" model
-            var rgb = Color.hsvToRgb({ h: penState.color * 360 / 100, s: 1, v: 1 });
-            var shade = newShade > 100 ? 200 - newShade : newShade;
-            if (shade < 50) {
-                rgb = Color.mixRgb(Color.RGB_BLACK, rgb, (10 + shade) / 60);
-            } else {
-                rgb = Color.mixRgb(rgb, Color.RGB_WHITE, (shade - 50) / 60);
-            }
-
-            // Update the pen state according to new color
-            var hsv = Color.rgbToHsv(rgb);
-            penState.color = 100 * hsv.h / 360;
-            penState.saturation = 100 * hsv.s;
-            penState.brightness = 100 * hsv.v;
-
             // And store the shade that was used to compute this new color for later use.
             penState._shade = newShade;
 
-            this._updatePenColor(penState);
+            this._legacyUpdatePenColor(penState);
         }
 
         /**
@@ -33676,6 +33722,33 @@ var Scratch3PenBlocks = function () {
             var penState = this._getPenState(util.target);
             var shadeChange = Cast.toNumber(args.SHADE);
             this.setPenShadeToNumber({ SHADE: penState._shade + shadeChange }, util);
+        }
+
+        /**
+         * Update the pen state's color from its hue & shade values, Scratch 2.0 style.
+         * @param {object} penState - update the HSV & RGB values in this pen state from its hue & shade values.
+         * @private
+         */
+
+    }, {
+        key: '_legacyUpdatePenColor',
+        value: function _legacyUpdatePenColor(penState) {
+            // Create the new color in RGB using the scratch 2 "shade" model
+            var rgb = Color.hsvToRgb({ h: penState.color * 360 / 100, s: 1, v: 1 });
+            var shade = penState._shade > 100 ? 200 - penState._shade : penState._shade;
+            if (shade < 50) {
+                rgb = Color.mixRgb(Color.RGB_BLACK, rgb, (10 + shade) / 60);
+            } else {
+                rgb = Color.mixRgb(rgb, Color.RGB_WHITE, (shade - 50) / 60);
+            }
+
+            // Update the pen state according to new color
+            var hsv = Color.rgbToHsv(rgb);
+            penState.color = 100 * hsv.h / 360;
+            penState.saturation = 100 * hsv.s;
+            penState.brightness = 100 * hsv.v;
+
+            this._updatePenColor(penState);
         }
     }], [{
         key: 'DEFAULT_PEN_STATE',
@@ -34406,7 +34479,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var EventEmitter = __webpack_require__(22);
 
 var Blocks = __webpack_require__(31);
-var Variable = __webpack_require__(46);
+var Variable = __webpack_require__(34);
 var uid = __webpack_require__(59);
 
 var _require = __webpack_require__(33),
@@ -34520,21 +34593,47 @@ var Target = function (_EventEmitter) {
          * if it exists.
          * @param {string} id Id of the variable.
          * @param {string} name Name of the variable.
-         * @return {!Variable} Variable object.
+         * @return {?Variable} Variable object.
          */
 
     }, {
         key: 'lookupBroadcastMsg',
         value: function lookupBroadcastMsg(id, name) {
-            var broadcastMsg = this.lookupVariableById(id);
+            var broadcastMsg = void 0;
+            if (id) {
+                broadcastMsg = this.lookupVariableById(id);
+            } else if (name) {
+                broadcastMsg = this.lookupBroadcastByInputValue(name);
+            } else {
+                log.error('Cannot find broadcast message if neither id nor name are provided.');
+            }
             if (broadcastMsg) {
-                if (broadcastMsg.name !== name) {
+                if (name && broadcastMsg.name.toLowerCase() !== name.toLowerCase()) {
                     log.error('Found broadcast message with id: ' + id + ', but' + ('its name, ' + broadcastMsg.name + ' did not match expected name ' + name + '.'));
                 }
                 if (broadcastMsg.type !== Variable.BROADCAST_MESSAGE_TYPE) {
                     log.error('Found variable with id: ' + id + ', but its type ' + broadcastMsg.type + ('did not match expected type ' + Variable.BROADCAST_MESSAGE_TYPE));
                 }
                 return broadcastMsg;
+            }
+        }
+
+        /**
+         * Look up a broadcast message with the given name and return the variable
+         * if it exists. Does not create a new broadcast message variable if
+         * it doesn't exist.
+         * @param {string} name Name of the variable.
+         * @return {?Variable} Variable object.
+         */
+
+    }, {
+        key: 'lookupBroadcastByInputValue',
+        value: function lookupBroadcastByInputValue(name) {
+            var vars = this.variables;
+            for (var propName in vars) {
+                if (vars[propName].type === Variable.BROADCAST_MESSAGE_TYPE && vars[propName].name.toLowerCase() === name.toLowerCase()) {
+                    return vars[propName];
+                }
             }
         }
 
@@ -34567,7 +34666,7 @@ var Target = function (_EventEmitter) {
         * Search begins for local lists; then look for globals.
         * @param {!string} id Id of the list.
         * @param {!string} name Name of the list.
-        * @return {!List} List object.
+        * @return {!Varible} Variable object representing the found/created list.
          */
 
     }, {
@@ -35304,7 +35403,7 @@ Object.keys(EVENTS).forEach(function(name){
 /* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Stream = __webpack_require__(9);
+var Stream = __webpack_require__(10);
 if (process.env.READABLE_STREAM === 'disable' && Stream) {
   module.exports = Stream;
   exports = module.exports = Stream.Readable;
@@ -36576,9 +36675,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(42);
+var ArgumentType = __webpack_require__(43);
 var BlockType = __webpack_require__(28);
-var color = __webpack_require__(43);
+var color = __webpack_require__(44);
 var log = __webpack_require__(8);
 
 /**
@@ -37639,10 +37738,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(42);
+var ArgumentType = __webpack_require__(43);
 var BlockType = __webpack_require__(28);
 var Clone = __webpack_require__(29);
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 var MathUtil = __webpack_require__(18);
 var Timer = __webpack_require__(47);
 
@@ -38527,7 +38626,7 @@ var _require = __webpack_require__(33),
 
 var escapeHtml = __webpack_require__(196);
 
-var ArgumentType = __webpack_require__(42);
+var ArgumentType = __webpack_require__(43);
 var Blocks = __webpack_require__(31);
 var BlockType = __webpack_require__(28);
 var Sequencer = __webpack_require__(197);
@@ -40988,12 +41087,12 @@ var Thread = __webpack_require__(48);
 var _require = __webpack_require__(33),
     Map = _require.Map;
 
+var cast = __webpack_require__(9);
+
 /**
  * Single BlockUtility instance reused by execute for every pritimive ran.
  * @const
  */
-
-
 var blockUtility = new BlockUtility();
 
 /**
@@ -41193,6 +41292,30 @@ var execute = function execute(sequencer, thread) {
         }
         argValues[inputName] = currentStackFrame.reported[inputName];
         params[inputName] = currentStackFrame.reported[inputName];
+        var inputValue = currentStackFrame.reported[inputName];
+        if (inputName === 'BROADCAST_INPUT') {
+            var broadcastInput = inputs[inputName];
+            // Check if something is plugged into the broadcast block, or
+            // if the shadow dropdown menu is being used.
+            if (broadcastInput.block === broadcastInput.shadow) {
+                // Shadow dropdown menu is being used.
+                // Get the appropriate information out of it.
+                var shadow = blockContainer.getBlock(broadcastInput.shadow);
+                var broadcastField = shadow.fields.BROADCAST_OPTION;
+                argValues.BROADCAST_OPTION = {
+                    id: broadcastField.id,
+                    name: broadcastField.value
+                };
+            } else {
+                // Something is plugged into the broadcast input.
+                // Cast it to a string. We don't need an id here.
+                argValues.BROADCAST_OPTION = {
+                    name: cast.toString(inputValue)
+                };
+            }
+        } else {
+            argValues[inputName] = inputValue;
+        }
     }
 
     // Add any mutation to args (e.g., for procedures).
@@ -41923,7 +42046,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var nets = __webpack_require__(203);
 var io = __webpack_require__(315);
-var querystring = __webpack_require__(36);
+var querystring = __webpack_require__(37);
 
 /**
  * Internal class used by the Device Manager client to manage making a connection to a particular device.
@@ -44147,11 +44270,11 @@ function serializer(replacer, cycleReplacer) {
 "use strict";
 
 
-var http = __webpack_require__(34)
+var http = __webpack_require__(35)
 var https = __webpack_require__(49)
 var url = __webpack_require__(11)
 var util = __webpack_require__(0)
-var stream = __webpack_require__(9)
+var stream = __webpack_require__(10)
 var zlib = __webpack_require__(210)
 var hawk = __webpack_require__(211)
 var aws2 = __webpack_require__(219)
@@ -45926,7 +46049,7 @@ module.exports = require("dns");
 // Load modules
 
 const Boom = __webpack_require__(63);
-const Hoek = __webpack_require__(35);
+const Hoek = __webpack_require__(36);
 const Cryptiles = __webpack_require__(104);
 const Crypto = __webpack_require__(65);
 const Utils = __webpack_require__(50);
@@ -46482,7 +46605,7 @@ internals.nonceFunc = function (key, nonce, ts, nonceCallback) {
 
 // Load modules
 
-const Hoek = __webpack_require__(35);
+const Hoek = __webpack_require__(36);
 
 
 // Declare internals
@@ -46953,7 +47076,7 @@ module.exports = {"name":"hawk","description":"HTTP Hawk Authentication Scheme",
 // Load modules
 
 const Url = __webpack_require__(11);
-const Hoek = __webpack_require__(35);
+const Hoek = __webpack_require__(36);
 const Cryptiles = __webpack_require__(104);
 const Crypto = __webpack_require__(65);
 const Utils = __webpack_require__(50);
@@ -47568,7 +47691,7 @@ module.exports.canonicalizeResource = canonicalizeResource
 
 var aws4 = exports,
     url = __webpack_require__(11),
-    querystring = __webpack_require__(36),
+    querystring = __webpack_require__(37),
     crypto = __webpack_require__(2),
     lru = __webpack_require__(221),
     credentialsCache = lru(1000)
@@ -48573,7 +48696,7 @@ for (var e in errors) {
 
 // Copyright 2011 Mark Cavage <mcavage@gmail.com> All rights reserved.
 
-var assert = __webpack_require__(37);
+var assert = __webpack_require__(38);
 
 var ASN1 = __webpack_require__(68);
 var errors = __webpack_require__(67);
@@ -48840,7 +48963,7 @@ module.exports = Reader;
 
 // Copyright 2011 Mark Cavage <mcavage@gmail.com> All rights reserved.
 
-var assert = __webpack_require__(37);
+var assert = __webpack_require__(38);
 var ASN1 = __webpack_require__(68);
 var errors = __webpack_require__(67);
 
@@ -49180,11 +49303,11 @@ var crypto = __webpack_require__(2);
 var algs = __webpack_require__(5);
 var Key = __webpack_require__(4);
 var PrivateKey = __webpack_require__(6);
-var Identity = __webpack_require__(41);
+var Identity = __webpack_require__(42);
 var rfc4253 = __webpack_require__(21);
 var Signature = __webpack_require__(15);
 var utils = __webpack_require__(3);
-var Certificate = __webpack_require__(39);
+var Certificate = __webpack_require__(40);
 
 function verify(cert, key) {
 	/*
@@ -49506,9 +49629,9 @@ var utils = __webpack_require__(3);
 var Key = __webpack_require__(4);
 var PrivateKey = __webpack_require__(6);
 var pem = __webpack_require__(16);
-var Identity = __webpack_require__(41);
+var Identity = __webpack_require__(42);
 var Signature = __webpack_require__(15);
-var Certificate = __webpack_require__(39);
+var Certificate = __webpack_require__(40);
 
 function read(buf, options) {
 	if (typeof (buf) !== 'string') {
@@ -49575,7 +49698,7 @@ function write(cert, options) {
 
 var assert = __webpack_require__(1);
 var crypto = __webpack_require__(2);
-var http = __webpack_require__(34);
+var http = __webpack_require__(35);
 var util = __webpack_require__(0);
 var sshpk = __webpack_require__(66);
 var jsprim = __webpack_require__(231);
@@ -51574,7 +51697,7 @@ module.exports = {"application/1d-interleaved-parityfec":{"source":"iana"},"appl
 /***/ (function(module, exports, __webpack_require__) {
 
 var util = __webpack_require__(0)
-var Stream = __webpack_require__(9)
+var Stream = __webpack_require__(10)
 var StringDecoder = __webpack_require__(96).StringDecoder
 
 module.exports = StringStream
@@ -51685,7 +51808,7 @@ module.exports = ForeverAgent
 ForeverAgent.SSL = ForeverAgentSSL
 
 var util = __webpack_require__(0)
-  , Agent = __webpack_require__(34).Agent
+  , Agent = __webpack_require__(35).Agent
   , net = __webpack_require__(61)
   , tls = __webpack_require__(114)
   , AgentSSL = __webpack_require__(49).Agent
@@ -51828,7 +51951,7 @@ function createConnectionSSL (port, host, options) {
 var CombinedStream = __webpack_require__(115);
 var util = __webpack_require__(0);
 var path = __webpack_require__(64);
-var http = __webpack_require__(34);
+var http = __webpack_require__(35);
 var https = __webpack_require__(49);
 var parseUrl = __webpack_require__(11).parse;
 var fs = __webpack_require__(116);
@@ -52288,7 +52411,7 @@ FormData.prototype.toString = function () {
 /* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Stream = __webpack_require__(9).Stream;
+var Stream = __webpack_require__(10).Stream;
 var util = __webpack_require__(0);
 
 module.exports = DelayedStream;
@@ -52670,7 +52793,7 @@ module.exports = getProxyFromURI
 
 
 var qs = __webpack_require__(124)
-var querystring = __webpack_require__(36)
+var querystring = __webpack_require__(37)
 
 function Querystring (request) {
   this.request = request
@@ -53125,7 +53248,7 @@ module.exports = function (str, opts) {
 
 
 var fs = __webpack_require__(116)
-var qs = __webpack_require__(36)
+var qs = __webpack_require__(37)
 var validate = __webpack_require__(252)
 var extend = __webpack_require__(60)
 
@@ -58143,7 +58266,7 @@ exports.OAuth = OAuth
 /***/ (function(module, exports, __webpack_require__) {
 
 var crypto = __webpack_require__(2)
-  , qs = __webpack_require__(36)
+  , qs = __webpack_require__(37)
   ;
 
 function sha1 (key, body) {
@@ -58751,10 +58874,10 @@ exports.Tunnel = Tunnel
 
 var net = __webpack_require__(61)
   , tls = __webpack_require__(114)
-  , http = __webpack_require__(34)
+  , http = __webpack_require__(35)
   , https = __webpack_require__(49)
   , events = __webpack_require__(22)
-  , assert = __webpack_require__(37)
+  , assert = __webpack_require__(38)
   , util = __webpack_require__(0)
   , Buffer = __webpack_require__(13).Buffer
   ;
@@ -59054,7 +59177,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 
 var Keyboard = function () {
     function Keyboard(runtime) {
@@ -59309,7 +59432,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 
 var Scratch3ControlBlocks = function () {
     function Scratch3ControlBlocks(runtime) {
@@ -59475,7 +59598,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 
 var Scratch3EventBlocks = function () {
     function Scratch3EventBlocks(runtime) {
@@ -59597,9 +59720,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 var Clone = __webpack_require__(29);
-var RenderedTarget = __webpack_require__(44);
+var RenderedTarget = __webpack_require__(45);
 
 /**
  * @typedef {object} BubbleState - the bubble state associated with a particular target.
@@ -59844,12 +59967,11 @@ var Scratch3LooksBlocks = function () {
                 looks_cleargraphiceffects: this.clearEffects,
                 looks_changesizeby: this.changeSize,
                 looks_setsizeto: this.setSize,
-                looks_gotofront: this.goToFront,
-                looks_gobacklayers: this.goBackLayers,
+                looks_gotofrontback: this.goToFrontBack,
+                looks_goforwardbackwardlayers: this.goForwardBackwardLayers,
                 looks_size: this.getSize,
-                looks_costumeorder: this.getCostumeIndex,
-                looks_backdroporder: this.getBackdropIndex,
-                looks_backdropname: this.getBackdropName
+                looks_costumenumbername: this.getCostumeNumberName,
+                looks_backdropnumbername: this.getBackdropNumberName
             };
         }
     }, {
@@ -60032,16 +60154,26 @@ var Scratch3LooksBlocks = function () {
             util.target.setSize(size);
         }
     }, {
-        key: 'goToFront',
-        value: function goToFront(args, util) {
+        key: 'goToFrontBack',
+        value: function goToFrontBack(args, util) {
             if (!util.target.isStage) {
-                util.target.goToFront();
+                if (args.FRONT_BACK === 'front') {
+                    util.target.goToFront();
+                } else {
+                    util.target.goToBack();
+                }
             }
         }
     }, {
-        key: 'goBackLayers',
-        value: function goBackLayers(args, util) {
-            util.target.goBackLayers(args.NUM);
+        key: 'goForwardBackwardLayers',
+        value: function goForwardBackwardLayers(args, util) {
+            if (!util.target.isStage) {
+                if (args.FORWARD_BACKWARD === 'forward') {
+                    util.target.goForwardLayers(Cast.toNumber(args.NUM));
+                } else {
+                    util.target.goBackwardLayers(Cast.toNumber(args.NUM));
+                }
+            }
         }
     }, {
         key: 'getSize',
@@ -60049,21 +60181,23 @@ var Scratch3LooksBlocks = function () {
             return Math.round(util.target.size);
         }
     }, {
-        key: 'getBackdropIndex',
-        value: function getBackdropIndex() {
+        key: 'getBackdropNumberName',
+        value: function getBackdropNumberName(args) {
             var stage = this.runtime.getTargetForStage();
-            return stage.currentCostume + 1;
-        }
-    }, {
-        key: 'getBackdropName',
-        value: function getBackdropName() {
-            var stage = this.runtime.getTargetForStage();
+            if (args.NUMBER_NAME === 'number') {
+                return stage.currentCostume + 1;
+            }
+            // Else return name
             return stage.sprite.costumes[stage.currentCostume].name;
         }
     }, {
-        key: 'getCostumeIndex',
-        value: function getCostumeIndex(args, util) {
-            return util.target.currentCostume + 1;
+        key: 'getCostumeNumberName',
+        value: function getCostumeNumberName(args, util) {
+            if (args.NUMBER_NAME === 'number') {
+                return util.target.currentCostume + 1;
+            }
+            // Else return name
+            return util.target.sprite.costumes[util.target.currentCostume].name;
         }
     }], [{
         key: 'DEFAULT_BUBBLE_STATE',
@@ -60106,7 +60240,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 var MathUtil = __webpack_require__(18);
 var Timer = __webpack_require__(47);
 
@@ -60403,7 +60537,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 var MathUtil = __webpack_require__(18);
 
 var Scratch3OperatorsBlocks = function () {
@@ -60611,7 +60745,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var MathUtil = __webpack_require__(18);
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 var Clone = __webpack_require__(29);
 
 var Scratch3SoundBlocks = function () {
@@ -60944,7 +61078,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 
 var Scratch3SensingBlocks = function () {
     function Scratch3SensingBlocks(runtime) {
@@ -60992,6 +61126,7 @@ var Scratch3SensingBlocks = function () {
                 sensing_of: this.getAttributeOf,
                 sensing_mousex: this.getMouseX,
                 sensing_mousey: this.getMouseY,
+                sensing_setdragmode: this.setDragMode,
                 sensing_mousedown: this.getMouseDown,
                 sensing_keypressed: this.getKeyPressed,
                 sensing_current: this.current,
@@ -61139,6 +61274,11 @@ var Scratch3SensingBlocks = function () {
             return Math.sqrt(dx * dx + dy * dy);
         }
     }, {
+        key: 'setDragMode',
+        value: function setDragMode(args, util) {
+            util.target.setDraggable(args.DRAG_MODE === 'draggable');
+        }
+    }, {
         key: 'getTimer',
         value: function getTimer(args, util) {
             return util.ioQuery('clock', 'projectTimer');
@@ -61281,7 +61421,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Cast = __webpack_require__(10);
+var Cast = __webpack_require__(9);
 
 var Scratch3DataBlocks = function () {
     function Scratch3DataBlocks(runtime) {
@@ -61553,13 +61693,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 var Blocks = __webpack_require__(31);
-var RenderedTarget = __webpack_require__(44);
+var RenderedTarget = __webpack_require__(45);
 var Sprite = __webpack_require__(137);
-var Color = __webpack_require__(43);
+var Color = __webpack_require__(44);
 var log = __webpack_require__(8);
 var uid = __webpack_require__(59);
 var specMap = __webpack_require__(328);
-var Variable = __webpack_require__(46);
+var Variable = __webpack_require__(34);
 
 var _require = __webpack_require__(56),
     loadCostume = _require.loadCostume;
@@ -61726,14 +61866,23 @@ var generateVariableIdGetter = function () {
 
 var globalBroadcastMsgStateGenerator = function () {
     var broadcastMsgNameMap = {};
+    var allBroadcastFields = [];
+    var emptyStringName = uid();
     return function (topLevel) {
         if (topLevel) broadcastMsgNameMap = {};
         return {
-            broadcastMsgMapUpdater: function broadcastMsgMapUpdater(name) {
+            broadcastMsgMapUpdater: function broadcastMsgMapUpdater(name, field) {
+                name = name.toLowerCase();
+                if (name === '') {
+                    name = emptyStringName;
+                }
                 broadcastMsgNameMap[name] = 'broadcastMsgId-' + name;
+                allBroadcastFields.push(field);
                 return broadcastMsgNameMap[name];
             },
-            globalBroadcastMsgs: broadcastMsgNameMap
+            globalBroadcastMsgs: broadcastMsgNameMap,
+            allBroadcastFields: allBroadcastFields,
+            emptyMsgName: emptyStringName
         };
     };
 }();
@@ -61882,6 +62031,31 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
             // all other targets have finished processing.
             if (target.isStage) {
                 var allBroadcastMsgs = globalBroadcastMsgObj.globalBroadcastMsgs;
+                var allBroadcastMsgFields = globalBroadcastMsgObj.allBroadcastFields;
+                var oldEmptyMsgName = globalBroadcastMsgObj.emptyMsgName;
+                if (allBroadcastMsgs[oldEmptyMsgName]) {
+                    // Find a fresh 'messageN'
+                    var currIndex = 1;
+                    while (allBroadcastMsgs['message' + currIndex]) {
+                        currIndex += 1;
+                    }
+                    var newEmptyMsgName = 'message' + currIndex;
+                    // Add the new empty message name to the broadcast message
+                    // name map, and assign it the old id.
+                    // Then, delete the old entry in map.
+                    allBroadcastMsgs[newEmptyMsgName] = allBroadcastMsgs[oldEmptyMsgName];
+                    delete allBroadcastMsgs[oldEmptyMsgName];
+                    // Now update all the broadcast message fields with
+                    // the new empty message name.
+                    for (var _i = 0; _i < allBroadcastMsgFields.length; _i++) {
+                        if (allBroadcastMsgFields[_i].value === '') {
+                            allBroadcastMsgFields[_i].value = newEmptyMsgName;
+                        }
+                    }
+                }
+                // Traverse the broadcast message name map and create
+                // broadcast messages as variables on the stage (which is this
+                // target).
                 for (var msgName in allBroadcastMsgs) {
                     var msgId = allBroadcastMsgs[msgName];
                     var newMsg = new Variable(msgId, msgName, Variable.BROADCAST_MESSAGE_TYPE, false);
@@ -62024,6 +62198,11 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
                 if (shadowObscured) {
                     fieldValue = '#990000';
                 }
+            } else if (expectedArg.inputOp === 'event_broadcast_menu') {
+                fieldName = 'BROADCAST_OPTION';
+                if (shadowObscured) {
+                    fieldValue = '';
+                }
             } else if (shadowObscured) {
                 // Filled drop-down menu.
                 fieldValue = '';
@@ -62033,6 +62212,23 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
                 name: fieldName,
                 value: fieldValue
             };
+            // event_broadcast_menus have some extra properties to add to the
+            // field and a different value than the rest
+            if (expectedArg.inputOp === 'event_broadcast_menu') {
+                if (!shadowObscured) {
+                    // Need to update the broadcast message name map with
+                    // the value of this field.
+                    // Also need to provide the fields[fieldName] object,
+                    // so that we can later update its value property, e.g.
+                    // if sb2 message name is empty string, we will later
+                    // replace this field's value with messageN
+                    // once we can traverse through all the existing message names
+                    // and come up with a fresh messageN.
+                    var broadcastId = addBroadcastMsg(fieldValue, fields[fieldName]);
+                    fields[fieldName].id = broadcastId;
+                }
+                fields[fieldName].variableType = expectedArg.variableType;
+            }
             activeBlock.children.push({
                 id: inputUid,
                 opcode: expectedArg.inputOp,
@@ -62059,9 +62255,15 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
                 // Add `id` property to variable fields
                 activeBlock.fields[expectedArg.fieldName].id = getVariableId(providedArg);
             } else if (expectedArg.fieldName === 'BROADCAST_OPTION') {
-                // add the name in this field to the broadcast msg name map
-                var broadcastId = addBroadcastMsg(providedArg);
-                activeBlock.fields[expectedArg.fieldName].id = broadcastId;
+                // Add the name in this field to the broadcast msg name map.
+                // Also need to provide the fields[fieldName] object,
+                // so that we can later update its value property, e.g.
+                // if sb2 message name is empty string, we will later
+                // replace this field's value with messageN
+                // once we can traverse through all the existing message names
+                // and come up with a fresh messageN.
+                var _broadcastId = addBroadcastMsg(providedArg, activeBlock.fields[expectedArg.fieldName]);
+                activeBlock.fields[expectedArg.fieldName].id = _broadcastId;
             }
             var varType = expectedArg.variableType;
             if (typeof varType === 'string') {
@@ -62069,6 +62271,41 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
             }
         }
     }
+
+    // Updates for blocks that have new menus (e.g. in Looks)
+    switch (oldOpcode) {
+        case 'comeToFront':
+            activeBlock.fields.FRONT_BACK = {
+                name: 'FRONT_BACK',
+                value: 'front'
+            };
+            break;
+        case 'goBackByLayers:':
+            activeBlock.fields.FORWARD_BACKWARD = {
+                name: 'FORWARD_BACKWARD',
+                value: 'backward'
+            };
+            break;
+        case 'backgroundIndex':
+            activeBlock.fields.NUMBER_NAME = {
+                name: 'NUMBER_NAME',
+                value: 'number'
+            };
+            break;
+        case 'sceneName':
+            activeBlock.fields.NUMBER_NAME = {
+                name: 'NUMBER_NAME',
+                value: 'name'
+            };
+            break;
+        case 'costumeIndex':
+            activeBlock.fields.NUMBER_NAME = {
+                name: 'NUMBER_NAME',
+                value: 'number'
+            };
+            break;
+    }
+
     // Special cases to generate mutations.
     if (oldOpcode === 'stopScripts') {
         // Mutation for stop block: if the argument is 'other scripts',
@@ -62168,7 +62405,7 @@ module.exports = {
  * Finally, I filled in the expected arguments as below.
  */
 
-var Variable = __webpack_require__(46);
+var Variable = __webpack_require__(34);
 
 /**
  * @typedef {object} SB2SpecMap_blockInfo
@@ -62430,11 +62667,11 @@ var specMap = {
         }]
     },
     'comeToFront': {
-        opcode: 'looks_gotofront',
+        opcode: 'looks_gotofrontback',
         argMap: []
     },
     'goBackByLayers:': {
-        opcode: 'looks_gobacklayers',
+        opcode: 'looks_goforwardbackwardlayers',
         argMap: [{
             type: 'input',
             inputOp: 'math_integer',
@@ -62442,11 +62679,11 @@ var specMap = {
         }]
     },
     'costumeIndex': {
-        opcode: 'looks_costumeorder',
+        opcode: 'looks_costumenumbername',
         argMap: []
     },
     'sceneName': {
-        opcode: 'looks_backdropname',
+        opcode: 'looks_backdropnumbername',
         argMap: []
     },
     'scale': {
@@ -62466,7 +62703,7 @@ var specMap = {
         argMap: []
     },
     'backgroundIndex': {
-        opcode: 'looks_backdroporder',
+        opcode: 'looks_backdropnumbername',
         argMap: []
     },
     'playSound:': {
@@ -62685,16 +62922,18 @@ var specMap = {
     'broadcast:': {
         opcode: 'event_broadcast',
         argMap: [{
-            type: 'field',
-            fieldName: 'BROADCAST_OPTION',
+            type: 'input',
+            inputOp: 'event_broadcast_menu',
+            inputName: 'BROADCAST_INPUT',
             variableType: Variable.BROADCAST_MESSAGE_TYPE
         }]
     },
     'doBroadcastAndWait': {
         opcode: 'event_broadcastandwait',
         argMap: [{
-            type: 'field',
-            fieldName: 'BROADCAST_OPTION',
+            type: 'input',
+            inputOp: 'event_broadcast_menu',
+            inputName: 'BROADCAST_INPUT',
             variableType: Variable.BROADCAST_MESSAGE_TYPE
         }]
     },
@@ -63453,7 +63692,7 @@ module.exports = specMap;
 var vmPackage = __webpack_require__(330);
 var Blocks = __webpack_require__(31);
 var Sprite = __webpack_require__(137);
-var Variable = __webpack_require__(46);
+var Variable = __webpack_require__(34);
 
 var _require = __webpack_require__(56),
     loadCostume = _require.loadCostume;

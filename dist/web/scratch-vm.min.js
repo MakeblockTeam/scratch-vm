@@ -96,7 +96,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Color = __webpack_require__(18);
+var Color = __webpack_require__(19);
 
 /**
  * @fileoverview
@@ -902,7 +902,7 @@ module.exports = MathUtil;
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(20);
+var processNextTick = __webpack_require__(21);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -2348,7 +2348,7 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(22).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23).Buffer))
 
 /***/ }),
 /* 16 */
@@ -7341,6 +7341,113 @@ function objectToString(o) {
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @fileoverview
+ * Object representing a Scratch variable.
+ */
+
+var uid = __webpack_require__(33);
+
+var Variable = function () {
+    /**
+     * @param {string} id Id of the variable.
+     * @param {string} name Name of the variable.
+     * @param {string} type Type of the variable, one of '' or 'list'
+     * @param {boolean} isCloud Whether the variable is stored in the cloud.
+     * @constructor
+     */
+    function Variable(id, name, type, isCloud) {
+        _classCallCheck(this, Variable);
+
+        this.id = id || uid();
+        this.name = name;
+        this.type = type;
+        this.isCloud = isCloud;
+        switch (this.type) {
+            case Variable.SCALAR_TYPE:
+                this.value = 0;
+                break;
+            case Variable.LIST_TYPE:
+                this.value = [];
+                break;
+            case Variable.COMM_TYPE:
+                this.value = 0;
+            case Variable.BROADCAST_MESSAGE_TYPE:
+                this.value = this.name;
+                break;
+            default:
+                throw new Error('Invalid variable type: ' + this.type);
+        }
+    }
+
+    _createClass(Variable, [{
+        key: 'toXML',
+        value: function toXML() {
+            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
+        }
+
+        /**
+         * Type representation for scalar variables.
+         * This is currently represented as ''
+         * for compatibility with blockly.
+         * @const {string}
+         */
+
+    }], [{
+        key: 'SCALAR_TYPE',
+        get: function get() {
+            return '';
+        }
+
+        /**
+         * Type representation for list variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'LIST_TYPE',
+        get: function get() {
+            return 'list';
+        }
+
+        /**
+         * Type representation for comm variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'COMM_TYPE',
+        get: function get() {
+            return 'comm';
+        }
+        /**
+         * Type representation for list variables.
+         * @const {string}
+         */
+
+    }, {
+        key: 'BROADCAST_MESSAGE_TYPE',
+        get: function get() {
+            return 'broadcast_msg';
+        }
+    }]);
+
+    return Variable;
+}();
+
+module.exports = Variable;
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var ArgumentType = {
     ANGLE: 'angle',
     BOOLEAN: 'Boolean',
@@ -7352,7 +7459,7 @@ var ArgumentType = {
 module.exports = ArgumentType;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7610,7 +7717,7 @@ var Color = function () {
 module.exports = Color;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7820,7 +7927,7 @@ var RenderedTarget = function (_Target) {
                 this.x = x;
                 this.y = y;
             }
-            this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY);
+            this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY, force);
             this.runtime.requestTargetsUpdate(this);
         }
 
@@ -8385,13 +8492,38 @@ var RenderedTarget = function (_Target) {
         }
 
         /**
-         * Move back a number of layers.
-         * @param {number} nLayers How many layers to go back.
+         * Move to the back layer.
          */
 
     }, {
-        key: 'goBackLayers',
-        value: function goBackLayers(nLayers) {
+        key: 'goToBack',
+        value: function goToBack() {
+            if (this.renderer) {
+                this.renderer.setDrawableOrder(this.drawableID, -Infinity, false, 1);
+            }
+        }
+
+        /**
+         * Move forward a number of layers.
+         * @param {number} nLayers How many layers to go forward.
+         */
+
+    }, {
+        key: 'goForwardLayers',
+        value: function goForwardLayers(nLayers) {
+            if (this.renderer) {
+                this.renderer.setDrawableOrder(this.drawableID, nLayers, true, 1);
+            }
+        }
+
+        /**
+         * Move backward a number of layers.
+         * @param {number} nLayers How many layers to go backward.
+         */
+
+    }, {
+        key: 'goBackwardLayers',
+        value: function goBackwardLayers(nLayers) {
             if (this.renderer) {
                 this.renderer.setDrawableOrder(this.drawableID, -nLayers, true, 1);
             }
@@ -8556,11 +8688,10 @@ var RenderedTarget = function (_Target) {
         key: 'postSpriteInfo',
         value: function postSpriteInfo(data) {
             var force = data.hasOwnProperty('force') ? data.force : null;
-            if (data.hasOwnProperty('x')) {
-                this.setXY(data.x, this.y, force);
-            }
-            if (data.hasOwnProperty('y')) {
-                this.setXY(this.x, data.y, force);
+            var isXChanged = data.hasOwnProperty('x');
+            var isYChanged = data.hasOwnProperty('y');
+            if (isXChanged || isYChanged) {
+                this.setXY(isXChanged ? data.x : this.x, isYChanged ? data.y : this.y, force);
             }
             if (data.hasOwnProperty('direction')) {
                 this.setDirection(data.direction);
@@ -8697,7 +8828,7 @@ var RenderedTarget = function (_Target) {
 module.exports = RenderedTarget;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8748,11 +8879,11 @@ function nextTick(fn, arg1, arg2, arg3) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* eslint-disable node/no-deprecated-api */
-var buffer = __webpack_require__(22)
+var buffer = __webpack_require__(23)
 var Buffer = buffer.Buffer
 
 // alternative to using Object.keys for old browsers
@@ -8816,7 +8947,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10613,113 +10744,6 @@ function isnan (val) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * @fileoverview
- * Object representing a Scratch variable.
- */
-
-var uid = __webpack_require__(33);
-
-var Variable = function () {
-    /**
-     * @param {string} id Id of the variable.
-     * @param {string} name Name of the variable.
-     * @param {string} type Type of the variable, one of '' or 'list'
-     * @param {boolean} isCloud Whether the variable is stored in the cloud.
-     * @constructor
-     */
-    function Variable(id, name, type, isCloud) {
-        _classCallCheck(this, Variable);
-
-        this.id = id || uid();
-        this.name = name;
-        this.type = type;
-        this.isCloud = isCloud;
-        switch (this.type) {
-            case Variable.SCALAR_TYPE:
-                this.value = 0;
-                break;
-            case Variable.LIST_TYPE:
-                this.value = [];
-                break;
-            case Variable.COMM_TYPE:
-                this.value = 0;
-            case Variable.BROADCAST_MESSAGE_TYPE:
-                this.value = this.name;
-                break;
-            default:
-                throw new Error('Invalid variable type: ' + this.type);
-        }
-    }
-
-    _createClass(Variable, [{
-        key: 'toXML',
-        value: function toXML() {
-            return '<variable type="' + this.type + '" id="' + this.id + '">' + this.name + '</variable>';
-        }
-
-        /**
-         * Type representation for scalar variables.
-         * This is currently represented as ''
-         * for compatibility with blockly.
-         * @const {string}
-         */
-
-    }], [{
-        key: 'SCALAR_TYPE',
-        get: function get() {
-            return '';
-        }
-
-        /**
-         * Type representation for list variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'LIST_TYPE',
-        get: function get() {
-            return 'list';
-        }
-
-        /**
-         * Type representation for comm variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'COMM_TYPE',
-        get: function get() {
-            return 'comm';
-        }
-        /**
-         * Type representation for list variables.
-         * @const {string}
-         */
-
-    }, {
-        key: 'BROADCAST_MESSAGE_TYPE',
-        get: function get() {
-            return 'broadcast_msg';
-        }
-    }]);
-
-    return Variable;
-}();
-
-module.exports = Variable;
-
-/***/ }),
 /* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11417,7 +11441,7 @@ exports.PassThrough = __webpack_require__(88);
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(20);
+var processNextTick = __webpack_require__(21);
 /*</replacement>*/
 
 module.exports = Writable;
@@ -11469,7 +11493,7 @@ var Stream = __webpack_require__(49);
 /*</replacement>*/
 
 /*<replacement>*/
-var Buffer = __webpack_require__(21).Buffer;
+var Buffer = __webpack_require__(22).Buffer;
 var OurUint8Array = global.Uint8Array || function () {};
 function _uint8ArrayToBuffer(chunk) {
   return Buffer.from(chunk);
@@ -12061,7 +12085,7 @@ Writable.prototype._destroy = function (err, cb) {
 "use strict";
 
 
-var Buffer = __webpack_require__(21).Buffer;
+var Buffer = __webpack_require__(22).Buffer;
 
 var isEncoding = Buffer.isEncoding || function (encoding) {
   encoding = '' + encoding;
@@ -14755,7 +14779,7 @@ module.exports = Stream;
 var Parser = __webpack_require__(41),
     WritableStream = __webpack_require__(80).Writable || __webpack_require__(93).Writable,
     StringDecoder = __webpack_require__(32).StringDecoder,
-    Buffer = __webpack_require__(22).Buffer;
+    Buffer = __webpack_require__(23).Buffer;
 
 function Stream(cbs, options){
 	var parser = this._parser = new Parser(cbs, options);
@@ -14806,7 +14830,7 @@ WritableStream.prototype._write = function(chunk, encoding, cb){
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(20);
+var processNextTick = __webpack_require__(21);
 /*</replacement>*/
 
 module.exports = Readable;
@@ -14836,7 +14860,7 @@ var Stream = __webpack_require__(49);
 // TODO(bmeurer): Change this back to const once hole checks are
 // properly optimized away early in Ignition+TurboFan.
 /*<replacement>*/
-var Buffer = __webpack_require__(21).Buffer;
+var Buffer = __webpack_require__(22).Buffer;
 var OurUint8Array = global.Uint8Array || function () {};
 function _uint8ArrayToBuffer(chunk) {
   return Buffer.from(chunk);
@@ -15817,7 +15841,7 @@ module.exports = __webpack_require__(5).EventEmitter;
 
 /*<replacement>*/
 
-var processNextTick = __webpack_require__(20);
+var processNextTick = __webpack_require__(21);
 /*</replacement>*/
 
 // undocumented cb() API, needed for core, not for public API
@@ -16138,7 +16162,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var RenderedTarget = __webpack_require__(19);
+var RenderedTarget = __webpack_require__(20);
 var Blocks = __webpack_require__(12);
 
 var _require = __webpack_require__(26),
@@ -16320,6 +16344,7 @@ var sb2 = __webpack_require__(144);
 var sb3 = __webpack_require__(146);
 var StringUtil = __webpack_require__(11);
 var formatMessage = __webpack_require__(36);
+var Variable = __webpack_require__(17);
 
 var _require = __webpack_require__(27),
     loadCostume = _require.loadCostume;
@@ -17168,14 +17193,42 @@ var VirtualMachine = function (_EventEmitter) {
     }, {
         key: 'emitWorkspaceUpdate',
         value: function emitWorkspaceUpdate() {
-            // modefied by Kane, 修复删除变量后切换角色出现undefined变量的bug
-            for (var variable in this.editingTarget.variables) {
-                if (this.editingTarget.variables[variable].name === undefined) {
-                    delete this.editingTarget.variables[variable];
+            // // modefied by Kane, 修复删除变量后切换角色出现undefined变量的bug
+            // for (let variable in this.editingTarget.variables) {
+            //     if (this.editingTarget.variables[variable].name === undefined) {
+            //         delete this.editingTarget.variables[variable];
+            //     }
+            // }
+            // // 角色有可能在stage加载前加载 by Kane
+            // const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
+            // Create a list of broadcast message Ids according to the stage variables
+            var stageVariables = this.runtime.getTargetForStage().variables;
+            var messageIds = [];
+            for (var varId in stageVariables) {
+                if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
+                    messageIds.push(varId);
                 }
             }
-            // 角色有可能在stage加载前加载 by Kane
-            var stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
+            // Go through all blocks on all targets, removing referenced
+            // broadcast ids from the list.
+            for (var i = 0; i < this.runtime.targets.length; i++) {
+                var currTarget = this.runtime.targets[i];
+                var currBlocks = currTarget.blocks._blocks;
+                for (var blockId in currBlocks) {
+                    if (currBlocks[blockId].fields.BROADCAST_OPTION) {
+                        var id = currBlocks[blockId].fields.BROADCAST_OPTION.id;
+                        var index = messageIds.indexOf(id);
+                        if (index !== -1) {
+                            messageIds = messageIds.slice(0, index).concat(messageIds.slice(index + 1));
+                        }
+                    }
+                }
+            }
+            // Anything left in messageIds is not referenced by a block, so delete it.
+            for (var _i = 0; _i < messageIds.length; _i++) {
+                var _id = messageIds[_i];
+                delete this.runtime.getTargetForStage().variables[_id];
+            }
             var variableMap = Object.assign({}, stageVariables, this.editingTarget.variables);
 
             var variables = Object.keys(variableMap).map(function (k) {
@@ -18343,14 +18396,14 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(17);
+var ArgumentType = __webpack_require__(18);
 var BlockType = __webpack_require__(9);
 var Cast = __webpack_require__(1);
 var Clone = __webpack_require__(10);
-var Color = __webpack_require__(18);
+var Color = __webpack_require__(19);
 var formatMessage = __webpack_require__(36);
 var MathUtil = __webpack_require__(6);
-var RenderedTarget = __webpack_require__(19);
+var RenderedTarget = __webpack_require__(20);
 var log = __webpack_require__(0);
 
 /**
@@ -18501,17 +18554,21 @@ var Scratch3PenBlocks = function () {
          * @param {RenderedTarget} target - the target which has moved.
          * @param {number} oldX - the previous X position.
          * @param {number} oldY - the previous Y position.
+         * @param {boolean} isForce - whether the movement was forced.
          * @private
          */
 
     }, {
         key: '_onTargetMoved',
-        value: function _onTargetMoved(target, oldX, oldY) {
-            var penSkinId = this._getPenLayerID();
-            if (penSkinId >= 0) {
-                var penState = this._getPenState(target);
-                this.runtime.renderer.penLine(penSkinId, penState.penAttributes, oldX, oldY, target.x, target.y);
-                this.runtime.requestRedraw();
+        value: function _onTargetMoved(target, oldX, oldY, isForce) {
+            // Only move the pen if the movement isn't forced (ie. dragged).
+            if (!isForce) {
+                var penSkinId = this._getPenLayerID();
+                if (penSkinId >= 0) {
+                    var penState = this._getPenState(target);
+                    this.runtime.renderer.penLine(penSkinId, penState.penAttributes, oldX, oldY, target.x, target.y);
+                    this.runtime.requestRedraw();
+                }
             }
         }
 
@@ -18785,7 +18842,7 @@ var Scratch3PenBlocks = function () {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.setHue',
-                        default: 'set pen hue to [HUE]',
+                        default: 'set pen color to [HUE]',
                         description: 'legacy pen blocks - set pen color to number'
                     }),
                     arguments: {
@@ -18800,7 +18857,7 @@ var Scratch3PenBlocks = function () {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.changeHue',
-                        default: 'change pen hue by [HUE]',
+                        default: 'change pen color by [HUE]',
                         description: 'legacy pen blocks - change pen color'
                     }),
                     arguments: {
@@ -19046,6 +19103,8 @@ var Scratch3PenBlocks = function () {
             var hueValue = Cast.toNumber(args.HUE);
             var colorValue = hueValue / 2;
             this._setOrChangeColorParam(ColorParam.COLOR, colorValue, penState, false);
+
+            this._legacyUpdatePenColor(penState);
         }
 
         /**
@@ -19062,6 +19121,8 @@ var Scratch3PenBlocks = function () {
             var hueChange = Cast.toNumber(args.HUE);
             var colorChange = hueChange / 2;
             this._setOrChangeColorParam(ColorParam.COLOR, colorChange, penState, true);
+
+            this._legacyUpdatePenColor(penState);
         }
 
         /**
@@ -19084,25 +19145,10 @@ var Scratch3PenBlocks = function () {
             newShade = newShade % 200;
             if (newShade < 0) newShade += 200;
 
-            // Create the new color in RGB using the scratch 2 "shade" model
-            var rgb = Color.hsvToRgb({ h: penState.color * 360 / 100, s: 1, v: 1 });
-            var shade = newShade > 100 ? 200 - newShade : newShade;
-            if (shade < 50) {
-                rgb = Color.mixRgb(Color.RGB_BLACK, rgb, (10 + shade) / 60);
-            } else {
-                rgb = Color.mixRgb(rgb, Color.RGB_WHITE, (shade - 50) / 60);
-            }
-
-            // Update the pen state according to new color
-            var hsv = Color.rgbToHsv(rgb);
-            penState.color = 100 * hsv.h / 360;
-            penState.saturation = 100 * hsv.s;
-            penState.brightness = 100 * hsv.v;
-
             // And store the shade that was used to compute this new color for later use.
             penState._shade = newShade;
 
-            this._updatePenColor(penState);
+            this._legacyUpdatePenColor(penState);
         }
 
         /**
@@ -19119,6 +19165,33 @@ var Scratch3PenBlocks = function () {
             var penState = this._getPenState(util.target);
             var shadeChange = Cast.toNumber(args.SHADE);
             this.setPenShadeToNumber({ SHADE: penState._shade + shadeChange }, util);
+        }
+
+        /**
+         * Update the pen state's color from its hue & shade values, Scratch 2.0 style.
+         * @param {object} penState - update the HSV & RGB values in this pen state from its hue & shade values.
+         * @private
+         */
+
+    }, {
+        key: '_legacyUpdatePenColor',
+        value: function _legacyUpdatePenColor(penState) {
+            // Create the new color in RGB using the scratch 2 "shade" model
+            var rgb = Color.hsvToRgb({ h: penState.color * 360 / 100, s: 1, v: 1 });
+            var shade = penState._shade > 100 ? 200 - penState._shade : penState._shade;
+            if (shade < 50) {
+                rgb = Color.mixRgb(Color.RGB_BLACK, rgb, (10 + shade) / 60);
+            } else {
+                rgb = Color.mixRgb(rgb, Color.RGB_WHITE, (shade - 50) / 60);
+            }
+
+            // Update the pen state according to new color
+            var hsv = Color.rgbToHsv(rgb);
+            penState.color = 100 * hsv.h / 360;
+            penState.saturation = 100 * hsv.s;
+            penState.brightness = 100 * hsv.v;
+
+            this._updatePenColor(penState);
         }
     }], [{
         key: 'DEFAULT_PEN_STATE',
@@ -19849,7 +19922,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var EventEmitter = __webpack_require__(5);
 
 var Blocks = __webpack_require__(12);
-var Variable = __webpack_require__(23);
+var Variable = __webpack_require__(17);
 var uid = __webpack_require__(33);
 
 var _require = __webpack_require__(16),
@@ -19963,21 +20036,47 @@ var Target = function (_EventEmitter) {
          * if it exists.
          * @param {string} id Id of the variable.
          * @param {string} name Name of the variable.
-         * @return {!Variable} Variable object.
+         * @return {?Variable} Variable object.
          */
 
     }, {
         key: 'lookupBroadcastMsg',
         value: function lookupBroadcastMsg(id, name) {
-            var broadcastMsg = this.lookupVariableById(id);
+            var broadcastMsg = void 0;
+            if (id) {
+                broadcastMsg = this.lookupVariableById(id);
+            } else if (name) {
+                broadcastMsg = this.lookupBroadcastByInputValue(name);
+            } else {
+                log.error('Cannot find broadcast message if neither id nor name are provided.');
+            }
             if (broadcastMsg) {
-                if (broadcastMsg.name !== name) {
+                if (name && broadcastMsg.name.toLowerCase() !== name.toLowerCase()) {
                     log.error('Found broadcast message with id: ' + id + ', but' + ('its name, ' + broadcastMsg.name + ' did not match expected name ' + name + '.'));
                 }
                 if (broadcastMsg.type !== Variable.BROADCAST_MESSAGE_TYPE) {
                     log.error('Found variable with id: ' + id + ', but its type ' + broadcastMsg.type + ('did not match expected type ' + Variable.BROADCAST_MESSAGE_TYPE));
                 }
                 return broadcastMsg;
+            }
+        }
+
+        /**
+         * Look up a broadcast message with the given name and return the variable
+         * if it exists. Does not create a new broadcast message variable if
+         * it doesn't exist.
+         * @param {string} name Name of the variable.
+         * @return {?Variable} Variable object.
+         */
+
+    }, {
+        key: 'lookupBroadcastByInputValue',
+        value: function lookupBroadcastByInputValue(name) {
+            var vars = this.variables;
+            for (var propName in vars) {
+                if (vars[propName].type === Variable.BROADCAST_MESSAGE_TYPE && vars[propName].name.toLowerCase() === name.toLowerCase()) {
+                    return vars[propName];
+                }
             }
         }
 
@@ -20010,7 +20109,7 @@ var Target = function (_EventEmitter) {
         * Search begins for local lists; then look for globals.
         * @param {!string} id Id of the list.
         * @param {!string} name Name of the list.
-        * @return {!List} List object.
+        * @return {!Varible} Variable object representing the found/created list.
          */
 
     }, {
@@ -21075,7 +21174,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Buffer = __webpack_require__(21).Buffer;
+var Buffer = __webpack_require__(22).Buffer;
 /*</replacement>*/
 
 function copyBuffer(src, target, offset) {
@@ -22652,9 +22751,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(17);
+var ArgumentType = __webpack_require__(18);
 var BlockType = __webpack_require__(9);
-var color = __webpack_require__(18);
+var color = __webpack_require__(19);
 var log = __webpack_require__(0);
 
 /**
@@ -23715,7 +23814,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ArgumentType = __webpack_require__(17);
+var ArgumentType = __webpack_require__(18);
 var BlockType = __webpack_require__(9);
 var Clone = __webpack_require__(10);
 var Cast = __webpack_require__(1);
@@ -24603,7 +24702,7 @@ var _require = __webpack_require__(16),
 
 var escapeHtml = __webpack_require__(115);
 
-var ArgumentType = __webpack_require__(17);
+var ArgumentType = __webpack_require__(18);
 var Blocks = __webpack_require__(12);
 var BlockType = __webpack_require__(9);
 var Sequencer = __webpack_require__(116);
@@ -27064,12 +27163,12 @@ var Thread = __webpack_require__(25);
 var _require = __webpack_require__(16),
     Map = _require.Map;
 
+var cast = __webpack_require__(1);
+
 /**
  * Single BlockUtility instance reused by execute for every pritimive ran.
  * @const
  */
-
-
 var blockUtility = new BlockUtility();
 
 /**
@@ -27269,6 +27368,30 @@ var execute = function execute(sequencer, thread) {
         }
         argValues[inputName] = currentStackFrame.reported[inputName];
         params[inputName] = currentStackFrame.reported[inputName];
+        var inputValue = currentStackFrame.reported[inputName];
+        if (inputName === 'BROADCAST_INPUT') {
+            var broadcastInput = inputs[inputName];
+            // Check if something is plugged into the broadcast block, or
+            // if the shadow dropdown menu is being used.
+            if (broadcastInput.block === broadcastInput.shadow) {
+                // Shadow dropdown menu is being used.
+                // Get the appropriate information out of it.
+                var shadow = blockContainer.getBlock(broadcastInput.shadow);
+                var broadcastField = shadow.fields.BROADCAST_OPTION;
+                argValues.BROADCAST_OPTION = {
+                    id: broadcastField.id,
+                    name: broadcastField.value
+                };
+            } else {
+                // Something is plugged into the broadcast input.
+                // Cast it to a string. We don't need an id here.
+                argValues.BROADCAST_OPTION = {
+                    name: cast.toString(inputValue)
+                };
+            }
+        } else {
+            argValues[inputName] = inputValue;
+        }
     }
 
     // Add any mutation to args (e.g., for procedures).
@@ -28489,7 +28612,7 @@ function Nets (opts, cb) {
   return req(opts, cb)
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14), __webpack_require__(22).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14), __webpack_require__(23).Buffer))
 
 /***/ }),
 /* 123 */
@@ -29654,7 +29777,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Cast = __webpack_require__(1);
 var Clone = __webpack_require__(10);
-var RenderedTarget = __webpack_require__(19);
+var RenderedTarget = __webpack_require__(20);
 
 /**
  * @typedef {object} BubbleState - the bubble state associated with a particular target.
@@ -29899,12 +30022,11 @@ var Scratch3LooksBlocks = function () {
                 looks_cleargraphiceffects: this.clearEffects,
                 looks_changesizeby: this.changeSize,
                 looks_setsizeto: this.setSize,
-                looks_gotofront: this.goToFront,
-                looks_gobacklayers: this.goBackLayers,
+                looks_gotofrontback: this.goToFrontBack,
+                looks_goforwardbackwardlayers: this.goForwardBackwardLayers,
                 looks_size: this.getSize,
-                looks_costumeorder: this.getCostumeIndex,
-                looks_backdroporder: this.getBackdropIndex,
-                looks_backdropname: this.getBackdropName
+                looks_costumenumbername: this.getCostumeNumberName,
+                looks_backdropnumbername: this.getBackdropNumberName
             };
         }
     }, {
@@ -30087,16 +30209,26 @@ var Scratch3LooksBlocks = function () {
             util.target.setSize(size);
         }
     }, {
-        key: 'goToFront',
-        value: function goToFront(args, util) {
+        key: 'goToFrontBack',
+        value: function goToFrontBack(args, util) {
             if (!util.target.isStage) {
-                util.target.goToFront();
+                if (args.FRONT_BACK === 'front') {
+                    util.target.goToFront();
+                } else {
+                    util.target.goToBack();
+                }
             }
         }
     }, {
-        key: 'goBackLayers',
-        value: function goBackLayers(args, util) {
-            util.target.goBackLayers(args.NUM);
+        key: 'goForwardBackwardLayers',
+        value: function goForwardBackwardLayers(args, util) {
+            if (!util.target.isStage) {
+                if (args.FORWARD_BACKWARD === 'forward') {
+                    util.target.goForwardLayers(Cast.toNumber(args.NUM));
+                } else {
+                    util.target.goBackwardLayers(Cast.toNumber(args.NUM));
+                }
+            }
         }
     }, {
         key: 'getSize',
@@ -30104,21 +30236,23 @@ var Scratch3LooksBlocks = function () {
             return Math.round(util.target.size);
         }
     }, {
-        key: 'getBackdropIndex',
-        value: function getBackdropIndex() {
+        key: 'getBackdropNumberName',
+        value: function getBackdropNumberName(args) {
             var stage = this.runtime.getTargetForStage();
-            return stage.currentCostume + 1;
-        }
-    }, {
-        key: 'getBackdropName',
-        value: function getBackdropName() {
-            var stage = this.runtime.getTargetForStage();
+            if (args.NUMBER_NAME === 'number') {
+                return stage.currentCostume + 1;
+            }
+            // Else return name
             return stage.sprite.costumes[stage.currentCostume].name;
         }
     }, {
-        key: 'getCostumeIndex',
-        value: function getCostumeIndex(args, util) {
-            return util.target.currentCostume + 1;
+        key: 'getCostumeNumberName',
+        value: function getCostumeNumberName(args, util) {
+            if (args.NUMBER_NAME === 'number') {
+                return util.target.currentCostume + 1;
+            }
+            // Else return name
+            return util.target.sprite.costumes[util.target.currentCostume].name;
         }
     }], [{
         key: 'DEFAULT_BUBBLE_STATE',
@@ -31047,6 +31181,7 @@ var Scratch3SensingBlocks = function () {
                 sensing_of: this.getAttributeOf,
                 sensing_mousex: this.getMouseX,
                 sensing_mousey: this.getMouseY,
+                sensing_setdragmode: this.setDragMode,
                 sensing_mousedown: this.getMouseDown,
                 sensing_keypressed: this.getKeyPressed,
                 sensing_current: this.current,
@@ -31192,6 +31327,11 @@ var Scratch3SensingBlocks = function () {
             var dx = util.target.x - targetX;
             var dy = util.target.y - targetY;
             return Math.sqrt(dx * dx + dy * dy);
+        }
+    }, {
+        key: 'setDragMode',
+        value: function setDragMode(args, util) {
+            util.target.setDraggable(args.DRAG_MODE === 'draggable');
         }
     }, {
         key: 'getTimer',
@@ -31608,13 +31748,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 var Blocks = __webpack_require__(12);
-var RenderedTarget = __webpack_require__(19);
+var RenderedTarget = __webpack_require__(20);
 var Sprite = __webpack_require__(53);
-var Color = __webpack_require__(18);
+var Color = __webpack_require__(19);
 var log = __webpack_require__(0);
 var uid = __webpack_require__(33);
 var specMap = __webpack_require__(145);
-var Variable = __webpack_require__(23);
+var Variable = __webpack_require__(17);
 
 var _require = __webpack_require__(27),
     loadCostume = _require.loadCostume;
@@ -31781,14 +31921,23 @@ var generateVariableIdGetter = function () {
 
 var globalBroadcastMsgStateGenerator = function () {
     var broadcastMsgNameMap = {};
+    var allBroadcastFields = [];
+    var emptyStringName = uid();
     return function (topLevel) {
         if (topLevel) broadcastMsgNameMap = {};
         return {
-            broadcastMsgMapUpdater: function broadcastMsgMapUpdater(name) {
+            broadcastMsgMapUpdater: function broadcastMsgMapUpdater(name, field) {
+                name = name.toLowerCase();
+                if (name === '') {
+                    name = emptyStringName;
+                }
                 broadcastMsgNameMap[name] = 'broadcastMsgId-' + name;
+                allBroadcastFields.push(field);
                 return broadcastMsgNameMap[name];
             },
-            globalBroadcastMsgs: broadcastMsgNameMap
+            globalBroadcastMsgs: broadcastMsgNameMap,
+            allBroadcastFields: allBroadcastFields,
+            emptyMsgName: emptyStringName
         };
     };
 }();
@@ -31937,6 +32086,31 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
             // all other targets have finished processing.
             if (target.isStage) {
                 var allBroadcastMsgs = globalBroadcastMsgObj.globalBroadcastMsgs;
+                var allBroadcastMsgFields = globalBroadcastMsgObj.allBroadcastFields;
+                var oldEmptyMsgName = globalBroadcastMsgObj.emptyMsgName;
+                if (allBroadcastMsgs[oldEmptyMsgName]) {
+                    // Find a fresh 'messageN'
+                    var currIndex = 1;
+                    while (allBroadcastMsgs['message' + currIndex]) {
+                        currIndex += 1;
+                    }
+                    var newEmptyMsgName = 'message' + currIndex;
+                    // Add the new empty message name to the broadcast message
+                    // name map, and assign it the old id.
+                    // Then, delete the old entry in map.
+                    allBroadcastMsgs[newEmptyMsgName] = allBroadcastMsgs[oldEmptyMsgName];
+                    delete allBroadcastMsgs[oldEmptyMsgName];
+                    // Now update all the broadcast message fields with
+                    // the new empty message name.
+                    for (var _i = 0; _i < allBroadcastMsgFields.length; _i++) {
+                        if (allBroadcastMsgFields[_i].value === '') {
+                            allBroadcastMsgFields[_i].value = newEmptyMsgName;
+                        }
+                    }
+                }
+                // Traverse the broadcast message name map and create
+                // broadcast messages as variables on the stage (which is this
+                // target).
                 for (var msgName in allBroadcastMsgs) {
                     var msgId = allBroadcastMsgs[msgName];
                     var newMsg = new Variable(msgId, msgName, Variable.BROADCAST_MESSAGE_TYPE, false);
@@ -32079,6 +32253,11 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
                 if (shadowObscured) {
                     fieldValue = '#990000';
                 }
+            } else if (expectedArg.inputOp === 'event_broadcast_menu') {
+                fieldName = 'BROADCAST_OPTION';
+                if (shadowObscured) {
+                    fieldValue = '';
+                }
             } else if (shadowObscured) {
                 // Filled drop-down menu.
                 fieldValue = '';
@@ -32088,6 +32267,23 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
                 name: fieldName,
                 value: fieldValue
             };
+            // event_broadcast_menus have some extra properties to add to the
+            // field and a different value than the rest
+            if (expectedArg.inputOp === 'event_broadcast_menu') {
+                if (!shadowObscured) {
+                    // Need to update the broadcast message name map with
+                    // the value of this field.
+                    // Also need to provide the fields[fieldName] object,
+                    // so that we can later update its value property, e.g.
+                    // if sb2 message name is empty string, we will later
+                    // replace this field's value with messageN
+                    // once we can traverse through all the existing message names
+                    // and come up with a fresh messageN.
+                    var broadcastId = addBroadcastMsg(fieldValue, fields[fieldName]);
+                    fields[fieldName].id = broadcastId;
+                }
+                fields[fieldName].variableType = expectedArg.variableType;
+            }
             activeBlock.children.push({
                 id: inputUid,
                 opcode: expectedArg.inputOp,
@@ -32114,9 +32310,15 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
                 // Add `id` property to variable fields
                 activeBlock.fields[expectedArg.fieldName].id = getVariableId(providedArg);
             } else if (expectedArg.fieldName === 'BROADCAST_OPTION') {
-                // add the name in this field to the broadcast msg name map
-                var broadcastId = addBroadcastMsg(providedArg);
-                activeBlock.fields[expectedArg.fieldName].id = broadcastId;
+                // Add the name in this field to the broadcast msg name map.
+                // Also need to provide the fields[fieldName] object,
+                // so that we can later update its value property, e.g.
+                // if sb2 message name is empty string, we will later
+                // replace this field's value with messageN
+                // once we can traverse through all the existing message names
+                // and come up with a fresh messageN.
+                var _broadcastId = addBroadcastMsg(providedArg, activeBlock.fields[expectedArg.fieldName]);
+                activeBlock.fields[expectedArg.fieldName].id = _broadcastId;
             }
             var varType = expectedArg.variableType;
             if (typeof varType === 'string') {
@@ -32124,6 +32326,41 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
             }
         }
     }
+
+    // Updates for blocks that have new menus (e.g. in Looks)
+    switch (oldOpcode) {
+        case 'comeToFront':
+            activeBlock.fields.FRONT_BACK = {
+                name: 'FRONT_BACK',
+                value: 'front'
+            };
+            break;
+        case 'goBackByLayers:':
+            activeBlock.fields.FORWARD_BACKWARD = {
+                name: 'FORWARD_BACKWARD',
+                value: 'backward'
+            };
+            break;
+        case 'backgroundIndex':
+            activeBlock.fields.NUMBER_NAME = {
+                name: 'NUMBER_NAME',
+                value: 'number'
+            };
+            break;
+        case 'sceneName':
+            activeBlock.fields.NUMBER_NAME = {
+                name: 'NUMBER_NAME',
+                value: 'name'
+            };
+            break;
+        case 'costumeIndex':
+            activeBlock.fields.NUMBER_NAME = {
+                name: 'NUMBER_NAME',
+                value: 'number'
+            };
+            break;
+    }
+
     // Special cases to generate mutations.
     if (oldOpcode === 'stopScripts') {
         // Mutation for stop block: if the argument is 'other scripts',
@@ -32223,7 +32460,7 @@ module.exports = {
  * Finally, I filled in the expected arguments as below.
  */
 
-var Variable = __webpack_require__(23);
+var Variable = __webpack_require__(17);
 
 /**
  * @typedef {object} SB2SpecMap_blockInfo
@@ -32485,11 +32722,11 @@ var specMap = {
         }]
     },
     'comeToFront': {
-        opcode: 'looks_gotofront',
+        opcode: 'looks_gotofrontback',
         argMap: []
     },
     'goBackByLayers:': {
-        opcode: 'looks_gobacklayers',
+        opcode: 'looks_goforwardbackwardlayers',
         argMap: [{
             type: 'input',
             inputOp: 'math_integer',
@@ -32497,11 +32734,11 @@ var specMap = {
         }]
     },
     'costumeIndex': {
-        opcode: 'looks_costumeorder',
+        opcode: 'looks_costumenumbername',
         argMap: []
     },
     'sceneName': {
-        opcode: 'looks_backdropname',
+        opcode: 'looks_backdropnumbername',
         argMap: []
     },
     'scale': {
@@ -32521,7 +32758,7 @@ var specMap = {
         argMap: []
     },
     'backgroundIndex': {
-        opcode: 'looks_backdroporder',
+        opcode: 'looks_backdropnumbername',
         argMap: []
     },
     'playSound:': {
@@ -32740,16 +32977,18 @@ var specMap = {
     'broadcast:': {
         opcode: 'event_broadcast',
         argMap: [{
-            type: 'field',
-            fieldName: 'BROADCAST_OPTION',
+            type: 'input',
+            inputOp: 'event_broadcast_menu',
+            inputName: 'BROADCAST_INPUT',
             variableType: Variable.BROADCAST_MESSAGE_TYPE
         }]
     },
     'doBroadcastAndWait': {
         opcode: 'event_broadcastandwait',
         argMap: [{
-            type: 'field',
-            fieldName: 'BROADCAST_OPTION',
+            type: 'input',
+            inputOp: 'event_broadcast_menu',
+            inputName: 'BROADCAST_INPUT',
             variableType: Variable.BROADCAST_MESSAGE_TYPE
         }]
     },
@@ -33508,7 +33747,7 @@ module.exports = specMap;
 var vmPackage = __webpack_require__(147);
 var Blocks = __webpack_require__(12);
 var Sprite = __webpack_require__(53);
-var Variable = __webpack_require__(23);
+var Variable = __webpack_require__(17);
 
 var _require = __webpack_require__(27),
     loadCostume = _require.loadCostume;

@@ -209,7 +209,7 @@ class RenderedTarget extends Target {
             this.x = x;
             this.y = y;
         }
-        this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY);
+        this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY, force);
         this.runtime.requestTargetsUpdate(this);
     }
 
@@ -705,10 +705,29 @@ class RenderedTarget extends Target {
     }
 
     /**
-     * Move back a number of layers.
-     * @param {number} nLayers How many layers to go back.
+     * Move to the back layer.
      */
-    goBackLayers (nLayers) {
+    goToBack () {
+        if (this.renderer) {
+            this.renderer.setDrawableOrder(this.drawableID, -Infinity, false, 1);
+        }
+    }
+
+    /**
+     * Move forward a number of layers.
+     * @param {number} nLayers How many layers to go forward.
+     */
+    goForwardLayers (nLayers) {
+        if (this.renderer) {
+            this.renderer.setDrawableOrder(this.drawableID, nLayers, true, 1);
+        }
+    }
+
+    /**
+     * Move backward a number of layers.
+     * @param {number} nLayers How many layers to go backward.
+     */
+    goBackwardLayers (nLayers) {
         if (this.renderer) {
             this.renderer.setDrawableOrder(this.drawableID, -nLayers, true, 1);
         }
@@ -851,11 +870,10 @@ class RenderedTarget extends Target {
      */
     postSpriteInfo (data) {
         const force = data.hasOwnProperty('force') ? data.force : null;
-        if (data.hasOwnProperty('x')) {
-            this.setXY(data.x, this.y, force);
-        }
-        if (data.hasOwnProperty('y')) {
-            this.setXY(this.x, data.y, force);
+        const isXChanged = data.hasOwnProperty('x');
+        const isYChanged = data.hasOwnProperty('y');
+        if (isXChanged || isYChanged) {
+            this.setXY(isXChanged ? data.x : this.x, isYChanged ? data.y : this.y, force);
         }
         if (data.hasOwnProperty('direction')) {
             this.setDirection(data.direction);

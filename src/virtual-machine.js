@@ -8,6 +8,7 @@ const sb2 = require('./serialization/sb2');
 const sb3 = require('./serialization/sb3');
 const StringUtil = require('./util/string-util');
 const formatMessage = require('format-message');
+const Variable = require('./engine/variable');
 
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
@@ -699,14 +700,43 @@ class VirtualMachine extends EventEmitter {
      * of the current editing target's blocks.
      */
     emitWorkspaceUpdate () {
-        // modefied by Kane, 修复删除变量后切换角色出现undefined变量的bug
-        for (let variable in this.editingTarget.variables) {
-            if (this.editingTarget.variables[variable].name === undefined) {
-                delete this.editingTarget.variables[variable];
+        // // modefied by Kane, 修复删除变量后切换角色出现undefined变量的bug
+        // for (let variable in this.editingTarget.variables) {
+        //     if (this.editingTarget.variables[variable].name === undefined) {
+        //         delete this.editingTarget.variables[variable];
+        //     }
+        // }
+        // // 角色有可能在stage加载前加载 by Kane
+        // const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
+        // Create a list of broadcast message Ids according to the stage variables
+        const stageVariables = this.runtime.getTargetForStage().variables;
+        let messageIds = [];
+        for (const varId in stageVariables) {
+            if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
+                messageIds.push(varId);
             }
         }
-        // 角色有可能在stage加载前加载 by Kane
-        const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
+        // Go through all blocks on all targets, removing referenced
+        // broadcast ids from the list.
+        for (let i = 0; i < this.runtime.targets.length; i++) {
+            const currTarget = this.runtime.targets[i];
+            const currBlocks = currTarget.blocks._blocks;
+            for (const blockId in currBlocks) {
+                if (currBlocks[blockId].fields.BROADCAST_OPTION) {
+                    const id = currBlocks[blockId].fields.BROADCAST_OPTION.id;
+                    const index = messageIds.indexOf(id);
+                    if (index !== -1) {
+                        messageIds = messageIds.slice(0, index)
+                            .concat(messageIds.slice(index + 1));
+                    }
+                }
+            }
+        }
+        // Anything left in messageIds is not referenced by a block, so delete it.
+        for (let i = 0; i < messageIds.length; i++) {
+            const id = messageIds[i];
+            delete this.runtime.getTargetForStage().variables[id];
+        }
         const variableMap = Object.assign({},
             stageVariables,
             this.editingTarget.variables
