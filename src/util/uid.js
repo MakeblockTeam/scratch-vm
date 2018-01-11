@@ -8,7 +8,7 @@
  * Removed $ due to issue 251.
  * @private
  */
-const soup_ = '!#%()*+,-./:;=?@[]^_`{|}~' +
+const soup_ = '!%()*+,-./:;=@[]^_`{|}~' +
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 /**
