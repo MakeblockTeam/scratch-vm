@@ -16310,7 +16310,7 @@ module.exports = global["VirtualMachine"] = __webpack_require__(55);
 /* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const VirtualMachine = __webpack_require__(56);
+var VirtualMachine = __webpack_require__(56);
 
 module.exports = VirtualMachine;
 
