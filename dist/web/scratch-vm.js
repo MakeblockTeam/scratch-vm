@@ -355,6 +355,33 @@ if (typeof Object.create === 'function') {
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var microee = __webpack_require__(63);
@@ -429,33 +456,6 @@ Transform.mixin = function(dest) {
 };
 
 module.exports = Transform;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
 
 
 /***/ }),
@@ -7896,17 +7896,18 @@ var RenderedTarget = function (_Target) {
             if (!this.isOriginal) {
                 this.runtime.startHats('control_start_as_clone', null, this);
             }
+        }
 
-            /**
-            * Audio player
-            */
+        /**
+         * Initialize the audio player for this sprite or clone.
+         */
+
+    }, {
+        key: 'initAudio',
+        value: function initAudio() {
             this.audioPlayer = null;
             if (this.runtime && this.runtime.audioEngine) {
-                if (this.isOriginal) {
-                    this.audioPlayer = this.runtime.audioEngine.createPlayer();
-                } else {
-                    this.audioPlayer = this.sprite.clones[0].audioPlayer;
-                }
+                this.audioPlayer = this.runtime.audioEngine.createPlayer();
             }
         }
 
@@ -8797,6 +8798,10 @@ var RenderedTarget = function (_Target) {
                 if (this.visible) {
                     this.runtime.requestRedraw();
                 }
+            }
+            if (this.audioPlayer) {
+                this.audioPlayer.stopAllSounds();
+                this.audioPlayer.dispose();
             }
         }
     }], [{
@@ -10758,7 +10763,7 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
 /* 24 */
@@ -12093,7 +12098,7 @@ Writable.prototype._destroy = function (err, cb) {
   this.end();
   cb(err);
 };
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14), __webpack_require__(88).setImmediate, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14), __webpack_require__(88).setImmediate, __webpack_require__(3)))
 
 /***/ }),
 /* 32 */
@@ -15829,7 +15834,7 @@ function indexOf(xs, x) {
   }
   return -1;
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(14)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(14)))
 
 /***/ }),
 /* 48 */
@@ -16248,6 +16253,7 @@ var Sprite = function () {
             var newClone = new RenderedTarget(this, this.runtime);
             newClone.isOriginal = this.clones.length === 0;
             this.clones.push(newClone);
+            newClone.initAudio();
             if (newClone.isOriginal) {
                 newClone.initDrawable();
                 this.runtime.fireTargetWasCreated(newClone);
@@ -16321,7 +16327,7 @@ module.exports = Sprite;
 /* WEBPACK VAR INJECTION */(function(global) {
 
 module.exports = global["VirtualMachine"] = __webpack_require__(55);
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
 /* 55 */
@@ -21079,7 +21085,7 @@ exports.backends = {
 /* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(3),
+var Transform = __webpack_require__(4),
     Filter = __webpack_require__(64);
 
 var log = new Transform(),
@@ -21187,7 +21193,7 @@ module.exports = M;
 /***/ (function(module, exports, __webpack_require__) {
 
 // default filter
-var Transform = __webpack_require__(3);
+var Transform = __webpack_require__(4);
 
 var levelMap = { debug: 1, info: 2, warn: 3, error: 4 };
 
@@ -21248,7 +21254,7 @@ module.exports = Filter;
 /* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(3);
+var Transform = __webpack_require__(4);
 
 var newlines = /\n+$/,
     logger = new Transform();
@@ -21286,7 +21292,7 @@ module.exports = logger;
 /* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(3),
+var Transform = __webpack_require__(4),
     color = __webpack_require__(35);
 
 var colors = { debug: ['cyan'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
@@ -21310,7 +21316,7 @@ module.exports = logger;
 /* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(3),
+var Transform = __webpack_require__(4),
     color = __webpack_require__(35),
     colors = { debug: ['gray'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
     logger = new Transform();
@@ -21342,7 +21348,7 @@ module.exports = logger;
 /* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(3),
+var Transform = __webpack_require__(4),
     cache = [ ];
 
 var logger = new Transform();
@@ -21362,7 +21368,7 @@ module.exports = logger;
 /* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(3),
+var Transform = __webpack_require__(4),
     cache = false;
 
 var logger = new Transform();
@@ -21382,7 +21388,7 @@ module.exports = logger;
 /* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(3);
+var Transform = __webpack_require__(4);
 
 var cid = new Date().valueOf().toString(36);
 
@@ -24652,7 +24658,7 @@ module.exports = function () {
 /* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var apply = Function.prototype.apply;
+/* WEBPACK VAR INJECTION */(function(global) {var apply = Function.prototype.apply;
 
 // DOM APIs, for completeness
 
@@ -24703,9 +24709,17 @@ exports._unrefActive = exports.active = function(item) {
 
 // setimmediate attaches itself to the global object
 __webpack_require__(89);
-exports.setImmediate = setImmediate;
-exports.clearImmediate = clearImmediate;
+// On some exotic environments, it's not clear which object `setimmeidate` was
+// able to install onto.  Search each possibility in the same order as the
+// `setimmediate` library.
+exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
+                       (typeof global !== "undefined" && global.setImmediate) ||
+                       (this && this.setImmediate);
+exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
+                         (typeof global !== "undefined" && global.clearImmediate) ||
+                         (this && this.clearImmediate);
 
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
 /* 89 */
@@ -24898,7 +24912,7 @@ exports.clearImmediate = clearImmediate;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(14)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(14)))
 
 /***/ }),
 /* 90 */
@@ -24972,7 +24986,7 @@ function config (name) {
   return String(val).toLowerCase() === 'true';
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
 /* 91 */
@@ -27332,8 +27346,23 @@ var Scratch3MusicBlocks = function () {
 
             if (!this.runtime.storage) return;
             if (!this.runtime.audioEngine) return;
+            if (!this.runtime.audioEngine.audioContext) return;
             return this.runtime.storage.load(this.runtime.storage.AssetType.Sound, fileName, 'mp3').then(function (soundAsset) {
-                return _this2.runtime.audioEngine.audioContext.decodeAudioData(soundAsset.data.buffer);
+                var context = _this2.runtime.audioEngine.audioContext;
+                // Check for newer promise-based API
+                if (context.decodeAudioData.length === 1) {
+                    return context.decodeAudioData(soundAsset.data.buffer);
+                } else {
+                    // eslint-disable-line no-else-return
+                    // Fall back to callback API
+                    return new Promise(function (resolve, reject) {
+                        return context.decodeAudioData(soundAsset.data.buffer, function (buffer) {
+                            return resolve(buffer);
+                        }, function (error) {
+                            return reject(error);
+                        });
+                    });
+                }
             }).then(function (buffer) {
                 bufferArray[index] = buffer;
             });
@@ -32289,7 +32318,7 @@ if (typeof window !== "undefined") {
 
 module.exports = win;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
 /* 128 */
@@ -34247,6 +34276,11 @@ var Scratch3SoundBlocks = function () {
             this.runtime.on('PROJECT_STOP_ALL', this._clearEffectsForAllTargets);
             this.runtime.on('PROJECT_START', this._clearEffectsForAllTargets);
         }
+
+        this._onTargetCreated = this._onTargetCreated.bind(this);
+        if (this.runtime) {
+            runtime.on('targetWasCreated', this._onTargetCreated);
+        }
     }
 
     /**
@@ -34271,6 +34305,26 @@ var Scratch3SoundBlocks = function () {
                 target.setCustomState(Scratch3SoundBlocks.STATE_KEY, soundState);
             }
             return soundState;
+        }
+
+        /**
+         * When a Target is cloned, clone the sound state.
+         * @param {Target} newTarget - the newly created target.
+         * @param {Target} [sourceTarget] - the target used as a source for the new clone, if any.
+         * @listens Runtime#event:targetWasCreated
+         * @private
+         */
+
+    }, {
+        key: '_onTargetCreated',
+        value: function _onTargetCreated(newTarget, sourceTarget) {
+            if (sourceTarget) {
+                var soundState = sourceTarget.getCustomState(Scratch3SoundBlocks.STATE_KEY);
+                if (soundState && newTarget) {
+                    newTarget.setCustomState(Scratch3SoundBlocks.STATE_KEY, Clone.simple(soundState));
+                    this._syncEffectsForTarget(newTarget);
+                }
+            }
         }
 
         /**
@@ -34404,6 +34458,16 @@ var Scratch3SoundBlocks = function () {
 
             if (util.target.audioPlayer === null) return;
             util.target.audioPlayer.setEffect(effect, soundState.effects[effect]);
+        }
+    }, {
+        key: '_syncEffectsForTarget',
+        value: function _syncEffectsForTarget(target) {
+            if (!target || !target.audioPlayer) return;
+            var soundState = this._getSoundState(target);
+            for (var effect in soundState.effects) {
+                if (!soundState.effects.hasOwnProperty(effect)) continue;
+                target.audioPlayer.setEffect(effect, soundState.effects[effect]);
+            }
         }
     }, {
         key: 'clearEffects',
@@ -37397,7 +37461,7 @@ module.exports = {
 /* 150 */
 /***/ (function(module, exports) {
 
-module.exports = {"name":"scratch-vm","version":"0.1.0","description":"Virtual Machine for Scratch 3.0","author":"Massachusetts Institute of Technology","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./dist/web/scratch-vm.js","scripts":{"build":"webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","extract:pen":"mkdirp translations/pen && format-message extract --out-file translations/pen/en.json src/extensions/scratch3_pen/index.js","i18n:src":"npm run extract:pen","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist ../mscratch/node_modules/scratch-vm"},"devDependencies":{"adm-zip":"0.4.7","babel-core":"^6.24.1","babel-eslint":"^7.1.1","babel-loader":"^7.0.0","babel-preset-es2015":"^6.24.1","copy-webpack-plugin":"4.2.1","decode-html":"2.0.0","escape-html":"1.0.3","eslint":"^4.5.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.4","format-message":"5.2.1","format-message-cli":"5.2.1","gh-pages":"^1.1.0","highlightjs":"^9.8.0","htmlparser2":"3.9.2","immutable":"3.8.1","in-publish":"^2.0.0","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","minilog":"3.1.0","nets":"3.2.0","promise":"8.0.1","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^0.3.0","script-loader":"0.7.2","socket.io-client":"2.0.4","stats.js":"^0.17.0","tap":"^10.2.0","text-encoding":"^0.6.4","tiny-worker":"^2.1.1","webpack":"^3.10.0","webpack-dev-server":"^2.4.1","worker-loader":"1.1.0"}}
+module.exports = {"name":"scratch-vm","version":"0.1.0","description":"Virtual Machine for Scratch 3.0","author":"Massachusetts Institute of Technology","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./dist/web/scratch-vm.js","scripts":{"build":"webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","extract:pen":"mkdirp translations/pen && format-message extract --out-file translations/pen/en.json src/extensions/scratch3_pen/index.js","i18n:src":"npm run extract:pen","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist ../mscratch/node_modules/scratch-vm"},"devDependencies":{"adm-zip":"0.4.7","babel-core":"^6.24.1","babel-eslint":"^7.1.1","babel-loader":"^7.0.0","babel-preset-es2015":"^6.24.1","copy-webpack-plugin":"4.2.1","decode-html":"2.0.0","escape-html":"1.0.3","eslint":"^4.5.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.4","format-message":"5.2.1","format-message-cli":"5.2.1","gh-pages":"^1.1.0","highlightjs":"^9.8.0","htmlparser2":"3.9.2","immutable":"3.8.1","in-publish":"^2.0.0","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","minilog":"3.1.0","nets":"3.2.0","promise":"8.0.1","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^0.3.0","script-loader":"0.7.2","socket.io-client":"2.0.4","stats.js":"^0.17.0","tap":"^11.0.1","text-encoding":"0.6.4","tiny-worker":"^2.1.1","webpack":"^3.10.0","webpack-dev-server":"^2.4.1","worker-loader":"1.1.0"}}
 
 /***/ })
 /******/ ]);
