@@ -17229,32 +17229,33 @@ var VirtualMachine = function (_EventEmitter) {
             // const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
             // Create a list of broadcast message Ids according to the stage variables
             var stageVariables = this.runtime.getTargetForStage().variables;
-            var messageIds = [];
-            for (var varId in stageVariables) {
-                if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
-                    messageIds.push(varId);
-                }
-            }
-            // Go through all blocks on all targets, removing referenced
-            // broadcast ids from the list.
-            for (var i = 0; i < this.runtime.targets.length; i++) {
-                var currTarget = this.runtime.targets[i];
-                var currBlocks = currTarget.blocks._blocks;
-                for (var blockId in currBlocks) {
-                    if (currBlocks[blockId].fields.BROADCAST_OPTION) {
-                        var id = currBlocks[blockId].fields.BROADCAST_OPTION.id;
-                        var index = messageIds.indexOf(id);
-                        if (index !== -1) {
-                            messageIds = messageIds.slice(0, index).concat(messageIds.slice(index + 1));
-                        }
-                    }
-                }
-            }
-            // Anything left in messageIds is not referenced by a block, so delete it.
-            for (var _i = 0; _i < messageIds.length; _i++) {
-                var _id = messageIds[_i];
-                delete this.runtime.getTargetForStage().variables[_id];
-            }
+            // let messageIds = [];
+            // for (const varId in stageVariables) {
+            //     if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
+            //         messageIds.push(varId);
+            //     }
+            // }
+            // // Go through all blocks on all targets, removing referenced
+            // // broadcast ids from the list.
+            // for (let i = 0; i < this.runtime.targets.length; i++) {
+            //     const currTarget = this.runtime.targets[i];
+            //     const currBlocks = currTarget.blocks._blocks;
+            //     for (const blockId in currBlocks) {
+            //         if (currBlocks[blockId].fields.BROADCAST_OPTION) {
+            //             const id = currBlocks[blockId].fields.BROADCAST_OPTION.id;
+            //             const index = messageIds.indexOf(id);
+            //             if (index !== -1) {
+            //                 messageIds = messageIds.slice(0, index)
+            //                     .concat(messageIds.slice(index + 1));
+            //             }
+            //         }
+            //     }
+            // }
+            // // Anything left in messageIds is not referenced by a block, so delete it.
+            // for (let i = 0; i < messageIds.length; i++) {
+            //     const id = messageIds[i];
+            //     delete this.runtime.getTargetForStage().variables[id];
+            // }
             var variableMap = Object.assign({}, stageVariables, this.editingTarget.variables);
 
             var variables = Object.keys(variableMap).map(function (k) {
