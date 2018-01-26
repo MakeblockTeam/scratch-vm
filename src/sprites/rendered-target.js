@@ -118,10 +118,11 @@ class RenderedTarget extends Target {
         this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
 
         /**
-         * 是否是当前编辑的目标
+         * Modified by Kane
+         * 设备Id
          * @type {boolean}
          */
-        this.isEditing = false;
+        this.deviceId = null;
     }
 
     /**
@@ -551,6 +552,8 @@ class RenderedTarget extends Target {
      */
     updateAllDrawableProperties () {
         if (this.renderer) {
+            // Modified by Kane: 设备角色可能没有造型
+            if (!this.sprite.costumes || this.sprite.costumes.length === 0) return;
             const renderedDirectionScale = this._getRenderedDirectionAndScale();
             const costume = this.sprite.costumes[this.currentCostume];
             const bitmapResolution = costume.bitmapResolution || 1;
@@ -807,6 +810,7 @@ class RenderedTarget extends Target {
         newClone.effects = JSON.parse(JSON.stringify(this.effects));
         newClone.variables = JSON.parse(JSON.stringify(this.variables));
         newClone.lists = JSON.parse(JSON.stringify(this.lists));
+        newClone.deviceId = this.deviceId;
         newClone.initDrawable();
         newClone.updateAllDrawableProperties();
         // Place behind the current target.
@@ -834,6 +838,7 @@ class RenderedTarget extends Target {
             newTarget.effects = JSON.parse(JSON.stringify(this.effects));
             newTarget.variables = JSON.parse(JSON.stringify(this.variables));
             newTarget.lists = JSON.parse(JSON.stringify(this.lists));
+            newTarget.deviceId = this.deviceId;
             newTarget.updateAllDrawableProperties();
             newTarget.goBehindOther(this);
             return newTarget;
@@ -911,9 +916,9 @@ class RenderedTarget extends Target {
         const costumes = this.getCostumes();
         return {
             id: this.id,
+            deviceId: this.deviceId,
             name: this.getName(),
             isStage: this.isStage,
-            isEditing: this.isEditing,
             x: this.x,
             y: this.y,
             size: this.size,

@@ -15830,10 +15830,11 @@ var RenderedTarget = function (_Target) {
         _this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
 
         /**
-         * 是否是当前编辑的目标
+         * Modified by Kane
+         * 设备Id
          * @type {boolean}
          */
-        _this.isEditing = false;
+        _this.deviceId = null;
         return _this;
     }
 
@@ -16302,6 +16303,8 @@ var RenderedTarget = function (_Target) {
         key: 'updateAllDrawableProperties',
         value: function updateAllDrawableProperties() {
             if (this.renderer) {
+                // Modified by Kane: 设备角色可能没有造型
+                if (!this.sprite.costumes || this.sprite.costumes.length === 0) return;
                 var renderedDirectionScale = this._getRenderedDirectionAndScale();
                 var costume = this.sprite.costumes[this.currentCostume];
                 var bitmapResolution = costume.bitmapResolution || 1;
@@ -16589,6 +16592,7 @@ var RenderedTarget = function (_Target) {
             newClone.effects = JSON.parse(JSON.stringify(this.effects));
             newClone.variables = JSON.parse(JSON.stringify(this.variables));
             newClone.lists = JSON.parse(JSON.stringify(this.lists));
+            newClone.deviceId = this.deviceId;
             newClone.initDrawable();
             newClone.updateAllDrawableProperties();
             // Place behind the current target.
@@ -16621,6 +16625,7 @@ var RenderedTarget = function (_Target) {
                 newTarget.effects = JSON.parse(JSON.stringify(_this2.effects));
                 newTarget.variables = JSON.parse(JSON.stringify(_this2.variables));
                 newTarget.lists = JSON.parse(JSON.stringify(_this2.lists));
+                newTarget.deviceId = _this2.deviceId;
                 newTarget.updateAllDrawableProperties();
                 newTarget.goBehindOther(_this2);
                 return newTarget;
@@ -16715,9 +16720,9 @@ var RenderedTarget = function (_Target) {
             var costumes = this.getCostumes();
             return {
                 id: this.id,
+                deviceId: this.deviceId,
                 name: this.getName(),
                 isStage: this.isStage,
-                isEditing: this.isEditing,
                 x: this.x,
                 y: this.y,
                 size: this.size,
@@ -31472,6 +31477,7 @@ var VirtualMachine = function (_EventEmitter) {
             // const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
             // Create a list of broadcast message Ids according to the stage variables
             var stageVariables = this.runtime.getTargetForStage().variables;
+            // modified by Kane: 保留没被使用的messageId
             // let messageIds = [];
             // for (const varId in stageVariables) {
             //     if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
@@ -65729,6 +65735,16 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
         }
     }
 
+    // Modified by Kane: 角色的编辑状态
+    if (object.hasOwnProperty('isEditing')) {
+        target.isEditing = object.isEditing;
+    }
+
+    // modified by Kane: 设备角色有设备ID
+    if (object.hasOwnProperty('deviceId')) {
+        target.deviceId = object.deviceId;
+    }
+
     target.isStage = topLevel;
 
     Promise.all(costumePromises).then(function (costumes) {
@@ -67556,6 +67572,7 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     });
     // Create the first clone, and load its run-state from JSON.
     var target = sprite.createClone();
+
     // Load target properties from JSON.
     if (object.hasOwnProperty('variables')) {
         for (var j in object.variables) {
@@ -67589,9 +67606,17 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     if (object.hasOwnProperty('isStage')) {
         target.isStage = object.isStage;
     }
+
+    // Modified by Kane: 角色的编辑状态
     if (object.hasOwnProperty('isEditing')) {
         target.isEditing = object.isEditing;
     }
+
+    // modified by Kane: 设备角色有设备ID
+    if (object.hasOwnProperty('deviceId')) {
+        target.deviceId = object.deviceId;
+    }
+
     Promise.all(costumePromises).then(function (costumes) {
         sprite.costumes = costumes;
     });

@@ -146,6 +146,7 @@ const parseScratchObject = function (object, runtime, extensions, mscratch) {
     });
     // Create the first clone, and load its run-state from JSON.
     const target = sprite.createClone();
+
     // Load target properties from JSON.
     if (object.hasOwnProperty('variables')) {
         for (const j in object.variables) {
@@ -184,9 +185,17 @@ const parseScratchObject = function (object, runtime, extensions, mscratch) {
     if (object.hasOwnProperty('isStage')) {
         target.isStage = object.isStage;
     }
+
+    // Modified by Kane: 角色的编辑状态
     if (object.hasOwnProperty('isEditing')) {
         target.isEditing = object.isEditing;
     }
+
+    // modified by Kane: 设备角色有设备ID
+    if (object.hasOwnProperty('deviceId')) {
+        target.deviceId = object.deviceId;
+    }
+    
     Promise.all(costumePromises).then(costumes => {
         sprite.costumes = costumes;
     });
