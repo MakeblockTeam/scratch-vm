@@ -123,6 +123,13 @@ class RenderedTarget extends Target {
          * @type {boolean}
          */
         this.deviceId = null;
+
+        /**
+         * Modified by Kane
+         * 角色状态
+         * @type {boolean}
+         */
+        this.isEditing = false;
     }
 
     /**
@@ -919,6 +926,7 @@ class RenderedTarget extends Target {
             deviceId: this.deviceId,
             name: this.getName(),
             isStage: this.isStage,
+            isEditing: this.runtime._editingTarget === this,
             x: this.x,
             y: this.y,
             size: this.size,

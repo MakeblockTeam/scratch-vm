@@ -15835,6 +15835,13 @@ var RenderedTarget = function (_Target) {
          * @type {boolean}
          */
         _this.deviceId = null;
+
+        /**
+         * Modified by Kane
+         * 角色状态
+         * @type {boolean}
+         */
+        _this.isEditing = false;
         return _this;
     }
 
@@ -16723,6 +16730,7 @@ var RenderedTarget = function (_Target) {
                 deviceId: this.deviceId,
                 name: this.getName(),
                 isStage: this.isStage,
+                isEditing: this.runtime._editingTarget === this,
                 x: this.x,
                 y: this.y,
                 size: this.size,
@@ -67458,10 +67466,6 @@ var _require2 = __webpack_require__(55),
 var serialize = function serialize(runtime) {
     // Fetch targets
     var obj = Object.create(null);
-    // 保存editingTarget设置
-    if (runtime._editingTarget) {
-        runtime._editingTarget.isEditing = true;
-    }
     obj.targets = runtime.targets.filter(function (target) {
         return target.isOriginal;
     });
