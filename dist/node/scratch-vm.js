@@ -7602,21 +7602,6 @@ var Blocks = function () {
                             }));
                         }
                     }
-                    // Modified by Kane monitor block update
-                    if (block.isMonitored) {
-                        optRuntime.requestUpdateMonitor(Map({
-                            id: block.id,
-                            params: this._getBlockParams(block)
-                        }));
-                    } else if (block.parent) {
-                        var parentBlock = this._blocks[block.parent];
-                        if (parentBlock.isMonitored) {
-                            optRuntime.requestUpdateMonitor(Map({
-                                id: parentBlock.id,
-                                params: this._getBlockParams(parentBlock)
-                            }));
-                        }
-                    }
                     break;
                 case 'mutation':
                     block.mutation = mutationAdapter(args.value);
