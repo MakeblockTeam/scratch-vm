@@ -1,6 +1,6 @@
 const StringUtil = require('../util/string-util');
 const log = require('../util/log');
-
+const DEFAULT_SVG = `<?xml version="1.0" encoding="UTF-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>`;
 /**
  * Initialize a costume from an asset asynchronously.
  * Do not call this unless there is a renderer attached.
@@ -25,7 +25,13 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
         costume.rotationCenterY / costume.bitmapResolution
     ];
     if (costumeAsset.assetType === AssetType.ImageVector) {
-        costume.skinId = runtime.renderer.createSVGSkin(costumeAsset.decodeText(), rotationCenter);
+        // modified by Kane: 找不到图片处理
+        let decodeText = costumeAsset.decodeText();
+        if (decodeText.indexOf('</html>') !== -1) {
+            costumeAsset.data = (new TextEncoder()).encode(DEFAULT_SVG);
+            decodeText = DEFAULT_SVG;
+        }
+        costume.skinId = runtime.renderer.createSVGSkin(decodeText, rotationCenter);
         return costume;
     }
 
@@ -76,7 +82,7 @@ const loadCostume = function (md5ext, costume, runtime, svgXml) {
     const idParts = StringUtil.splitFirst(md5ext, '.');
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
-    const assetType = (ext === 'svg') ? AssetType.ImageVector : AssetType.ImageBitmap;
+    const assetType = (ext === 'svg') || svgXml ? AssetType.ImageVector : AssetType.ImageBitmap;
     // by Kane, 解析svg路径
     if (svgXml) {
         costume.dataFormat = ext;

@@ -11309,7 +11309,7 @@ module.exports = {
 
 var StringUtil = __webpack_require__(11);
 var log = __webpack_require__(0);
-
+var DEFAULT_SVG = '<?xml version="1.0" encoding="UTF-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>';
 /**
  * Initialize a costume from an asset asynchronously.
  * Do not call this unless there is a renderer attached.
@@ -11331,7 +11331,13 @@ var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, 
     var AssetType = runtime.storage.AssetType;
     var rotationCenter = [costume.rotationCenterX / costume.bitmapResolution, costume.rotationCenterY / costume.bitmapResolution];
     if (costumeAsset.assetType === AssetType.ImageVector) {
-        costume.skinId = runtime.renderer.createSVGSkin(costumeAsset.decodeText(), rotationCenter);
+        // modified by Kane: 找不到图片处理
+        var decodeText = costumeAsset.decodeText();
+        if (decodeText.indexOf('</html>') !== -1) {
+            costumeAsset.data = new TextEncoder().encode(DEFAULT_SVG);
+            decodeText = DEFAULT_SVG;
+        }
+        costume.skinId = runtime.renderer.createSVGSkin(decodeText, rotationCenter);
         return costume;
     }
 
@@ -11382,7 +11388,7 @@ var loadCostume = function loadCostume(md5ext, costume, runtime, svgXml) {
     var idParts = StringUtil.splitFirst(md5ext, '.');
     var md5 = idParts[0];
     var ext = idParts[1].toLowerCase();
-    var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
+    var assetType = ext === 'svg' || svgXml ? AssetType.ImageVector : AssetType.ImageBitmap;
     // by Kane, 解析svg路径
     if (svgXml) {
         costume.dataFormat = ext;
