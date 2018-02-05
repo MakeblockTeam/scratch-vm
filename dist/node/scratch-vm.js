@@ -18660,7 +18660,7 @@ var DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
  */
 var loadSoundFromAsset = function loadSoundFromAsset(sound, soundAsset, runtime) {
     // modified by Hyman: 处理默认音频 md5
-    if (soundAsset.assetId.length < 32) {
+    if (!soundAsset.assetId || soundAsset.assetId && soundAsset.assetId.length < 32) {
         soundAsset.assetId = DEFAULT_SOUND_ASSETID;
     }
     sound.assetId = soundAsset.assetId;
