@@ -11252,6 +11252,8 @@ module.exports = Thread;
 var StringUtil = __webpack_require__(11);
 var log = __webpack_require__(0);
 
+var DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
+
 /**
  * Initialize a sound from an asset asynchronously.
  * @param {!object} sound - the Scratch sound object.
@@ -11262,6 +11264,10 @@ var log = __webpack_require__(0);
  * @returns {!Promise} - a promise which will resolve to the sound when ready.
  */
 var loadSoundFromAsset = function loadSoundFromAsset(sound, soundAsset, runtime) {
+    // modified by Hyman: 处理默认音频 md5
+    if (soundAsset.assetId.length < 32) {
+        soundAsset.assetId = DEFAULT_SOUND_ASSETID;
+    }
     sound.assetId = soundAsset.assetId;
     return runtime.audioEngine.decodeSound(Object.assign({}, sound, { data: soundAsset.data })).then(function (soundId) {
         sound.soundId = soundId;

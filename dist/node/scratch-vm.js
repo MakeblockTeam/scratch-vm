@@ -18647,6 +18647,8 @@ SSHBuffer.prototype.write = function (buf) {
 var StringUtil = __webpack_require__(31);
 var log = __webpack_require__(8);
 
+var DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
+
 /**
  * Initialize a sound from an asset asynchronously.
  * @param {!object} sound - the Scratch sound object.
@@ -18657,6 +18659,10 @@ var log = __webpack_require__(8);
  * @returns {!Promise} - a promise which will resolve to the sound when ready.
  */
 var loadSoundFromAsset = function loadSoundFromAsset(sound, soundAsset, runtime) {
+    // modified by Hyman: 处理默认音频 md5
+    if (soundAsset.assetId.length < 32) {
+        soundAsset.assetId = DEFAULT_SOUND_ASSETID;
+    }
     sound.assetId = soundAsset.assetId;
     return runtime.audioEngine.decodeSound(Object.assign({}, sound, { data: soundAsset.data })).then(function (soundId) {
         sound.soundId = soundId;
@@ -47469,7 +47475,7 @@ MemoryCookieStore.prototype.getAllCookies = function(cb) {
 /* 209 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":{"name":"Jeremy Stashewsky","email":"jstashewsky@salesforce.com","website":"https://github.com/stash"},"contributors":[{"name":"Alexander Savin","website":"https://github.com/apsavin"},{"name":"Ian Livingstone","website":"https://github.com/ianlivingstone"},{"name":"Ivan Nikulin","website":"https://github.com/inikulin"},{"name":"Lalit Kapoor","website":"https://github.com/lalitkapoor"},{"name":"Sam Thompson","website":"https://github.com/sambthompson"},{"name":"Sebastian Mayr","website":"https://github.com/Sebmaster"}],"license":"BSD-3-Clause","name":"tough-cookie","description":"RFC6265 Cookies and Cookie Jar for node.js","keywords":["HTTP","cookie","cookies","set-cookie","cookiejar","jar","RFC6265","RFC2965"],"version":"2.3.3","homepage":"https://github.com/salesforce/tough-cookie","repository":{"type":"git","url":"git://github.com/salesforce/tough-cookie.git"},"bugs":{"url":"https://github.com/salesforce/tough-cookie/issues"},"main":"./lib/cookie","files":["lib"],"scripts":{"suffixup":"curl -o public_suffix_list.dat https://publicsuffix.org/list/public_suffix_list.dat && ./generate-pubsuffix.js","test":"vows test/*_test.js"},"engines":{"node":">=0.8"},"devDependencies":{"async":"^1.4.2","string.prototype.repeat":"^0.2.0","vows":"^0.8.1"},"dependencies":{"punycode":"^1.4.1"}}
+module.exports = {"author":{"name":"Jeremy Stashewsky","email":"jstashewsky@salesforce.com","website":"https://github.com/stash"},"contributors":[{"name":"Alexander Savin","website":"https://github.com/apsavin"},{"name":"Ian Livingstone","website":"https://github.com/ianlivingstone"},{"name":"Ivan Nikulin","website":"https://github.com/inikulin"},{"name":"Lalit Kapoor","website":"https://github.com/lalitkapoor"},{"name":"Sam Thompson","website":"https://github.com/sambthompson"},{"name":"Sebastian Mayr","website":"https://github.com/Sebmaster"}],"license":"BSD-3-Clause","name":"tough-cookie","description":"RFC6265 Cookies and Cookie Jar for node.js","keywords":["HTTP","cookie","cookies","set-cookie","cookiejar","jar","RFC6265","RFC2965"],"version":"2.3.3","homepage":"https://github.com/salesforce/tough-cookie","repository":{"type":"git","url":"git://github.com/salesforce/tough-cookie.git"},"bugs":{"url":"https://github.com/salesforce/tough-cookie/issues"},"main":"./lib/cookie","files":["lib"],"scripts":{"suffixup":"curl -o public_suffix_list.dat https://publicsuffix.org/list/public_suffix_list.dat && ./generate-pubsuffix.js","test":"vows test/*_test.js"},"engines":{"node":">=0.8"},"devDependencies":{"async":"^1.4.2","string.prototype.repeat":"^0.2.0","vows":"^0.8.1"},"dependencies":{"punycode":"^1.4.1"},"_from":"tough-cookie@2.3.3","_resolved":"http://registry.npm.taobao.org/tough-cookie/download/tough-cookie-2.3.3.tgz"}
 
 /***/ }),
 /* 210 */
@@ -50305,7 +50311,7 @@ exports.badImplementation = function (message, data) {
 /* 219 */
 /***/ (function(module, exports) {
 
-module.exports = {"name":"hawk","description":"HTTP Hawk Authentication Scheme","version":"6.0.2","author":"Eran Hammer <eran@hammer.io> (http://hueniverse.com)","repository":"git://github.com/hueniverse/hawk","main":"lib/index.js","browser":"dist/browser.js","keywords":["http","authentication","scheme","hawk"],"engines":{"node":">=4.5.0"},"dependencies":{"hoek":"4.x.x","boom":"4.x.x","cryptiles":"3.x.x","sntp":"2.x.x"},"devDependencies":{"babel-cli":"^6.1.2","babel-preset-es2015":"^6.1.2","code":"4.x.x","lab":"14.x.x"},"babel":{"presets":["es2015"]},"scripts":{"build-client":"mkdir -p dist; babel lib/browser.js --out-file dist/browser.js","prepublish":"npm run-script build-client","test":"lab -a code -t 100 -L","test-cov-html":"lab -a code -r html -o coverage.html"},"license":"BSD-3-Clause"}
+module.exports = {"name":"hawk","description":"HTTP Hawk Authentication Scheme","version":"6.0.2","author":"Eran Hammer <eran@hammer.io> (http://hueniverse.com)","repository":"git://github.com/hueniverse/hawk","main":"lib/index.js","browser":"dist/browser.js","keywords":["http","authentication","scheme","hawk"],"engines":{"node":">=4.5.0"},"dependencies":{"hoek":"4.x.x","boom":"4.x.x","cryptiles":"3.x.x","sntp":"2.x.x"},"devDependencies":{"babel-cli":"^6.1.2","babel-preset-es2015":"^6.1.2","code":"4.x.x","lab":"14.x.x"},"babel":{"presets":["es2015"]},"scripts":{"build-client":"mkdir -p dist; babel lib/browser.js --out-file dist/browser.js","prepublish":"npm run-script build-client","test":"lab -a code -t 100 -L","test-cov-html":"lab -a code -r html -o coverage.html"},"license":"BSD-3-Clause","_from":"hawk@6.0.2","_resolved":"http://registry.npm.taobao.org/hawk/download/hawk-6.0.2.tgz"}
 
 /***/ }),
 /* 220 */

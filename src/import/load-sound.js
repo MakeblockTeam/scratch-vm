@@ -1,6 +1,8 @@
 const StringUtil = require('../util/string-util');
 const log = require('../util/log');
 
+const DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
+
 /**
  * Initialize a sound from an asset asynchronously.
  * @param {!object} sound - the Scratch sound object.
@@ -11,6 +13,10 @@ const log = require('../util/log');
  * @returns {!Promise} - a promise which will resolve to the sound when ready.
  */
 const loadSoundFromAsset = function (sound, soundAsset, runtime) {
+    // modified by Hyman: 处理默认音频 md5
+    if (soundAsset.assetId.length < 32) {
+        soundAsset.assetId = DEFAULT_SOUND_ASSETID;
+    }
     sound.assetId = soundAsset.assetId;
     return runtime.audioEngine.decodeSound(Object.assign(
         {},
