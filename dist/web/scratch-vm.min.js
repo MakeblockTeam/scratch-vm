@@ -11251,8 +11251,7 @@ module.exports = Thread;
 
 var StringUtil = __webpack_require__(11);
 var log = __webpack_require__(0);
-
-var DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
+var DEFAULT_SOUND_ASSETID = '83a9787d4cb6f3b7632b4ddfebf74367.wav';
 
 /**
  * Initialize a sound from an asset asynchronously.
@@ -11264,10 +11263,6 @@ var DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
  * @returns {!Promise} - a promise which will resolve to the sound when ready.
  */
 var loadSoundFromAsset = function loadSoundFromAsset(sound, soundAsset, runtime) {
-    // modified by Hyman: 处理默认音频 md5
-    if (!soundAsset.assetId || soundAsset.assetId && soundAsset.assetId.length < 32) {
-        soundAsset.assetId = DEFAULT_SOUND_ASSETID;
-    }
     sound.assetId = soundAsset.assetId;
     return runtime.audioEngine.decodeSound(Object.assign({}, sound, { data: soundAsset.data })).then(function (soundId) {
         sound.soundId = soundId;
@@ -11292,6 +11287,12 @@ var loadSound = function loadSound(sound, runtime) {
         log.error('No audio engine present; cannot load sound asset: ', sound.md5);
         return Promise.resolve(sound);
     }
+
+    // modified by Hyman: 处理默认音频 md5
+    if (sound.md5.length < 36) {
+        sound.md5 = DEFAULT_SOUND_ASSETID;
+    }
+
     var idParts = StringUtil.splitFirst(sound.md5, '.');
     var md5 = idParts[0];
     var ext = idParts[1].toLowerCase();
@@ -11404,6 +11405,16 @@ var loadCostume = function loadCostume(md5ext, costume, runtime, svgXml) {
         return loadCostumeFromAsset(costume, costumeAsset, runtime);
     }
     return runtime.storage.load(assetType, md5, ext).then(function (costumeAsset) {
+        // TODO: by Hyman, 补充构造虚拟数据
+        if (!costumeAsset) {
+            var svgXml = DEFAULT_SVG;
+            costume.dataFormat = ext;
+            var data = new TextEncoder().encode(svgXml);
+            var costumeAsset = new runtime.storage.Asset(assetType, md5, ext, data);
+            runtime.storage.builtinHelper.cache(assetType, ext, data, md5);
+            var customizeCostume = loadCostumeFromAsset(costume, costumeAsset, runtime);
+            return customizeCostume;
+        }
         costume.dataFormat = ext;
         return loadCostumeFromAsset(costume, costumeAsset, runtime);
     });

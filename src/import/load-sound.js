@@ -1,7 +1,6 @@
 const StringUtil = require('../util/string-util');
 const log = require('../util/log');
-
-const DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
+const DEFAULT_SOUND_ASSETID = '83a9787d4cb6f3b7632b4ddfebf74367.wav';
 
 /**
  * Initialize a sound from an asset asynchronously.
@@ -13,10 +12,6 @@ const DEFAULT_SOUND_ASSETID = '7ed8ce1853bde6dcbc6f7f5a1c65ae47';
  * @returns {!Promise} - a promise which will resolve to the sound when ready.
  */
 const loadSoundFromAsset = function (sound, soundAsset, runtime) {
-    // modified by Hyman: 处理默认音频 md5
-    if (!soundAsset.assetId || (soundAsset.assetId && soundAsset.assetId.length < 32)) {
-        soundAsset.assetId = DEFAULT_SOUND_ASSETID;
-    }
     sound.assetId = soundAsset.assetId;
     return runtime.audioEngine.decodeSound(Object.assign(
         {},
@@ -45,6 +40,12 @@ const loadSound = function (sound, runtime) {
         log.error('No audio engine present; cannot load sound asset: ', sound.md5);
         return Promise.resolve(sound);
     }
+
+    // modified by Hyman: 处理默认音频 md5
+    if (sound.md5.length < 36) {
+        sound.md5 = DEFAULT_SOUND_ASSETID;
+    }
+
     const idParts = StringUtil.splitFirst(sound.md5, '.');
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();

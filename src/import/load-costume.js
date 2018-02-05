@@ -92,6 +92,16 @@ const loadCostume = function (md5ext, costume, runtime, svgXml) {
         return loadCostumeFromAsset(costume, costumeAsset, runtime);
     }
     return runtime.storage.load(assetType, md5, ext).then(costumeAsset => {
+        // TODO: by Hyman, 补充构造虚拟数据
+        if (!costumeAsset) {
+            var svgXml = DEFAULT_SVG
+            costume.dataFormat = ext;
+            var data = new TextEncoder().encode(svgXml);
+            var costumeAsset = new runtime.storage.Asset(assetType, md5, ext, data);
+            runtime.storage.builtinHelper.cache(assetType, ext, data, md5);
+            var customizeCostume = loadCostumeFromAsset(costume, costumeAsset, runtime);
+            return customizeCostume;
+        }
         costume.dataFormat = ext;
         return loadCostumeFromAsset(costume, costumeAsset, runtime);
     });
