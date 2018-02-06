@@ -271,6 +271,8 @@ const execute = function (sequencer, thread) {
             runtime.profiler.START, blockFunctionProfilerId, opcode, performance.now());
     }
     primitiveReportedValue = blockFunction(argValues, blockUtility);
+    // add by jeremy: 上报脚本执行事件
+    runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({blockId: currentBlockId, opcode: opcode}, argValues));
     if (runtime.profiler !== null) {
         // runtime.profiler.stop(blockFunctionProfilerId);
         runtime.profiler.records.push(runtime.profiler.STOP, performance.now());

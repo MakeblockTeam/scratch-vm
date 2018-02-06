@@ -441,6 +441,13 @@ class Runtime extends EventEmitter {
         return 'MSCRATCH_EXTENSION_UPDATE';
     }
 
+    /**
+     * mscratch block 脚本被执行 emit 事件
+     */
+    static get BLOCK_SCRIPT_RAN () {
+        return 'BLOCK_SCRIPT_RAN';
+    }
+
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
 

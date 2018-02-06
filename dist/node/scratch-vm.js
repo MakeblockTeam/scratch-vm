@@ -43857,6 +43857,16 @@ var Runtime = function (_EventEmitter) {
         get: function get() {
             return 'MSCRATCH_EXTENSION_UPDATE';
         }
+
+        /**
+         * mscratch block 脚本被执行 emit 事件
+         */
+
+    }, {
+        key: 'BLOCK_SCRIPT_RAN',
+        get: function get() {
+            return 'BLOCK_SCRIPT_RAN';
+        }
     }]);
 
     return Runtime;
@@ -44603,6 +44613,8 @@ var execute = function execute(sequencer, thread) {
         runtime.profiler.records.push(runtime.profiler.START, blockFunctionProfilerId, opcode, performance.now());
     }
     primitiveReportedValue = blockFunction(argValues, blockUtility);
+    // add by jeremy: 上报脚本执行事件
+    runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({ blockId: currentBlockId, opcode: opcode }, argValues));
     if (runtime.profiler !== null) {
         // runtime.profiler.stop(blockFunctionProfilerId);
         runtime.profiler.records.push(runtime.profiler.STOP, performance.now());
