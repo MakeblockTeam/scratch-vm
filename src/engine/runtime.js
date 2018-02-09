@@ -1070,10 +1070,12 @@ class Runtime extends EventEmitter {
         const instance = this;
         const newThreads = [];
 
-        for (const opts in optMatchFields) {
-            if (!optMatchFields.hasOwnProperty(opts)) continue;
-            optMatchFields[opts] = optMatchFields[opts].toUpperCase();
-        }
+        for (var opts in optMatchFields) {
+                if (!optMatchFields.hasOwnProperty(opts)) continue;
+                // modified by jeremy: string 类型变大写，其他原样返回
+                optMatchFields[opts] = typeof optMatchFields[opts] === 'string'?
+                                        optMatchFields[opts].toUpperCase(): optMatchFields[opts];
+            }
 
         // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
         this.allScriptsDo((topBlockId, target) => {
@@ -1084,6 +1086,10 @@ class Runtime extends EventEmitter {
                 // Not the right hat.
                 return;
             }
+
+            // add by jeremy: 帽子块被触发时，上报其被执行事件
+            instance.emit(instance.constructor.BLOCK_SCRIPT_RAN,
+                Object.assign({blockId: topBlockId, opcode: potentialHatOpcode}));
 
             // Match any requested fields.
             // For example: ensures that broadcasts match.
@@ -1106,15 +1112,26 @@ class Runtime extends EventEmitter {
             }
 
             if (optMatchFields) {
-                for (const matchField in optMatchFields) {
-                    // modified by Hyman: 为帽子块增加输入参数
-                    let val = hatFields[matchField] ? hatFields[matchField].value : hatFields.TEXT.value;
-                    if (val.toUpperCase() !== optMatchFields[matchField]) {
-                        // Field mismatch.
-                        return;
+                    for (var matchField in optMatchFields) {
+                        // modified by Hyman: 为帽子块增加输入参数
+                        // var val = hatFields[matchField] ? hatFields[matchField].value : hatFields.TEXT.value;
+                        var val;
+                        if(!hatFields[matchField]){ // 不存在此字段则跳过
+                            continue;
+                        }else {
+                            val = (hatFields[matchField].value || '').toUpperCase();
+                        }
+                        // 源码为：if (val.toUpperCase() !== optMatchFields[matchField]) {
+                        if(!optMatchFields.matchFunc && val !== optMatchFields[matchField]){
+                            // Field mismatch.
+                            return;
+                        } // 若不满足判断条件，则return
+                        else if(optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField])){
+                            // Field mismatch.
+                            return;
+                        }
                     }
                 }
-            }
 
             // Look up metadata for the relevant hat.
             const hatMeta = instance._hats[requestedHatOpcode];

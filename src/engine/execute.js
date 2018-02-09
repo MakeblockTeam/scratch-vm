@@ -289,6 +289,9 @@ const execute = function (sequencer, thread) {
         if (thread.status === Thread.STATUS_RUNNING) {
             // Primitive returned a promise; automatically yield thread.
             thread.status = Thread.STATUS_PROMISE_WAIT;
+            // add by jeremy: fix scratch-vm bug with doubt that why the glow missed?
+            // 此处修复了 promise 块运行完毕不能正常触发 onEnd 事件的 bug
+            thread.requestScriptGlowInFrame = true;
         }
         // Promise handlers
         primitiveReportedValue.then(resolvedValue => {

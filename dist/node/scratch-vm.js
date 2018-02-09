@@ -42973,7 +42973,8 @@ var Runtime = function (_EventEmitter) {
 
             for (var opts in optMatchFields) {
                 if (!optMatchFields.hasOwnProperty(opts)) continue;
-                optMatchFields[opts] = optMatchFields[opts].toUpperCase();
+                // modified by jeremy: string 类型变大写，其他原样返回
+                optMatchFields[opts] = typeof optMatchFields[opts] === 'string' ? optMatchFields[opts].toUpperCase() : optMatchFields[opts];
             }
 
             // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
@@ -42985,6 +42986,9 @@ var Runtime = function (_EventEmitter) {
                     // Not the right hat.
                     return;
                 }
+
+                // add by jeremy: 帽子块被触发时，上报其被执行事件
+                instance.emit(instance.constructor.BLOCK_SCRIPT_RAN, Object.assign({ blockId: topBlockId, opcode: potentialHatOpcode }));
 
                 // Match any requested fields.
                 // For example: ensures that broadcasts match.
@@ -43009,11 +43013,23 @@ var Runtime = function (_EventEmitter) {
                 if (optMatchFields) {
                     for (var matchField in optMatchFields) {
                         // modified by Hyman: 为帽子块增加输入参数
-                        var val = hatFields[matchField] ? hatFields[matchField].value : hatFields.TEXT.value;
-                        if (val.toUpperCase() !== optMatchFields[matchField]) {
+                        // var val = hatFields[matchField] ? hatFields[matchField].value : hatFields.TEXT.value;
+                        var val;
+                        if (!hatFields[matchField]) {
+                            // 不存在此字段则跳过
+                            continue;
+                        } else {
+                            val = (hatFields[matchField].value || '').toUpperCase();
+                        }
+                        // 源码为：if (val.toUpperCase() !== optMatchFields[matchField]) {
+                        if (!optMatchFields.matchFunc && val !== optMatchFields[matchField]) {
                             // Field mismatch.
                             return;
-                        }
+                        } // 若不满足判断条件，则return
+                        else if (optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField])) {
+                                // Field mismatch.
+                                return;
+                            }
                     }
                 }
 
@@ -44631,6 +44647,9 @@ var execute = function execute(sequencer, thread) {
         if (thread.status === Thread.STATUS_RUNNING) {
             // Primitive returned a promise; automatically yield thread.
             thread.status = Thread.STATUS_PROMISE_WAIT;
+            // add by jeremy: fix scratch-vm bug with doubt that why the glow missed?
+            // 此处修复了 promise 块运行完毕不能正常触发 onEnd 事件的 bug
+            thread.requestScriptGlowInFrame = true;
         }
         // Promise handlers
         primitiveReportedValue.then(function (resolvedValue) {
