@@ -157,6 +157,9 @@ const execute = function (sequencer, thread) {
     if (typeof blockFunction === 'undefined') {
         if (isHat) {
             // Skip through the block (hat with no predicate).
+            // add by jeremy: 帽子块也要上报执行事件
+            runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({
+                blockId: currentBlockId, opcode: opcode}, {/*参数暂时缺省*/}));
             return;
         }
         const keys = Object.keys(fields);
@@ -272,7 +275,8 @@ const execute = function (sequencer, thread) {
     }
     primitiveReportedValue = blockFunction(argValues, blockUtility);
     // add by jeremy: 上报脚本执行事件
-    runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({blockId: currentBlockId, opcode: opcode}, argValues));
+    runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign(
+        {blockId: currentBlockId, opcode: opcode}, argValues));
     if (runtime.profiler !== null) {
         // runtime.profiler.stop(blockFunctionProfilerId);
         runtime.profiler.records.push(runtime.profiler.STOP, performance.now());

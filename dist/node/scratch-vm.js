@@ -42987,9 +42987,6 @@ var Runtime = function (_EventEmitter) {
                     return;
                 }
 
-                // add by jeremy: 帽子块被触发时，上报其被执行事件
-                instance.emit(instance.constructor.BLOCK_SCRIPT_RAN, Object.assign({ blockId: topBlockId, opcode: potentialHatOpcode }));
-
                 // Match any requested fields.
                 // For example: ensures that broadcasts match.
                 // This needs to happen before the block is evaluated
@@ -44517,6 +44514,9 @@ var execute = function execute(sequencer, thread) {
     if (typeof blockFunction === 'undefined') {
         if (isHat) {
             // Skip through the block (hat with no predicate).
+            // add by jeremy: 帽子块也要上报执行事件
+            runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({
+                blockId: currentBlockId, opcode: opcode }, {/*参数暂时缺省*/}));
             return;
         }
         var keys = Object.keys(fields);
