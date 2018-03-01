@@ -4,6 +4,7 @@ const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
 const MathUtil = require('../../util/math-util');
 const Timer = require('../../util/timer');
+const formatMessage = require('format-message');
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -176,75 +177,129 @@ class Scratch3MusicBlocks {
     get DRUM_INFO () {
         return [
             {
-                name: '(1) Snare Drum',
+                name: formatMessage({
+                    id: 'music.snareDrum',
+                    default: '(1) Snare Drum'
+                }),
                 fileName: '1-snare'
             },
             {
-                name: '(2) Bass Drum',
+                name: formatMessage({
+                    id: 'music.bassDrum',
+                    default: '(2) Bass Drum'
+                }),
                 fileName: '2-bass-drum'
             },
             {
-                name: '(3) Side Stick',
+                name: formatMessage({
+                    id: 'music.sideStick',
+                    default: '(3) Side Stick'
+                }),
                 fileName: '3-side-stick'
             },
             {
-                name: '(4) Crash Cymbal',
+                name: formatMessage({
+                    id: 'music.crashCymbal',
+                    default: '(4) Crash Cymbal'
+                }),
                 fileName: '4-crash-cymbal'
             },
             {
-                name: '(5) Open Hi-Hat',
+                name: formatMessage({
+                    id: 'music.openHiHat',
+                    default: '(5) Open Hi-Hat'
+                }),
                 fileName: '5-open-hi-hat'
             },
             {
-                name: '(6) Closed Hi-Hat',
+                name: formatMessage({
+                    id: 'music.closedHiHat',
+                    default: '(6) Closed Hi-Hat'
+                }),
                 fileName: '6-closed-hi-hat'
             },
             {
-                name: '(7) Tambourine',
+                name: formatMessage({
+                    id: 'music.tambourine',
+                    default: '(7) Tambourine'
+                }),
                 fileName: '7-tambourine'
             },
             {
-                name: '(8) Hand Clap',
+                name: formatMessage({
+                    id: 'music.handClap',
+                    default: '(8) Hand Clap'
+                }),
                 fileName: '8-hand-clap'
             },
             {
-                name: '(9) Claves',
+                name: formatMessage({
+                    id: 'music.claves',
+                    default: '(9) Claves'
+                }),
                 fileName: '9-claves'
             },
             {
-                name: '(10) Wood Block',
+                name: formatMessage({
+                    id: 'music.woodBlock',
+                    default: '(10) Wood Block'
+                }),
                 fileName: '10-wood-block'
             },
             {
-                name: '(11) Cowbell',
+                name: formatMessage({
+                    id: 'music.cowbell',
+                    default: '(11) Cowbell'
+                }),
                 fileName: '11-cowbell'
             },
             {
-                name: '(12) Triangle',
+                name: formatMessage({
+                    id: 'music.triangle',
+                    default: '(12) Triangle'
+                }),
                 fileName: '12-triangle'
             },
             {
-                name: '(13) Bongo',
+                name: formatMessage({
+                    id: 'music.bongo',
+                    default: '(13) Bongo'
+                }),
                 fileName: '13-bongo'
             },
             {
-                name: '(14) Conga',
+                name: formatMessage({
+                    id: 'music.conga',
+                    default: '(14) Conga'
+                }),
                 fileName: '14-conga'
             },
             {
-                name: '(15) Cabasa',
+                name: formatMessage({
+                    id: 'music.cabasa',
+                    default: '(15) Cabasa'
+                }),
                 fileName: '15-cabasa'
             },
             {
-                name: '(16) Guiro',
+                name: formatMessage({
+                    id: 'music.guiro',
+                    default: '(16) Guiro'
+                }),
                 fileName: '16-guiro'
             },
             {
-                name: '(17) Vibraslap',
+                name: formatMessage({
+                    id: 'music.vibraslap',
+                    default: '(17) Vibraslap'
+                }),
                 fileName: '17-vibraslap'
             },
             {
-                name: '(18) Cuica',
+                name: formatMessage({
+                    id: 'music.cuica',
+                    default: '(18) Cuica'
+                }),
                 fileName: '18-cuica'
             }
         ];
@@ -262,120 +317,183 @@ class Scratch3MusicBlocks {
     get INSTRUMENT_INFO () {
         return [
             {
-                name: '(1) Piano',
+                name: formatMessage({
+                    id: 'music.piano',
+                    default: '(1) Piano'
+                }),
                 dirName: '1-piano',
                 releaseTime: 0.5,
                 samples: [24, 36, 48, 60, 72, 84, 96, 108]
             },
             {
-                name: '(2) Electric Piano',
+                name: formatMessage({
+                    id: 'music.electricPiano',
+                    default: '(2) Electric Piano'
+                }),
                 dirName: '2-electric-piano',
                 releaseTime: 0.5,
                 samples: [60]
             },
             {
-                name: '(3) Organ',
+                name: formatMessage({
+                    id: 'music.organ',
+                    default: '(3) Organ'
+                }),
                 dirName: '3-organ',
                 releaseTime: 0.5,
                 samples: [60]
             },
             {
-                name: '(4) Guitar',
+                name: formatMessage({
+                    id: 'music.guitar',
+                    default: '(4) Guitar'
+                }),
                 dirName: '4-guitar',
                 releaseTime: 0.5,
                 samples: [60]
             },
             {
-                name: '(5) Electric Guitar',
+                name: formatMessage({
+                    id: 'music.electricGuitar',
+                    default: '(5) Electric Guitar'
+                }),
                 dirName: '5-electric-guitar',
                 releaseTime: 0.5,
                 samples: [60]
             },
             {
-                name: '(6) Bass',
+                name: formatMessage({
+                    id: 'music.bass',
+                    default: '(6) Bass'
+                }),
                 dirName: '6-bass',
                 releaseTime: 0.25,
                 samples: [36, 48]
             },
             {
-                name: '(7) Pizzicato',
+                name: formatMessage({
+                    id: 'music.pizzicato',
+                    default: '(7) Pizzicato'
+                }),
                 dirName: '7-pizzicato',
                 releaseTime: 0.25,
                 samples: [60]
             },
             {
-                name: '(8) Cello',
+                name: formatMessage({
+                    id: 'music.cello',
+                    default: '(8) Cello'
+                }),
                 dirName: '8-cello',
                 releaseTime: 0.1,
                 samples: [36, 48, 60]
             },
             {
-                name: '(9) Trombone',
+                name: formatMessage({
+                    id: 'music.trombone',
+                    default: '(9) Trombone'
+                }),
                 dirName: '9-trombone',
                 samples: [36, 48, 60]
             },
             {
-                name: '(10) Clarinet',
+                name: formatMessage({
+                    id: 'music.clarinet',
+                    default: '(10) Clarinet'
+                }),
                 dirName: '10-clarinet',
                 samples: [48, 60]
             },
             {
-                name: '(11) Saxophone',
+                name: formatMessage({
+                    id: 'music.saxophone',
+                    default: '(11) Saxophone'
+                }),
                 dirName: '11-saxophone',
                 samples: [36, 60, 84]
             },
             {
-                name: '(12) Flute',
+                name: formatMessage({
+                    id: 'music.flute',
+                    default: '(12) Flute'
+                }),
                 dirName: '12-flute',
                 samples: [60, 72]
             },
             {
-                name: '(13) Wooden Flute',
+                name: formatMessage({
+                    id: 'music.woodenFlute',
+                    default: '(13) Wooden Flute'
+                }),
                 dirName: '13-wooden-flute',
                 samples: [60, 72]
             },
             {
-                name: '(14) Bassoon',
+                name: formatMessage({
+                    id: 'music.bassoon',
+                    default: '(14) Bassoon'
+                }),
                 dirName: '14-bassoon',
                 samples: [36, 48, 60]
             },
             {
-                name: '(15) Choir',
+                name: formatMessage({
+                    id: 'music.choir',
+                    default: '(15) Choir'
+                }),
                 dirName: '15-choir',
                 releaseTime: 0.25,
                 samples: [48, 60, 72]
             },
             {
-                name: '(16) Vibraphone',
+                name: formatMessage({
+                    id: 'music.vibraphone',
+                    default: '(16) Vibraphone'
+                }),
                 dirName: '16-vibraphone',
                 releaseTime: 0.5,
                 samples: [60, 72]
             },
             {
-                name: '(17) Music Box',
+                name: formatMessage({
+                    id: 'music.musicBox',
+                    default: '(17) Music Box'
+                }),
                 dirName: '17-music-box',
                 releaseTime: 0.25,
                 samples: [60]
             },
             {
-                name: '(18) Steel Drum',
+                name: formatMessage({
+                    id: 'music.steelDrum',
+                    default: '(18) Steel Drum'
+                }),
                 dirName: '18-steel-drum',
                 releaseTime: 0.5,
                 samples: [60]
             },
             {
-                name: '(19) Marimba',
+                name: formatMessage({
+                    id: 'music.marimba',
+                    default: '(19) Marimba'
+                }),
                 dirName: '19-marimba',
                 samples: [60]
             },
             {
-                name: '(20) Synth Lead',
+                name: formatMessage({
+                    id: 'music.synthLead',
+                    default: '(20) Synth Lead'
+                }),
                 dirName: '20-synth-lead',
                 releaseTime: 0.1,
                 samples: [60]
             },
             {
-                name: '(21) Synth Pad',
+                name: formatMessage({
+                    id: 'music.synthPad',
+                    default: '(21) Synth Pad'
+                }),
                 dirName: '21-synth-pad',
                 releaseTime: 0.25,
                 samples: [60]
@@ -460,7 +578,10 @@ class Scratch3MusicBlocks {
                 {
                     opcode: 'playDrumForBeats',
                     blockType: BlockType.COMMAND,
-                    text: 'play drum [DRUM] for [BEATS] beats',
+                    text: formatMessage({
+                        id: 'music.playDrumForBeats',
+                        default: 'play drum [DRUM] for [BEATS] beats'
+                    }),
                     arguments: {
                         DRUM: {
                             type: ArgumentType.NUMBER,
@@ -476,7 +597,10 @@ class Scratch3MusicBlocks {
                 {
                     opcode: 'restForBeats',
                     blockType: BlockType.COMMAND,
-                    text: 'rest for [BEATS] beats',
+                    text: formatMessage({
+                        id: 'music.restForBeats',
+                        default: 'rest for [BEATS] beats'
+                    }),
                     arguments: {
                         BEATS: {
                             type: ArgumentType.NUMBER,
@@ -487,7 +611,10 @@ class Scratch3MusicBlocks {
                 {
                     opcode: 'playNoteForBeats',
                     blockType: BlockType.COMMAND,
-                    text: 'play note [NOTE] for [BEATS] beats',
+                    text: formatMessage({
+                        id: 'music.playNoteForBeats',
+                        default: 'play note [NOTE] for [BEATS] beats'
+                    }),
                     arguments: {
                         NOTE: {
                             type: ArgumentType.NUMBER,
@@ -502,7 +629,10 @@ class Scratch3MusicBlocks {
                 {
                     opcode: 'setInstrument',
                     blockType: BlockType.COMMAND,
-                    text: 'set instrument to [INSTRUMENT]',
+                    text: formatMessage({
+                        id: 'music.setInstrument',
+                        default: 'set instrument to [INSTRUMENT]'
+                    }),
                     arguments: {
                         INSTRUMENT: {
                             type: ArgumentType.NUMBER,
@@ -514,7 +644,10 @@ class Scratch3MusicBlocks {
                 {
                     opcode: 'setTempo',
                     blockType: BlockType.COMMAND,
-                    text: 'set tempo to [TEMPO]',
+                    text: formatMessage({
+                        id: 'music.setTempo',
+                        default: 'set tempo to [TEMPO]'
+                    }),
                     arguments: {
                         TEMPO: {
                             type: ArgumentType.NUMBER,
@@ -525,7 +658,10 @@ class Scratch3MusicBlocks {
                 {
                     opcode: 'changeTempo',
                     blockType: BlockType.COMMAND,
-                    text: 'change tempo by [TEMPO]',
+                    text: formatMessage({
+                        id: 'music.changeTempo',
+                        default: 'change tempo by [TEMPO]'
+                    }),
                     arguments: {
                         TEMPO: {
                             type: ArgumentType.NUMBER,
@@ -535,7 +671,10 @@ class Scratch3MusicBlocks {
                 },
                 {
                     opcode: 'getTempo',
-                    text: 'tempo',
+                    text: formatMessage({
+                        id: 'music.getTempo',
+                        default: 'tempo'
+                    }),
                     blockType: BlockType.REPORTER
                 }
             ],
