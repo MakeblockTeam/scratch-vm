@@ -1099,10 +1099,6 @@ class Runtime extends EventEmitter {
                 return;
             }
 
-            // add by jeremy: 帽子块被触发时，上报其被执行事件
-            instance.emit(instance.constructor.BLOCK_SCRIPT_RAN,
-                Object.assign({ blockId: topBlockId, opcode: potentialHatOpcode }));
-
             // Match any requested fields.
             // For example: ensures that broadcasts match.
             // This needs to happen before the block is evaluated

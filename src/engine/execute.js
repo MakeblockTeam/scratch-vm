@@ -160,6 +160,8 @@ const execute = function (sequencer, thread) {
             // add by jeremy: 帽子块也要上报执行事件
             runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({
                 blockId: currentBlockId, opcode: opcode}, {/*参数暂时缺省*/}));
+            // 当做本块已被执行到，故需要记录高亮
+            thread.requestScriptGlowInFrame = true;
             return;
         }
         const keys = Object.keys(fields);
