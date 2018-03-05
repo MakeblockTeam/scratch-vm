@@ -328,8 +328,8 @@ class RenderedTarget extends Target {
             const origH = costumeSize[1];
             const minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
             const maxScale = Math.min(
-                (1.5 * this.runtime.STAGE_WIDTH) / origW,
-                (1.5 * this.runtime.STAGE_HEIGHT) / origH
+                (1.5 * this.runtime.constructor.STAGE_WIDTH) / origW,
+                (1.5 * this.runtime.constructor.STAGE_HEIGHT) / origH
             );
             this.size = MathUtil.clamp(size / 100, minScale, maxScale) * 100;
             const renderedDirectionScale = this._getRenderedDirectionAndScale();
@@ -791,10 +791,10 @@ class RenderedTarget extends Target {
         let fence = optFence;
         if (!fence) {
             fence = {
-                left: -this.runtime.STAGE_WIDTH / 2,
-                right: this.runtime.STAGE_WIDTH / 2,
-                top: this.runtime.STAGE_HEIGHT / 2,
-                bottom: -this.runtime.STAGE_HEIGHT / 2
+                left: -this.runtime.constructor.STAGE_WIDTH / 2,
+                right: this.runtime.constructor.STAGE_WIDTH / 2,
+                top: this.runtime.constructor.STAGE_HEIGHT / 2,
+                bottom: -this.runtime.constructor.STAGE_HEIGHT / 2
             };
         }
         const bounds = this.getBounds();
