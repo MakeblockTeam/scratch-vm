@@ -426,70 +426,70 @@ class Scratch3PenBlocks {
                     }
                 },
                 /* Legacy blocks, should not be shown in flyout */
-                {
-                    opcode: 'setPenShadeToNumber',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setShade',
-                        default: 'set pen shade to [SHADE]',
-                        description: 'legacy pen blocks - set pen shade'
-                    }),
-                    arguments: {
-                        SHADE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1
-                        }
-                    },
-                    hideFromPalette: true
-                },
-                {
-                    opcode: 'changePenShadeBy',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.changeShade',
-                        default: 'change pen shade by [SHADE]',
-                        description: 'legacy pen blocks - change pen shade'
-                    }),
-                    arguments: {
-                        SHADE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1
-                        }
-                    },
-                    hideFromPalette: true
-                },
-                {
-                    opcode: 'setPenHueToNumber',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.setHue',
-                        default: 'set pen color to [HUE]',
-                        description: 'legacy pen blocks - set pen color to number'
-                    }),
-                    arguments: {
-                        HUE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1
-                        }
-                    },
-                    hideFromPalette: true
-                },
-                {
-                    opcode: 'changePenHueBy',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'pen.changeHue',
-                        default: 'change pen color by [HUE]',
-                        description: 'legacy pen blocks - change pen color'
-                    }),
-                    arguments: {
-                        HUE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1
-                        }
-                    },
-                    hideFromPalette: true
-                }
+                // {
+                //     opcode: 'setPenShadeToNumber',
+                //     blockType: BlockType.COMMAND,
+                //     text: formatMessage({
+                //         id: 'pen.setShade',
+                //         default: 'set pen shade to [SHADE]',
+                //         description: 'legacy pen blocks - set pen shade'
+                //     }),
+                //     arguments: {
+                //         SHADE: {
+                //             type: ArgumentType.NUMBER,
+                //             defaultValue: 1
+                //         }
+                //     },
+                //     hideFromPalette: true
+                // },
+                // {
+                //     opcode: 'changePenShadeBy',
+                //     blockType: BlockType.COMMAND,
+                //     text: formatMessage({
+                //         id: 'pen.changeShade',
+                //         default: 'change pen shade by [SHADE]',
+                //         description: 'legacy pen blocks - change pen shade'
+                //     }),
+                //     arguments: {
+                //         SHADE: {
+                //             type: ArgumentType.NUMBER,
+                //             defaultValue: 1
+                //         }
+                //     },
+                //     hideFromPalette: true
+                // },
+                // {
+                //     opcode: 'setPenHueToNumber',
+                //     blockType: BlockType.COMMAND,
+                //     text: formatMessage({
+                //         id: 'pen.setHue',
+                //         default: 'set pen color to [HUE]',
+                //         description: 'legacy pen blocks - set pen color to number'
+                //     }),
+                //     arguments: {
+                //         HUE: {
+                //             type: ArgumentType.NUMBER,
+                //             defaultValue: 1
+                //         }
+                //     },
+                //     hideFromPalette: true
+                // },
+                // {
+                //     opcode: 'changePenHueBy',
+                //     blockType: BlockType.COMMAND,
+                //     text: formatMessage({
+                //         id: 'pen.changeHue',
+                //         default: 'change pen color by [HUE]',
+                //         description: 'legacy pen blocks - change pen color'
+                //     }),
+                //     arguments: {
+                //         HUE: {
+                //             type: ArgumentType.NUMBER,
+                //             defaultValue: 1
+                //         }
+                //     },
+                //     hideFromPalette: true
+                // }
             ],
             menus: {
                 colorParam: this._initColorParam()
