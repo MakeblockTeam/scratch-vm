@@ -304,8 +304,8 @@ class VirtualMachine extends EventEmitter {
         }
 
         return sb2.deserialize(json, this.runtime, true)
-            .then(({targets, extensions}) =>
-                this.installTargets(targets, extensions, false));
+            .then(({targets}) =>
+                this.installTargets(targets, false));
     }
 
     /**
