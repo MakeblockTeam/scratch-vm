@@ -27,7 +27,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
     if (costumeAsset.assetType === AssetType.ImageVector) {
         // modified by Kane: 找不到图片处理
         let decodeText = costumeAsset.decodeText();
-        if (decodeText.indexOf('</html>') !== -1) {
+        if (!decodeText || decodeText.indexOf('</html>') !== -1) {
             costumeAsset.data = (new TextEncoder()).encode(DEFAULT_SVG);
             decodeText = DEFAULT_SVG;
         }
@@ -72,7 +72,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
-const loadCostume = function (md5ext, costume, runtime, svgXml) {
+const loadCostume = function (md5ext, costume, runtime) {
     if (!runtime.storage) {
         log.error('No storage module present; cannot load costume asset: ', md5ext);
         return Promise.resolve(costume);
@@ -82,26 +82,8 @@ const loadCostume = function (md5ext, costume, runtime, svgXml) {
     const idParts = StringUtil.splitFirst(md5ext, '.');
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
-    const assetType = (ext === 'svg') || svgXml ? AssetType.ImageVector : AssetType.ImageBitmap;
-    // by Kane, 解析svg路径
-    if (svgXml) {
-        costume.dataFormat = ext;
-        const data = new TextEncoder().encode(svgXml);
-        const costumeAsset = new runtime.storage.Asset(assetType, md5, ext, data);
-        runtime.storage.builtinHelper.cache(assetType, ext, data, md5);
-        return loadCostumeFromAsset(costume, costumeAsset, runtime);
-    }
+    const assetType = (ext === 'svg') ? AssetType.ImageVector : AssetType.ImageBitmap;
     return runtime.storage.load(assetType, md5, ext).then(costumeAsset => {
-        // TODO: by Hyman, 补充构造虚拟数据
-        if (!costumeAsset) {
-            var svgXml = DEFAULT_SVG
-            costume.dataFormat = ext;
-            var data = new TextEncoder().encode(svgXml);
-            var costumeAsset = new runtime.storage.Asset(assetType, md5, ext, data);
-            runtime.storage.builtinHelper.cache(assetType, ext, data, md5);
-            var customizeCostume = loadCostumeFromAsset(costume, costumeAsset, runtime);
-            return customizeCostume;
-        }
         costume.dataFormat = ext;
         return loadCostumeFromAsset(costume, costumeAsset, runtime);
     });

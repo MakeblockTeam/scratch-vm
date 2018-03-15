@@ -87,13 +87,6 @@ class VirtualMachine extends EventEmitter {
             this.emit(Runtime.BLOCKSINFO_UPDATE, blocksInfo);
         });
 
-        /**
-         * 监听mscratch extension状态变化
-         */
-        this.on(Runtime.MSCRATCH_EXTENSION_UPDATE, extension => {
-            this.runtime.updateMscratchExtensionState(extension);
-        });
-
         this.extensionManager = new ExtensionManager(this.runtime);
 
         this.blockListener = this.blockListener.bind(this);
@@ -251,34 +244,22 @@ class VirtualMachine extends EventEmitter {
         } else {
             deserializer = sb2;
         }
-        // 解析json中的mscratch信息
+        
         return deserializer.deserialize(json, this.runtime)
-            .then(({targets, extensions, mscratch}) =>
-                this.installTargets(targets, extensions, true, mscratch));
+            .then(({targets}) =>
+                this.installTargets(targets, true));
     }
 
     /**
      * Install `deserialize` results: zero or more targets after the extensions (if any) used by those targets.
      * @param {Array.<Target>} targets - the targets to be installed
-     * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
      * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
-     * @param {object} mscratch - mscratch信息.
      * @returns {Promise} resolved once targets have been installed
      */
-    installTargets (targets, extensions, wholeProject, mscratch) {
+    installTargets (targets, wholeProject) {
         const extensionPromises = [];
-        extensions.extensionIDs.forEach(extensionID => {
-            if (!this.extensionManager.isExtensionLoaded(extensionID)) {
-                const extensionURL = extensions.extensionURLs.get(extensionID) || extensionID;
-                extensionPromises.push(this.extensionManager.loadExtensionURL(extensionURL));
-            }
-        });
 
         targets = targets.filter(target => !!target);
-        // 如果导入文件中包含mscratch信息，则触发事件
-        if (mscratch) {
-            this.emitMscratchUpdate(mscratch);
-        }
 
         return Promise.all(extensionPromises).then(() => {
             if (wholeProject) {
@@ -506,8 +487,6 @@ class VirtualMachine extends EventEmitter {
             storage.DataFormat.SVG,
             (new TextEncoder()).encode(svg)
         );
-        // by Kane, 保存编辑后的svg代码
-        costume.svgXml = svg;
         this.emitTargetsUpdate();
     }
 
@@ -767,13 +746,6 @@ class VirtualMachine extends EventEmitter {
             // Currently editing target id.
             editingTarget: this.editingTarget ? this.editingTarget.id : null
         });
-    }
-
-    /**
-     * 通知mscratch加载保存在项目中的信息
-     */
-    emitMscratchUpdate (mscratch) {
-        this.emit('MSCRATCH_UPDATE', mscratch);
     }
 
     /**

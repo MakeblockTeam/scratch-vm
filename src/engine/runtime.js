@@ -269,12 +269,6 @@ class Runtime extends EventEmitter {
          * @type {Profiler}
          */
         this.profiler = null;
-        /**
-         * 保存mscratch的扩展状态
-         * [{extensionId, devices}]
-         */
-        this.mscratchExtensionsState = new Map();
-        this.mscratchSounds = new Map();
     }
 
     /**
@@ -440,13 +434,6 @@ class Runtime extends EventEmitter {
     }
 
     /**
-     * mscratch扩展状态更新事件名
-     */
-    static get MSCRATCH_EXTENSION_UPDATE() {
-        return 'MSCRATCH_EXTENSION_UPDATE';
-    }
-
-    /**
      * mscratch block 脚本被执行 emit 事件
      */
     static get BLOCK_SCRIPT_RAN() {
@@ -455,39 +442,6 @@ class Runtime extends EventEmitter {
 
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
-
-    /**
-     * 更新mscratch扩展状态
-     * @param {object} extension mscratch 扩展信息
-     */
-    updateMscratchExtensionState(extension) {
-        const { id, devices, isDelete } = extension;
-        if (isDelete) {
-            this.mscratchExtensionsState.delete(id);
-            return;
-        }
-        this.mscratchExtensionsState.set(id, devices);
-    }
-
-    /**
-     * 添加mscratch 录音
-     * @param {string} assetId mscratch 音频信息
-     * @param {buffer} data mscratch 音频信息
-     */
-    addMscratchSound(assetId, data) {
-        this.mscratchSounds.set(assetId, data);
-    }
-
-    /**
-     * 添加mscratch 录音
-     * @param {string} assetId mscratch 音频信息
-     * @param {buffer} data mscratch 音频信息
-     */
-    deleteMscratchSound(assetId) {
-        if (this.mscratchSounds.has(assetId)) {
-            this.mscratchSounds.delete(assetId);
-        }
-    }
 
     /**
      * Register default block packages with this runtime.

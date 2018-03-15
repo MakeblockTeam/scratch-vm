@@ -46,27 +46,6 @@ const serialize = function (runtime) {
     // Assemble payload and return
     obj.meta = meta;
 
-    // 保存mscratch扩展信息
-    // 扩展信息
-    if (runtime.mscratchExtensionsState.size > 0) {
-        if (!obj.mscratch) {
-            obj.mscratch = new Object(null);
-        }
-        obj.mscratch.extensions = new Object(null);
-        runtime.mscratchExtensionsState.forEach((devices, extensionId) => {
-            obj.mscratch.extensions[extensionId] = devices;
-        });
-    }
-    // 录音信息
-    if (runtime.mscratchSounds.size > 0) {
-        if (!obj.mscratch) {
-            obj.mscratch = new Object(null);
-        }
-        obj.mscratch.sounds = [];
-        runtime.mscratchSounds.forEach((data, assetId) => {
-            obj.mscratch.sounds.push({assetId, data});
-        });
-    }
     return obj;
 };
 
@@ -74,10 +53,9 @@ const serialize = function (runtime) {
  * Parse a single "Scratch object" and create all its in-memory VM objects.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
  * @param {!Runtime} runtime Runtime object to load all structures into.
- * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
  * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
  */
-const parseScratchObject = function (object, runtime, extensions, mscratch) {
+const parseScratchObject = function (object, runtime) {
     if (!object.hasOwnProperty('name')) {
         // Watcher/monitor - skip this object until those are implemented in VM.
         // @todo
@@ -97,15 +75,6 @@ const parseScratchObject = function (object, runtime, extensions, mscratch) {
         for (const blockId in object.blocks) {
             const blockJSON = object.blocks[blockId];
             blocks.createBlock(blockJSON);
-
-            const dotIndex = blockJSON.opcode.indexOf('.');
-            if (dotIndex >= 0) {
-                const extensionId = blockJSON.opcode.substring(0, dotIndex);
-                const isMscratchExtension = mscratch && mscratch.extensions && mscratch.extensions.hasOwnProperty(extensionId);
-                if (!isMscratchExtension) {
-                    extensions.extensionIDs.add(extensionId);
-                }
-            }
         }
         // console.log(blocks);
     }
@@ -124,7 +93,7 @@ const parseScratchObject = function (object, runtime, extensions, mscratch) {
             (costumeSource.assetType && costumeSource.assetType.runtimeFormat) || // older format
             'png'; // if all else fails, guess that it might be a PNG
         const costumeMd5 = `${costumeSource.assetId}.${dataFormat}`;
-        return loadCostume(costumeMd5, costume, runtime, costumeSource.svgXml); // by Kane
+        return loadCostume(costumeMd5, costume, runtime); // by Kane
     });
     // Sounds from JSON
     const soundPromises = (object.sounds || []).map(soundSource => {
@@ -209,18 +178,10 @@ const parseScratchObject = function (object, runtime, extensions, mscratch) {
  * @returns {Promise.<ImportedProject>} Promise that resolves to the list of targets after the project is deserialized
  */
 const deserialize = function (json, runtime) {
-    const extensions = {
-        extensionIDs: new Set(),
-        extensionURLs: new Map()
-    };
-    // 解析json中的mscratch信息
-    const mscratch = json.mscratch;
     return Promise.all(
-        (json.targets || []).map(target => parseScratchObject(target, runtime, extensions, mscratch))
+        (json.targets || []).map(target => parseScratchObject(target, runtime))
     ).then(targets => ({
-        targets,
-        extensions,
-        mscratch
+        targets
     }));
 };
 
