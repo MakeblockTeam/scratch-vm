@@ -111,7 +111,8 @@ const parseScratchObject = function (object, runtime) {
     });
     // Create the first clone, and load its run-state from JSON.
     const target = sprite.createClone();
-
+    // 还原target的id
+    target.id = object.id;
     // Load target properties from JSON.
     if (object.hasOwnProperty('variables')) {
         for (const j in object.variables) {
