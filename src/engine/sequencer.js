@@ -280,9 +280,12 @@ class Sequencer {
         );
         thread.peekStackFrame().isLoop = isLoop;
         if (branchId) {
+            if (!isLoop) {
+                thread.popStack();
+            }
             // Push branch ID to the thread's stack.
             thread.pushStack(branchId);
-        } else {
+        } else if (isLoop) {
             thread.pushStack(null);
         }
     }

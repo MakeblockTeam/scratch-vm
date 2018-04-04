@@ -8,8 +8,7 @@
  * Removed $ due to issue 251.
  * @private
  */
-const soup_ = '!%()*+,-./:;=@[]^_`{|}~' +
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const soup_ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 /**
  * Generate a unique ID, from Blockly.  This should be globally unique.
