@@ -104,10 +104,9 @@ class Target extends EventEmitter {
         let broadcastMsg;
         if (id) {
             broadcastMsg = this.lookupVariableById(id);
-        } else if (name) {
+        }
+        if (!broadcastMsg && name) { // 历史项目存在block中的broadcast id 与 variables中的id不一致的问题
             broadcastMsg = this.lookupBroadcastByInputValue(name);
-        } else {
-            log.error('Cannot find broadcast message if neither id nor name are provided.');
         }
         if (broadcastMsg) {
             if (name && (broadcastMsg.name.toLowerCase() !== name.toLowerCase())) {
@@ -120,6 +119,7 @@ class Target extends EventEmitter {
             }
             return broadcastMsg;
         }
+        log.error('Cannot find broadcast message if neither id nor name are provided.');
     }
 
     /**
