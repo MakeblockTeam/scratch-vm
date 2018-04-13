@@ -244,7 +244,7 @@ class VirtualMachine extends EventEmitter {
         } else {
             deserializer = sb2;
         }
-        
+
         return deserializer.deserialize(json, this.runtime)
             .then(({targets}) =>
                 this.installTargets(targets, true));
@@ -760,9 +760,9 @@ class VirtualMachine extends EventEmitter {
         //     }
         // }
         // // 角色有可能在stage加载前加载 by Kane
-        // const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
+        // const stageVariables = this.runtime.getTargetForStage().variables;
         // Create a list of broadcast message Ids according to the stage variables
-        const stageVariables = this.runtime.getTargetForStage().variables;
+        const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
         // modified by Kane: 保留没被使用的messageId
         // let messageIds = [];
         // for (const varId in stageVariables) {
