@@ -280,7 +280,8 @@ class Sequencer {
         );
         thread.peekStackFrame().isLoop = isLoop;
         if (branchId) {
-            if (!isLoop) {
+            const hasNextBlock = thread.target.blocks.getBlock(currentBlockId);
+            if (!isLoop && hasNextBlock && !hasNextBlock.next) {
                 thread.popStack();
             }
             // Push branch ID to the thread's stack.

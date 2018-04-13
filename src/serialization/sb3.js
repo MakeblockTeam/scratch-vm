@@ -93,7 +93,7 @@ const parseScratchObject = function (object, runtime) {
             (costumeSource.assetType && costumeSource.assetType.runtimeFormat) || // older format
             'png'; // if all else fails, guess that it might be a PNG
         const costumeMd5 = `${costumeSource.assetId}.${dataFormat}`;
-        return loadCostume(costumeMd5, costume, runtime); // by Kane
+        return loadCostume(costumeMd5, costume, runtime);
     });
     // Sounds from JSON
     const soundPromises = (object.sounds || []).map(soundSource => {
