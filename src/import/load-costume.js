@@ -32,6 +32,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
             decodeText = DEFAULT_SVG;
         }
         costume.skinId = runtime.renderer.createSVGSkin(decodeText, rotationCenter);
+        costume.size = runtime.renderer.getSkinSize(costume.skinId);
         return costume;
     }
 
@@ -39,8 +40,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
         const imageElement = new Image();
         const onError = function () {
             // eslint-disable-next-line no-use-before-define
-            removeEventListeners();
-            reject();
+            imageElement.src = `data:image/svg+xml,${encodeURI(DEFAULT_SVG)}`;
         };
         const onLoad = function () {
             // eslint-disable-next-line no-use-before-define
@@ -56,6 +56,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
         imageElement.src = costumeAsset.encodeDataURI();
     }).then(imageElement => {
         costume.skinId = runtime.renderer.createBitmapSkin(imageElement, costume.bitmapResolution, rotationCenter);
+        costume.size = runtime.renderer.getSkinSize(costume.skinId);
         return costume;
     });
 };

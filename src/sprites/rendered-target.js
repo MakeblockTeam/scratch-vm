@@ -118,7 +118,7 @@ class RenderedTarget extends Target {
         this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
 
         /**
-         * Modified by Kane
+         * * Modified by Kane
          * 设备Id
          * @type {boolean}
          */
@@ -130,6 +130,40 @@ class RenderedTarget extends Target {
          * @type {boolean}
          */
         this.isEditing = false;
+        /**
+         * Loudness for sound playback for this target, as a percentage.
+         * @type {number}
+         */
+        this.volume = 100;
+
+        /**
+         * Current tempo (used by the music extension).
+         * This property is global to the project and stored in the stage.
+         * @type {number}
+         */
+        this.tempo = 60;
+
+        /**
+         * The transparency of the video (used by extensions with camera input).
+         * This property is global to the project and stored in the stage.
+         * @type {number}
+         */
+        this.videoTransparency = 50;
+
+        /**
+         * The state of the video input (used by extensions with camera input).
+         * This property is global to the project and stored in the stage.
+         *
+         * Defaults to ON. This setting does not turn the video by itself. A
+         * video extension once loaded will set the video device to this
+         * setting. Set to ON when a video extension is added in the editor the
+         * video will start ON. If the extension is loaded as part of loading a
+         * saved project the extension will see the value set when the stage
+         * was loaded from the saved values including the video state.
+         *
+         * @type {string}
+         */
+        this.videoState = RenderedTarget.VIDEO_STATE.ON;
     }
 
     /**
@@ -154,6 +188,13 @@ class RenderedTarget extends Target {
         this.audioPlayer = null;
         if (this.runtime && this.runtime.audioEngine) {
             this.audioPlayer = this.runtime.audioEngine.createPlayer();
+            // If this is a clone, it gets a reference to its parent's activeSoundPlayers object.
+            if (!this.isOriginal) {
+                const parent = this.sprite.clones[0];
+                if (parent && parent.audioPlayer) {
+                    this.audioPlayer.activeSoundPlayers = parent.audioPlayer.activeSoundPlayers;
+                }
+            }
         }
     }
 
@@ -187,6 +228,18 @@ class RenderedTarget extends Target {
      */
     static get ROTATION_STYLE_NONE () {
         return "don't rotate";
+    }
+
+    /**
+     * Available states for video input.
+     * @enum {string}
+     */
+    static get VIDEO_STATE () {
+        return {
+            OFF: 'off',
+            ON: 'on',
+            ON_FLIPPED: 'on-flipped'
+        };
     }
 
     /**
@@ -323,7 +376,7 @@ class RenderedTarget extends Target {
         if (this.renderer) {
             // Clamp to scales relative to costume and stage size.
             // See original ScratchSprite.as:setSize.
-            const costumeSize = this.renderer.getSkinSize(this.drawableID);
+            const costumeSize = this.renderer.getCurrentSkinSize(this.drawableID);
             const origW = costumeSize[0];
             const origH = costumeSize[1];
             const minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
@@ -389,7 +442,7 @@ class RenderedTarget extends Target {
             index, 0, this.sprite.costumes.length - 1
         );
         if (this.renderer) {
-            const costume = this.sprite.costumes[this.currentCostume];
+            const costume = this.getCostumes()[this.currentCostume];
             const drawableProperties = {
                 skinId: costume.skinId,
                 costumeResolution: costume.bitmapResolution
@@ -418,12 +471,10 @@ class RenderedTarget extends Target {
      * @param {?int} index Index at which to add costume
      */
     addCostume (costumeObject, index) {
-        const usedNames = this.sprite.costumes.map(costume => costume.name);
-        costumeObject.name = StringUtil.unusedName(costumeObject.name, usedNames);
         if (index) {
-            this.sprite.costumes.splice(index, 0, costumeObject);
+            this.sprite.addCostumeAt(costumeObject, index);
         } else {
-            this.sprite.costumes.push(costumeObject);
+            this.sprite.addCostumeAt(costumeObject, this.sprite.costumes.length);
         }
     }
 
@@ -436,9 +487,9 @@ class RenderedTarget extends Target {
         const usedNames = this.sprite.costumes
             .filter((costume, index) => costumeIndex !== index)
             .map(costume => costume.name);
-        const oldName = this.sprite.costumes[costumeIndex].name;
+        const oldName = this.getCostumes()[costumeIndex].name;
         const newUnusedName = StringUtil.unusedName(newName, usedNames);
-        this.sprite.costumes[costumeIndex].name = newUnusedName;
+        this.getCostumes()[costumeIndex].name = newUnusedName;
 
         if (this.isStage) {
             // Since this is a backdrop, go through all targets and
@@ -462,9 +513,7 @@ class RenderedTarget extends Target {
         const originalCostumeCount = this.sprite.costumes.length;
         if (originalCostumeCount === 1) return;
 
-        this.sprite.costumes = this.sprite.costumes
-            .slice(0, index)
-            .concat(this.sprite.costumes.slice(index + 1));
+        this.sprite.deleteCostumeAt(index);
 
         if (index === this.currentCostume && index === originalCostumeCount - 1) {
             this.setCostume(index - 1);
@@ -550,7 +599,7 @@ class RenderedTarget extends Target {
      */
     getCostumeIndexByName (costumeName) {
         for (let i = 0; i < this.sprite.costumes.length; i++) {
-            if (this.sprite.costumes[i].name === costumeName) {
+            if (this.getCostumes()[i].name === costumeName) {
                 return i;
             }
         }
@@ -562,7 +611,7 @@ class RenderedTarget extends Target {
      * @return {object} current costume
      */
     getCurrentCostume () {
-        return this.sprite.costumes[this.currentCostume];
+        return this.getCostumes()[this.currentCostume];
     }
 
     /**
@@ -590,7 +639,7 @@ class RenderedTarget extends Target {
             // Modified by Kane: 设备角色可能没有造型
             if (!this.sprite.costumes || this.sprite.costumes.length === 0) return;
             const renderedDirectionScale = this._getRenderedDirectionAndScale();
-            const costume = this.sprite.costumes[this.currentCostume];
+            const costume = this.getCostumes()[this.currentCostume];
             const bitmapResolution = costume.bitmapResolution || 1;
             const props = {
                 position: [this.x, this.y],
@@ -647,6 +696,18 @@ class RenderedTarget extends Target {
     }
 
     /**
+     * Return the bounding box around a slice of the top 8px of the rendered target.
+     * Includes top, left, bottom, right attributes in Scratch coordinates.
+     * @return {?object} Tight bounding box, or null.
+     */
+    getBoundsForBubble () {
+        if (this.renderer) {
+            return this.runtime.renderer.getBoundsForBubble(this.drawableID);
+        }
+        return null;
+    }
+
+    /**
      * Return whether touching a point.
      * @param {number} x X coordinate of test point.
      * @param {number} y Y coordinate of test point.
@@ -696,7 +757,11 @@ class RenderedTarget extends Target {
         if (!firstClone || !this.renderer) {
             return false;
         }
-        const drawableCandidates = firstClone.sprite.clones.map(clone => clone.drawableID);
+        // Filter out dragging targets. This means a sprite that is being dragged
+        // can detect other sprites using touching <sprite>, but cannot be detected
+        // by other sprites while it is being dragged. This matches Scratch 2.0 behavior.
+        const drawableCandidates = firstClone.sprite.clones.filter(clone => !clone.dragging)
+            .map(clone => clone.drawableID);
         return this.renderer.isTouchingDrawables(
             this.drawableID, drawableCandidates);
     }
@@ -969,7 +1034,12 @@ class RenderedTarget extends Target {
             variables: this.variables,
             lists: this.lists,
             costumes: costumes,
-            sounds: this.getSounds()
+            sounds: this.getSounds(),
+            tempo: this.tempo,
+            volume: this.volume,
+            videoTransparency: this.videoTransparency,
+            videoState: this.videoState
+
         };
     }
 

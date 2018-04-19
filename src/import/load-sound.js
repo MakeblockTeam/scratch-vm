@@ -12,12 +12,26 @@ const log = require('../util/log');
  */
 const loadSoundFromAsset = function (sound, soundAsset, runtime) {
     sound.assetId = soundAsset.assetId;
+    if (!runtime.audioEngine) {
+        log.error('No audio engine present; cannot load sound asset: ', sound.md5);
+        return Promise.resolve(sound);
+    }
     return runtime.audioEngine.decodeSound(Object.assign(
         {},
         sound,
         { data: soundAsset.data }
     )).then(soundId => {
+        if (!soundId) {
+            soundId = Object.keys(runtime.audioEngine.audioBuffers)[0];
+        }
         sound.soundId = soundId;
+        // Set the sound sample rate and sample count based on the
+        // the audio buffer from the audio engine since the sound
+        // gets resampled by the audio engine
+        const soundBuffer = runtime.audioEngine.getSoundBuffer(soundId);
+        sound.rate = soundBuffer.sampleRate;
+        sound.sampleCount = soundBuffer.length;
+
         return sound;
     });
 };
@@ -33,10 +47,6 @@ const loadSoundFromAsset = function (sound, soundAsset, runtime) {
 const loadSound = function (sound, runtime) {
     if (!runtime.storage) {
         log.error('No storage module present; cannot load sound asset: ', sound.md5);
-        return Promise.resolve(sound);
-    }
-    if (!runtime.audioEngine) {
-        log.error('No audio engine present; cannot load sound asset: ', sound.md5);
         return Promise.resolve(sound);
     }
     const idParts = StringUtil.splitFirst(sound.md5, '.');
