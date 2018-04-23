@@ -348,6 +348,7 @@ const serializeVariables = function (variables) {
     obj.variables = Object.create(null);
     obj.lists = Object.create(null);
     obj.broadcasts = Object.create(null);
+    obj.comms = Object.create(null);
     for (const varId in variables) {
         const v = variables[varId];
         if (v.type === Variable.BROADCAST_MESSAGE_TYPE) {
@@ -380,7 +381,7 @@ const serializeVariables = function (variables) {
 const serializeTarget = function (target, runtime) {
     const obj = Object.create(null);
     obj.deviceId = target.deviceId;
-    obj.isEditing = target === runtime.editingTarget;
+    obj.isEditing = target.id === (runtime._editingTarget ? runtime._editingTarget.id : false);
     obj.isStage = target.isStage;
     obj.name = obj.isStage ? 'Stage' : target.name;
     const vars = serializeVariables(target.variables);
