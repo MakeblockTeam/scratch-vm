@@ -123,6 +123,11 @@ class Scratch3ControlBlocks {
         if (newClone) {
             this.runtime.targets.push(newClone);
         }
+        return new Promise(res => {
+            setTimeout(() => {
+                res();
+            }, 100);
+        });
     }
 
     deleteClone (args, util) {
