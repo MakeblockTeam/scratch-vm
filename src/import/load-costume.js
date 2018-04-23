@@ -1,6 +1,6 @@
 const StringUtil = require('../util/string-util');
 const log = require('../util/log');
-const DEFAULT_SVG = `<?xml version="1.0" encoding="UTF-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>`;
+const DEFAULT_SVG = `<?xml version="1.0" encoding="UTF-8"?><svg width="1" height="1" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect width="1" height="1" fill="none" stroke="none"></rect></svg>`;
 /**
  * Initialize a costume from an asset asynchronously.
  * Do not call this unless there is a renderer attached.
