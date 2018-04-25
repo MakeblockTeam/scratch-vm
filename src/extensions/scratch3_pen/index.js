@@ -65,9 +65,11 @@ class Scratch3PenBlocks {
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this._onTargetMoved = this._onTargetMoved.bind(this);
         this._disposePenSkinId = this._disposePenSkinId.bind(this);
+        this._resetPenState = this._resetPenState.bind(this);
 
         runtime.on('targetWasCreated', this._onTargetCreated);
         runtime.on('stageSizeChanged', this._disposePenSkinId);
+        runtime.on('RUNTIME_DISPOSE', this._resetPenState);
     }
 
     /**
@@ -294,6 +296,11 @@ class Scratch3PenBlocks {
             this.runtime.renderer.destroySkin(this._penSkinId);
             this._penSkinId = -1;
         }
+    }
+
+    _resetPenState () {
+        this._penSkinId = -1;
+        this._penDrawableId = -1;
     }
 
     /**

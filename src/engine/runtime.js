@@ -440,6 +440,13 @@ class Runtime extends EventEmitter {
         return 'BLOCK_SCRIPT_RAN';
     }
 
+    /**
+     * runtime 被注销时
+     */
+    static get RUNTIME_DISPOSE () {
+        return 'RUNTIME_DISPOSE';
+    }
+
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
 
@@ -1132,6 +1139,7 @@ class Runtime extends EventEmitter {
      */
     dispose () {
         this.stopAll();
+        this.emit(Runtime.RUNTIME_DISPOSE);
         this.targets.map(this.disposeTarget, this);
     }
 
