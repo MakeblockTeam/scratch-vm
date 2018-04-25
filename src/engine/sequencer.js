@@ -251,7 +251,7 @@ class Sequencer {
                     // since loops need to be re-executed.
                     continue;
 
-                } else if (stackFrame.waitingReporter) {
+                } else if (stackFrame.waitingReporter && !stackFrame.reported.hasOwnProperty(stackFrame.waitingReporter)) {
                     // This level of the stack was waiting for a value.
                     // This means a reporter has just returned - so don't go
                     // to the next block for this level of the stack.
@@ -280,13 +280,9 @@ class Sequencer {
         );
         thread.peekStackFrame().isLoop = isLoop;
         if (branchId) {
-            const hasNextBlock = thread.target.blocks.getBlock(currentBlockId);
-            if (!isLoop && hasNextBlock && !hasNextBlock.next) {
-                thread.popStack();
-            }
             // Push branch ID to the thread's stack.
             thread.pushStack(branchId);
-        } else if (isLoop) {
+        } else {
             thread.pushStack(null);
         }
     }
