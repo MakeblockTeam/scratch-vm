@@ -17,6 +17,9 @@ const loadSoundFromAsset = function (sound, soundAsset, runtime) {
         sound,
         { data: soundAsset.data }
     )).then(soundId => {
+        if (!soundId) {
+            soundId = Object.keys(runtime.audioEngine.audioBuffers)[0];
+        }
         sound.soundId = soundId;
         return sound;
     });

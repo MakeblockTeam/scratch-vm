@@ -1,6 +1,7 @@
 const StringUtil = require('../util/string-util');
 const log = require('../util/log');
 const DEFAULT_SVG = `<?xml version="1.0" encoding="UTF-8"?><svg width="1" height="1" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect width="1" height="1" fill="none" stroke="none"></rect></svg>`;
+const DEFAULT_SVG_DATA = (new TextEncoder()).encode(DEFAULT_SVG);
 /**
  * Initialize a costume from an asset asynchronously.
  * Do not call this unless there is a renderer attached.
@@ -14,6 +15,12 @@ const DEFAULT_SVG = `<?xml version="1.0" encoding="UTF-8"?><svg width="1" height
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
 const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
+    if (!costumeAsset) {
+        const defaultAssetId = runtime.storage.defaultAssetId.ImageVector;
+        const asset = runtime.storage.builtinHelper.assets[defaultAssetId];
+        costumeAsset = new runtime.storage.Asset(asset.type, asset.id, asset.format, DEFAULT_SVG_DATA);
+        costume.dataFormat = asset.format;
+    }
     costume.assetId = costumeAsset.assetId;
     if (!runtime.renderer) {
         log.error('No rendering module present; cannot load costume: ', costume.name);
@@ -28,7 +35,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
         // modified by Kane: 找不到图片处理
         let decodeText = costumeAsset.decodeText();
         if (!decodeText || decodeText.indexOf('</html>') !== -1) {
-            costumeAsset.data = (new TextEncoder()).encode(DEFAULT_SVG);
+            costumeAsset.data = DEFAULT_SVG_DATA;
             decodeText = DEFAULT_SVG;
         }
         costume.skinId = runtime.renderer.createSVGSkin(decodeText, rotationCenter);
@@ -39,8 +46,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime) {
         const imageElement = new Image();
         const onError = function () {
             // eslint-disable-next-line no-use-before-define
-            removeEventListeners();
-            reject();
+            imageElement.src = `data:image/svg+xml,${encodeURI(DEFAULT_SVG)}`;
         };
         const onLoad = function () {
             // eslint-disable-next-line no-use-before-define
