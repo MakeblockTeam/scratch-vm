@@ -45,13 +45,6 @@ class Scratch3MusicBlocks {
         this.runtime = runtime;
 
         /**
-         * The current tempo in beats per minute. The tempo is a global property of the project,
-         * not a property of each sprite, so it is not stored in the MusicState object.
-         * @type {number}
-         */
-        this.tempo = 60;
-
-        /**
          * The number of drum and instrument sounds currently being played simultaneously.
          * @type {number}
          * @private
@@ -82,6 +75,9 @@ class Scratch3MusicBlocks {
         this._bufferSources = [];
 
         this._loadAllSounds();
+
+        this._onTargetCreated = this._onTargetCreated.bind(this);
+        this.runtime.on('targetWasCreated', this._onTargetCreated);
     }
 
     /**
@@ -133,10 +129,11 @@ class Scratch3MusicBlocks {
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
     _decodeSound (soundBuffer) {
-        if (!this.runtime.audioEngine) return;
-        if (!this.runtime.audioEngine.audioContext) return;
+        const context = this.runtime.audioEngine && this.runtime.audioEngine.audioContext;
 
-        const context = this.runtime.audioEngine.audioContext;
+        if (!context) {
+            return Promise.reject(new Error('No Audio Context Detected'));
+        }
 
         // Check for newer promise-based API
         if (context.decodeAudioData.length === 1) {
@@ -566,6 +563,22 @@ class Scratch3MusicBlocks {
     }
 
     /**
+     * When a music-playing Target is cloned, clone the music state.
+     * @param {Target} newTarget - the newly created target.
+     * @param {Target} [sourceTarget] - the target used as a source for the new clone, if any.
+     * @listens Runtime#event:targetWasCreated
+     * @private
+     */
+    _onTargetCreated (newTarget, sourceTarget) {
+        if (sourceTarget) {
+            const musicState = sourceTarget.getCustomState(Scratch3MusicBlocks.STATE_KEY);
+            if (musicState) {
+                newTarget.setCustomState(Scratch3MusicBlocks.STATE_KEY, Clone.simple(musicState));
+            }
+        }
+    }
+
+    /**
      * @returns {object} metadata for this extension and its blocks.
      */
     getInfo () {
@@ -585,7 +598,7 @@ class Scratch3MusicBlocks {
                     arguments: {
                         DRUM: {
                             type: ArgumentType.NUMBER,
-                            menu: 'drums',
+                            menu: 'DRUM',
                             defaultValue: 1
                         },
                         BEATS: {
@@ -636,7 +649,7 @@ class Scratch3MusicBlocks {
                     arguments: {
                         INSTRUMENT: {
                             type: ArgumentType.NUMBER,
-                            menu: 'instruments',
+                            menu: 'INSTRUMENT',
                             defaultValue: 1
                         }
                     }
@@ -679,8 +692,8 @@ class Scratch3MusicBlocks {
                 }
             ],
             menus: {
-                drums: this._buildMenu(this.DRUM_INFO),
-                instruments: this._buildMenu(this.INSTRUMENT_INFO)
+                DRUM: this._buildMenu(this.DRUM_INFO),
+                INSTRUMENT: this._buildMenu(this.INSTRUMENT_INFO)
             }
         };
     }
@@ -898,7 +911,7 @@ class Scratch3MusicBlocks {
      * @private
      */
     _beatsToSec (beats) {
-        return (60 / this.tempo) * beats;
+        return (60 / this.getTempo()) * beats;
     }
 
     /**
@@ -968,7 +981,7 @@ class Scratch3MusicBlocks {
      */
     changeTempo (args) {
         const change = Cast.toNumber(args.TEMPO);
-        const tempo = change + this.tempo;
+        const tempo = change + this.getTempo();
         this._updateTempo(tempo);
     }
 
@@ -979,7 +992,10 @@ class Scratch3MusicBlocks {
      */
     _updateTempo (tempo) {
         tempo = MathUtil.clamp(tempo, Scratch3MusicBlocks.TEMPO_RANGE.min, Scratch3MusicBlocks.TEMPO_RANGE.max);
-        this.tempo = tempo;
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            stage.tempo = tempo;
+        }
     }
 
     /**
@@ -987,7 +1003,11 @@ class Scratch3MusicBlocks {
      * @return {number} - the current tempo, in beats per minute.
      */
     getTempo () {
-        return this.tempo;
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            return stage.tempo;
+        }
+        return 60;
     }
 }
 

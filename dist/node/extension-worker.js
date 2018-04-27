@@ -285,6 +285,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var ArgumentType = __webpack_require__(7);
 var BlockType = __webpack_require__(8);
 var dispatch = __webpack_require__(9);
+var TargetType = __webpack_require__(28);
 
 var ExtensionWorker = function () {
     function ExtensionWorker() {
@@ -344,6 +345,7 @@ var ExtensionWorker = function () {
 global.Scratch = global.Scratch || {};
 global.Scratch.ArgumentType = ArgumentType;
 global.Scratch.BlockType = BlockType;
+global.Scratch.TargetType = TargetType;
 
 /**
  * Expose only specific parts of the worker to extensions.
@@ -360,12 +362,35 @@ global.Scratch.extensions = {
 "use strict";
 
 
+/**
+ * Block argument types
+ * @enum {string}
+ */
 var ArgumentType = {
-    ANGLE: 'angle',
-    BOOLEAN: 'Boolean',
-    COLOR: 'color',
-    NUMBER: 'number',
-    STRING: 'string'
+  /**
+   * Numeric value with angle picker
+   */
+  ANGLE: 'angle',
+
+  /**
+   * Boolean value with hexagonal placeholder
+   */
+  BOOLEAN: 'Boolean',
+
+  /**
+   * Numeric value with color picker
+   */
+  COLOR: 'color',
+
+  /**
+   * Numeric value with text field
+   */
+  NUMBER: 'number',
+
+  /**
+   * String value with text field
+   */
+  STRING: 'string'
 };
 
 module.exports = ArgumentType;
@@ -377,12 +402,48 @@ module.exports = ArgumentType;
 "use strict";
 
 
+/**
+ * Types of block
+ * @enum {string}
+ */
 var BlockType = {
-    BOOLEAN: 'Boolean',
-    COMMAND: 'command',
-    CONDITIONAL: 'conditional',
-    HAT: 'hat',
-    REPORTER: 'reporter'
+  /**
+   * Boolean reporter with hexagonal shape
+   */
+  BOOLEAN: 'Boolean',
+
+  /**
+   * Command block
+   */
+  COMMAND: 'command',
+
+  /**
+   * Specialized command block which may or may not run a child branch
+   * The thread continues with the next block whether or not a child branch ran.
+   */
+  CONDITIONAL: 'conditional',
+
+  /**
+   * Specialized hat block with no implementation function
+   * This stack only runs if the corresponding event is emitted by other code.
+   */
+  EVENT: 'event',
+
+  /**
+   * Hat block which conditionally starts a block stack
+   */
+  HAT: 'hat',
+
+  /**
+   * Specialized command block which may or may not run a child branch
+   * If a child branch runs, the thread evaluates the loop block again.
+   */
+  LOOP: 'loop',
+
+  /**
+   * General reporter with numeric or string value
+   */
+  REPORTER: 'reporter'
 };
 
 module.exports = BlockType;
@@ -1411,6 +1472,31 @@ RedisBackend.prototype.clear = function(cb) {
 
 module.exports = RedisBackend;
 
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * Default types of Target supported by the VM
+ * @enum {string}
+ */
+var TargetType = {
+  /**
+   * Rendered target which can move, change costumes, etc.
+   */
+  SPRITE: 'sprite',
+
+  /**
+   * Rendered target which cannot move but can change backdrops
+   */
+  STAGE: 'stage'
+};
+
+module.exports = TargetType;
 
 /***/ })
 /******/ ]);

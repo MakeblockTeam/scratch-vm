@@ -105,7 +105,7 @@ test('renameSprite does not increment when renaming to the same name', t => {
     t.equal(vm.runtime.targets[0].sprite.name, 'foo');
     vm.renameSprite(target.id, 'foo');
     t.equal(vm.runtime.targets[0].sprite.name, 'foo');
-    
+
     t.end();
 });
 
@@ -276,6 +276,26 @@ test('duplicateSprite duplicates a sprite when given id is associated with known
 
 });
 
+test('duplicateSprite assigns duplicated sprite a fresh name', t => {
+    const vm = new VirtualMachine();
+    const spr = new Sprite(null, vm.runtime);
+    spr.name = 'sprite1';
+    const currTarget = spr.createClone();
+    vm.editingTarget = currTarget;
+
+    vm.emitWorkspaceUpdate = () => null;
+
+    vm.runtime.targets = [currTarget];
+    t.equal(vm.runtime.targets.length, 1);
+    vm.duplicateSprite(currTarget.id).then(() => {
+        t.equal(vm.runtime.targets.length, 2);
+        t.equal(vm.runtime.targets[0].sprite.name, 'sprite1');
+        t.equal(vm.runtime.targets[1].sprite.name, 'sprite2');
+        t.end();
+    });
+
+});
+
 test('emitWorkspaceUpdate', t => {
     const vm = new VirtualMachine();
     vm.runtime.targets = [
@@ -357,5 +377,32 @@ test('drag IO redirect', t => {
     // Then postSpriteInfo should continue posting to the new editing target
     vm.postSpriteInfo('sprite2 info 2');
     t.equal(sprite2Info[1], 'sprite2 info 2');
+    t.end();
+});
+
+test('select original after dragging clone', t => {
+    const vm = new VirtualMachine();
+    let newEditingTargetId = null;
+    vm.setEditingTarget = id => {
+        newEditingTargetId = id;
+    };
+    vm.runtime.targets = [
+        {
+            id: 'sprite1_clone',
+            sprite: {clones: [{id: 'sprite1_original'}]},
+            stopDrag: () => {}
+        }, {
+            id: 'sprite2',
+            stopDrag: () => {}
+        }
+    ];
+
+    // Stop drag on a bare target selects that target
+    vm.stopDrag('sprite2');
+    t.equal(newEditingTargetId, 'sprite2');
+
+    // Stop drag on target with parent sprite selects the 0th clone of that sprite
+    vm.stopDrag('sprite1_clone');
+    t.equal(newEditingTargetId, 'sprite1_original');
     t.end();
 });

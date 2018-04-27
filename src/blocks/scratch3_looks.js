@@ -20,7 +20,7 @@ class Scratch3LooksBlocks {
          */
         this.runtime = runtime;
 
-        this._onTargetMoved = this._onTargetMoved.bind(this);
+        this._onTargetChanged = this._onTargetChanged.bind(this);
         this._onResetBubbles = this._onResetBubbles.bind(this);
         this._onTargetWillExit = this._onTargetWillExit.bind(this);
         this._updateBubble = this._updateBubble.bind(this);
@@ -75,7 +75,7 @@ class Scratch3LooksBlocks {
      * @param {RenderedTarget} target - the target which has moved.
      * @private
      */
-    _onTargetMoved (target) {
+    _onTargetChanged (target) {
         const bubbleState = this._getBubbleState(target);
         if (bubbleState.drawableId) {
             this._positionBubble(target);
@@ -97,7 +97,7 @@ class Scratch3LooksBlocks {
             bubbleState.drawableVisible = true; // Reset back to default value
             this.runtime.requestRedraw();
         }
-        target.removeListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
+        target.removeListener(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this._onTargetChanged);
     }
 
     /**
@@ -117,9 +117,22 @@ class Scratch3LooksBlocks {
      * @private
      */
     _positionBubble (target) {
+        if (!target.visible) return;
         const bubbleState = this._getBubbleState(target);
-        const [bubbleWidth, bubbleHeight] = this.runtime.renderer.getSkinSize(bubbleState.drawableId);
-        const targetBounds = target.getBounds();
+        const [bubbleWidth, bubbleHeight] = this.runtime.renderer.getCurrentSkinSize(bubbleState.drawableId);
+        let targetBounds;
+        try {
+            targetBounds = target.getBoundsForBubble();
+        } catch (error_) {
+            // Bounds calculation could fail (e.g. on empty costumes), in that case
+            // use the x/y position of the target.
+            targetBounds = {
+                left: target.x,
+                right: target.x,
+                top: target.y,
+                bottom: target.y
+            };
+        }
         const stageBounds = this.runtime.getTargetForStage().getBounds();
         if (bubbleState.onSpriteRight && bubbleWidth + targetBounds.right > stageBounds.right &&
             (targetBounds.left - bubbleWidth > stageBounds.left)) { // Only flip if it would fit
@@ -137,7 +150,7 @@ class Scratch3LooksBlocks {
                     ) : (
                         Math.max(stageBounds.left, targetBounds.left - bubbleWidth)
                     ),
-                    Math.min(stageBounds.top, targetBounds.top + bubbleHeight)
+                    Math.min(stageBounds.top, targetBounds.bottom + bubbleHeight)
                 ]
             });
             this.runtime.requestRedraw();
@@ -153,13 +166,16 @@ class Scratch3LooksBlocks {
      * @private
      */
     _renderBubble (target) {
+        if (!this.runtime.renderer) return;
+
         const bubbleState = this._getBubbleState(target);
         const {drawableVisible, type, text, onSpriteRight} = bubbleState;
 
         // Remove the bubble if target is not visible, or text is being set to blank
         // without being initialized. See comment below about blank text optimization.
         if (!target.visible || (text === '' && !bubbleState.skinId)) {
-            return this._onTargetWillExit(target);
+            this._onTargetWillExit(target);
+            return;
         }
 
         if (bubbleState.skinId) {
@@ -175,7 +191,7 @@ class Scratch3LooksBlocks {
                 this.runtime.renderer.updateTextSkin(bubbleState.skinId, type, text, onSpriteRight, [0, 0]);
             }
         } else {
-            target.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
+            target.addListener(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this._onTargetChanged);
 
             // TODO is there a way to figure out before rendering whether to default left or right?
             const targetBounds = target.getBounds();
@@ -253,7 +269,7 @@ class Scratch3LooksBlocks {
         // @TODO in 2.0 calling say/think resets the right/left bias of the bubble
         let message = args.MESSAGE;
         if (typeof message === 'number') {
-            message = message.toFixed(2);
+            message = parseFloat(message.toFixed(2));
         }
         message = String(message);
         this.runtime.emit('SAY', util.target, 'say', message);
@@ -332,7 +348,7 @@ class Scratch3LooksBlocks {
         }
         if (target === this.runtime.getTargetForStage()) {
             // Target is the stage - start hats.
-            const newName = target.sprite.costumes[target.currentCostume].name;
+            const newName = target.getCostumes()[target.currentCostume].name;
             return this.runtime.startHats('event_whenbackdropswitchesto', {
                 BACKDROP: newName
             });
@@ -442,7 +458,7 @@ class Scratch3LooksBlocks {
             return stage.currentCostume + 1;
         }
         // Else return name
-        return stage.sprite.costumes[stage.currentCostume].name;
+        return stage.getCostumes()[stage.currentCostume].name;
     }
 
     getCostumeNumberName (args, util) {
@@ -450,7 +466,7 @@ class Scratch3LooksBlocks {
             return util.target.currentCostume + 1;
         }
         // Else return name
-        return util.target.sprite.costumes[util.target.currentCostume].name;
+        return util.target.getCostumes()[util.target.currentCostume].name;
     }
 }
 
