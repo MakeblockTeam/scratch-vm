@@ -426,7 +426,7 @@ class Runtime extends EventEmitter {
     /**
      * mscratch block 脚本被执行 emit 事件
      */
-    static get BLOCK_SCRIPT_RAN() {
+    static get BLOCK_SCRIPT_RAN () {
         return 'BLOCK_SCRIPT_RAN';
     }
 
@@ -442,7 +442,7 @@ class Runtime extends EventEmitter {
         for (const packageName in defaultBlockPackages) {
             if (defaultBlockPackages.hasOwnProperty(packageName)) {
                 // @todo pass a different runtime depending on package privilege?
-                const packageObject = new(defaultBlockPackages[packageName])(this);
+                const packageObject = new (defaultBlockPackages[packageName])(this);
                 // Collect primitives from package.
                 if (packageObject.getPrimitives) {
                     const packagePrimitives = packageObject.getPrimitives();
@@ -477,8 +477,8 @@ class Runtime extends EventEmitter {
      * @returns {string} - the constructed ID.
      * @private
      */
-    _makeExtensionMenuId(menuName, extensionId) {
-        return `${extensionId}.menu.${escapeHtml(menuName)}`;
+    _makeExtensionMenuId (menuName, extensionId) {
+        return `${extensionId}_menu_${escapeHtml(menuName)}`;
     }
 
     /**
@@ -524,7 +524,7 @@ class Runtime extends EventEmitter {
      * @param  {ExtensionMetadata} extensionInfo - new info (results of running getInfo) for an extension
      * @private
      */
-    _refreshExtensionPrimitives(extensionInfo) {
+    _refreshExtensionPrimitives (extensionInfo) {
         let extensionBlocks = [];
         for (const categoryInfo of this._blockInfo) {
             if (extensionInfo.id === categoryInfo.id) {
@@ -629,8 +629,8 @@ class Runtime extends EventEmitter {
      * @returns {ConvertedBlockInfo} - the converted & original block information
      * @private
      */
-    _convertForScratchBlocks(blockInfo, categoryInfo) {
-        const extendedOpcode = `${categoryInfo.id}.${blockInfo.opcode}`;
+    _convertForScratchBlocks (blockInfo, categoryInfo) {
+        const extendedOpcode = `${categoryInfo.id}_${blockInfo.opcode}`;
 
         const blockJSON = {
             type: extendedOpcode,
