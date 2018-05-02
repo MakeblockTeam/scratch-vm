@@ -65,8 +65,10 @@ class Scratch3SensingBlocks {
             sensing_current: this.current,
             sensing_dayssince2000: this.daysSince2000,
             sensing_loudness: this.getLoudness,
+            sensing_loud: this.isLoud,
             sensing_askandwait: this.askAndWait,
-            sensing_answer: this.getAnswer
+            sensing_answer: this.getAnswer,
+            sensing_userid: () => {} // legacy no-op block
         };
     }
 
@@ -247,6 +249,10 @@ class Scratch3SensingBlocks {
         this._cachedLoudnessTimestamp = this._timer.time();
         this._cachedLoudness = this.runtime.audioEngine.getLoudness();
         return this._cachedLoudness;
+    }
+
+    isLoud () {
+        return this.getLoudness() > 10;
     }
 
     getAttributeOf (args) {
