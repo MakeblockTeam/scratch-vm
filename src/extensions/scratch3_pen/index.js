@@ -48,6 +48,9 @@ class Scratch3PenBlocks {
          */
         this.runtime = runtime;
 
+
+        this.activeTargets = [];
+
         /**
          * The ID of the renderer Drawable corresponding to the pen layer.
          * @type {int}
@@ -175,6 +178,7 @@ class Scratch3PenBlocks {
                 newTarget.setCustomState(Scratch3PenBlocks.STATE_KEY, Clone.simple(penState));
                 if (penState.penDown) {
                     newTarget.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
+                    this.activeTargets.push(newTarget);
                 }
             }
         }
@@ -301,6 +305,10 @@ class Scratch3PenBlocks {
     _resetPenState () {
         this._penSkinId = -1;
         this._penDrawableId = -1;
+
+        for (const item of this.activeTargets) {
+            item.removeListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
+        }
     }
 
     /**
