@@ -241,8 +241,6 @@ const execute = function (sequencer, thread, recursiveCall) {
 
     // Generate values for arguments (inputs).
     const argValues = {};
-    // 监听arguments值变化 by Kane
-    const params = {};
 
     // Add all fields on this block to the argValues. Some known fields may
     // appear by themselves and can be set to argValues quicker by setting them
@@ -263,7 +261,6 @@ const execute = function (sequencer, thread, recursiveCall) {
                 argValues[fieldName] = fields[fieldName].value;
             }
         }
-        params[fieldName] = fields[fieldName].value;
     }
 
     // Recursively evaluate input blocks.
