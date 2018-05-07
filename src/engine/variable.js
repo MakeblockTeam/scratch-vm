@@ -27,6 +27,7 @@ class Variable {
             break;
         case Variable.COMM_TYPE:
             this.value = 0;
+            break;
         case Variable.BROADCAST_MESSAGE_TYPE:
             this.value = this.name;
             break;

@@ -115,7 +115,8 @@ const FieldKind = {
     VARIABLE: 'VARIABLE',
     LIST: 'LIST',
     BROADCAST_OPTION: 'BROADCAST_OPTION',
-    DYNAMIC: 'DYNAMIC'
+    DYNAMIC: 'DYNAMIC',
+    COMM: 'COMM'
 };
 
 /**
@@ -196,6 +197,12 @@ const execute = function (sequencer, thread, recursiveCall) {
                 id: fields.BROADCAST_OPTION.id,
                 name: fields.BROADCAST_OPTION.value
             };
+        } else if (fieldKeys.length === 1 && fieldKeys.includes('COMM_VARIABLE')) {
+            blockCached._fieldKind = FieldKind.COMM;
+            blockCached._fieldVariable = {
+                id: fields.COMM_VARIABLE.id,
+                name: fields.COMM_VARIABLE.value
+            };
         }
 
         // Store a modified inputs. This assures the keys are its own properties
@@ -249,6 +256,9 @@ const execute = function (sequencer, thread, recursiveCall) {
         switch (blockCached._fieldKind) {
         case FieldKind.VARIABLE:
             argValues.VARIABLE = blockCached._fieldVariable;
+            break;
+        case FieldKind.COMM:
+            argValues.COMM_VARIABLE = blockCached._fieldVariable;
             break;
         case FieldKind.LIST:
             argValues.LIST = blockCached._fieldList;
