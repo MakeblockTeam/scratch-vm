@@ -465,7 +465,7 @@ class RenderedTarget extends Target {
                 typeof costume.rotationCenterX !== 'undefined' &&
                 typeof costume.rotationCenterY !== 'undefined'
             ) {
-                const scale = costume.bitmapResolution || 2;
+                const scale = costume.bitmapResolution || ((costume.dataFormat && costume.dataFormat === 'svg') ? 1 : 2);
                 drawableProperties.rotationCenter = [
                     costume.rotationCenterX / scale,
                     costume.rotationCenterY / scale
