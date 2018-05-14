@@ -2,9 +2,9 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
+const formatMessage = require('format-message');
 const MathUtil = require('../../util/math-util');
 const Timer = require('../../util/timer');
-const formatMessage = require('format-message');
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -116,7 +116,7 @@ class Scratch3MusicBlocks {
         if (!assetData[fullPath]) return;
 
         // The sound buffer has already been downloaded via the manifest file required above.
-        const soundBuffer = assetData[fullPath].buffer;
+        const soundBuffer = assetData[fullPath];
 
         return this._decodeSound(soundBuffer).then(buffer => {
             bufferArray[index] = buffer;

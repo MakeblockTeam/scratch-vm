@@ -13,26 +13,12 @@ const StringUtil = require('./util/string-util');
 const formatMessage = require('format-message');
 const validate = require('scratch-parser');
 
-const Variable = require('./engine/variable');
-
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
-
-const CORE_EXTENSIONS = [
-    // 'motion',
-    // 'looks',
-    // 'sound',
-    // 'events',
-    // 'control',
-    // 'sensing',
-    // 'operators',
-    // 'variables',
-    // 'myBlocks'
-];
 
 /**
  * Handles connections between blocks, stage, and extensions.
@@ -212,13 +198,11 @@ class VirtualMachine extends EventEmitter {
         }
 
         const validationPromise = new Promise((resolve, reject) => {
-            validate(input, (error, res) => {
-                if (error) {
-                    reject(error);
-                }
-                if (res) {
-                    resolve(res);
-                }
+            // The second argument of false below indicates to the validator that the
+            // input should be parsed/validated as an entire project (and not a single sprite)
+            validate(input, false, (error, res) => {
+                if (error) return reject(error);
+                resolve(res);
             });
         });
 
@@ -362,51 +346,80 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
-     * Add a single sprite from the "Sprite2" (i.e., SB2 sprite) format.
-     * @param {string} json JSON string representing the sprite.
-     * @returns {Promise} Promise that resolves after the sprite is added
+     * Add a sprite, this could be .sprite2 or .sprite3. Unpack and validate
+     * such a file first.
+     * @param {string | object} input A json string, object, or ArrayBuffer representing the project to load.
+     * @return {!Promise} Promise that resolves after targets are installed.
      */
-    addSprite2 (json) {
-        // Validate & parse
-        if (typeof json !== 'string') {
-            log.error('Failed to parse sprite. Non-string supplied to addSprite2.');
-            return;
-        }
-        json = JSON.parse(json);
-        if (typeof json !== 'object') {
-            log.error('Failed to parse sprite. JSON supplied to addSprite2 is not an object.');
-            return;
+    addSprite (input) {
+        const errorPrefix = 'Sprite Upload Error:';
+        if (typeof input === 'object' && !(input instanceof ArrayBuffer) &&
+          !ArrayBuffer.isView(input)) {
+            // If the input is an object and not any ArrayBuffer
+            // or an ArrayBuffer view (this includes all typed arrays and DataViews)
+            // turn the object into a JSON string, because we suspect
+            // this is a project.json as an object
+            // validate expects a string or buffer as input
+            // TODO not sure if we need to check that it also isn't a data view
+            input = JSON.stringify(input);
         }
 
-        return sb2.deserialize(json, this.runtime, true)
+        const validationPromise = new Promise((resolve, reject) => {
+            // The second argument of true below indicates to the parser/validator
+            // that the given input should be treated as a single sprite and not
+            // an entire project
+            validate(input, true, (error, res) => {
+                if (error) return reject(error);
+                resolve(res);
+            });
+        });
+
+        return validationPromise
+            .then(validatedInput => {
+                const projectVersion = validatedInput[0].projectVersion;
+                if (projectVersion === 2) {
+                    return this._addSprite2(validatedInput[0], validatedInput[1]);
+                }
+                if (projectVersion === 3) {
+                    return this._addSprite3(validatedInput[0], validatedInput[1]);
+                }
+                return Promise.reject(`${errorPrefix} Unable to verify sprite version.`);
+            })
+            .catch(error => {
+                // Intentionally rejecting here (want errors to be handled by caller)
+                if (error.hasOwnProperty('validationError')) {
+                    return Promise.reject(JSON.stringify(error));
+                }
+                return Promise.reject(`${errorPrefix} ${error}`);
+            });
+    }
+
+    /**
+     * Add a single sprite from the "Sprite2" (i.e., SB2 sprite) format.
+     * @param {object} sprite Object representing 2.0 sprite to be added.
+     * @param {?ArrayBuffer} zip Optional zip of assets being referenced by json
+     * @returns {Promise} Promise that resolves after the sprite is added
+     */
+    _addSprite2 (sprite, zip) {
+        // Validate & parse
+
+        return sb2.deserialize(sprite, this.runtime, true, zip)
             .then(({targets}) =>
                 this.installTargets(targets, false));
     }
 
     /**
      * Add a single sb3 sprite.
-     * @param {string} target JSON string representing the sprite/target.
+     * @param {object} sprite Object rperesenting 3.0 sprite to be added.
+     * @param {?ArrayBuffer} zip Optional zip of assets being referenced by target json
      * @returns {Promise} Promise that resolves after the sprite is added
      */
-    addSprite3 (target) {
+    _addSprite3 (sprite, zip) {
         // Validate & parse
-        if (typeof target !== 'string') {
-            log.error('Failed to parse sprite. Non-string supplied to addSprite3.');
-            return;
-        }
-        target = JSON.parse(target);
-        if (typeof target !== 'object') {
-            log.error('Failed to parse sprite. JSON supplied to addSprite3 is not an object.');
-            return;
-        }
-
-        const jsonFormatted = {
-            targets: [target]
-        };
 
         return sb3
-            .deserialize(jsonFormatted, this.runtime, null)
-            .then(({targets, extensions}) => this.installTargets(targets, extensions, false));
+            .deserialize(sprite, this.runtime, zip, true)
+            .then(({targets}) => this.installTargets(targets, false));
     }
 
     /**
@@ -597,7 +610,7 @@ class VirtualMachine extends EventEmitter {
         canvas.height = bitmap.height;
         const context = canvas.getContext('2d');
         context.putImageData(bitmap, 0, 0);
-        
+
         // Divide by resolution because the renderer's definition of the rotation center
         // is the rotation center divided by the bitmap resolution
         this.runtime.renderer.updateBitmapSkin(
@@ -652,7 +665,7 @@ class VirtualMachine extends EventEmitter {
         // so the dataFormat should be 'svg'
         costume.dataFormat = storage.DataFormat.SVG;
         costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
-        delete costume.bitmapResolution;
+        costume.bitmapResolution = 1;
         this.emitTargetsUpdate();
     }
 
@@ -782,6 +795,14 @@ class VirtualMachine extends EventEmitter {
      */
     attachRenderer (renderer) {
         this.runtime.attachRenderer(renderer);
+    }
+
+    /**
+     * Set the svg adapter for the VM/runtime, which converts scratch 2 svgs to scratch 3 svgs
+     * @param {!SvgRenderer} svgAdapter The adapter to attach
+     */
+    attachV2SVGAdapter (svgAdapter) {
+        this.runtime.attachV2SVGAdapter(svgAdapter);
     }
 
     /**
@@ -920,44 +941,7 @@ class VirtualMachine extends EventEmitter {
      * of the current editing target's blocks.
      */
     emitWorkspaceUpdate () {
-        // // modefied by Kane, 修复删除变量后切换角色出现undefined变量的bug
-        // for (let variable in this.editingTarget.variables) {
-        //     if (this.editingTarget.variables[variable].name === undefined) {
-        //         delete this.editingTarget.variables[variable];
-        //     }
-        // }
-        // // 角色有可能在stage加载前加载 by Kane
-        // const stageVariables = this.runtime.getTargetForStage().variables;
-        // Create a list of broadcast message Ids according to the stage variables
         const stageVariables = this.runtime.getTargetForStage() ? this.runtime.getTargetForStage().variables : {};
-        // modified by Kane: 保留没被使用的messageId
-        // let messageIds = [];
-        // for (const varId in stageVariables) {
-        //     if (stageVariables[varId].type === Variable.BROADCAST_MESSAGE_TYPE) {
-        //         messageIds.push(varId);
-        //     }
-        // }
-        // // Go through all blocks on all targets, removing referenced
-        // // broadcast ids from the list.
-        // for (let i = 0; i < this.runtime.targets.length; i++) {
-        //     const currTarget = this.runtime.targets[i];
-        //     const currBlocks = currTarget.blocks._blocks;
-        //     for (const blockId in currBlocks) {
-        //         if (currBlocks[blockId].fields.BROADCAST_OPTION) {
-        //             const id = currBlocks[blockId].fields.BROADCAST_OPTION.id;
-        //             const index = messageIds.indexOf(id);
-        //             if (index !== -1) {
-        //                 messageIds = messageIds.slice(0, index)
-        //                     .concat(messageIds.slice(index + 1));
-        //             }
-        //         }
-        //     }
-        // }
-        // // Anything left in messageIds is not referenced by a block, so delete it.
-        // for (let i = 0; i < messageIds.length; i++) {
-        //     const id = messageIds[i];
-        //     delete this.runtime.getTargetForStage().variables[id];
-        // }
         const variableMap = Object.assign({},
             stageVariables,
             this.editingTarget.variables

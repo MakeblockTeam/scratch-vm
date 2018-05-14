@@ -855,7 +855,7 @@ class Runtime extends EventEmitter {
             const menuIconXML = menuIconURI ?
                 `iconURI="${menuIconURI}"` : '';
 
-            xmlParts.push(`<category name="${name}" ${colorXML} ${menuIconXML}>`);
+            xmlParts.push(`<category name="${name}" id="${categoryInfo.id}" ${colorXML} ${menuIconXML}>`);
             xmlParts.push.apply(xmlParts, paletteBlocks.map(block => block.xml));
             xmlParts.push('</category>');
         }
@@ -931,6 +931,14 @@ class Runtime extends EventEmitter {
      */
     attachRenderer (renderer) {
         this.renderer = renderer;
+    }
+
+    /**
+     * Set the svg adapter, which converts scratch 2 svgs to scratch 3 svgs
+     * @param {!SvgRenderer} svgAdapter The adapter to attach
+     */
+    attachV2SVGAdapter (svgAdapter) {
+        this.v2SvgAdapter = svgAdapter;
     }
 
     /**
@@ -1209,6 +1217,8 @@ class Runtime extends EventEmitter {
         this.stopAll();
         this.emit(Runtime.RUNTIME_DISPOSE);
         this.targets.map(this.disposeTarget, this);
+        this._monitorState = OrderedMap({});
+        // @todo clear out extensions? turboMode? etc.
     }
 
     /**
