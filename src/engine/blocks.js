@@ -170,6 +170,15 @@ class Blocks {
     }
 
     /**
+     * Get block disabled.
+     * @param {?object} block The block to query.
+     * @return {?object} Mutation for the block.
+     */
+    getDisabled (block) {
+        return (typeof block === 'undefined') ? false : block.disabled;
+    }
+
+    /**
      * Get the top-level script for a given block.
      * @param {?string} id ID of block to query.
      * @return {?string} ID of top-level script block.
@@ -413,7 +422,7 @@ class Blocks {
      */
     changeBlock (args, optRuntime) {
         // Validate
-        if (['field', 'mutation', 'checkbox'].indexOf(args.element) === -1) return;
+        if (['field', 'mutation', 'checkbox', 'disabled'].indexOf(args.element) === -1) return;
         const block = this._blocks[args.id];
         if (typeof block === 'undefined') return;
         const wasMonitored = block.isMonitored;
@@ -499,6 +508,9 @@ class Blocks {
             }
             break;
         }
+        case 'disabled':
+            block.disabled = args.value;
+            break;
         }
 
         this.resetCache();
@@ -942,14 +954,16 @@ BlocksExecuteCache.getCached = function (blocks, blockId, CacheType) {
             opcode: blocks.getOpcode(block),
             fields: blocks.getFields(block),
             inputs: blocks.getInputs(block),
-            mutation: blocks.getMutation(block)
+            mutation: blocks.getMutation(block),
+            disabled: blocks.getDisabled(block)
         };
     } else {
         cached = new CacheType(blocks, {
             opcode: blocks.getOpcode(block),
             fields: blocks.getFields(block),
             inputs: blocks.getInputs(block),
-            mutation: blocks.getMutation(block)
+            mutation: blocks.getMutation(block),
+            disabled: blocks.getDisabled(block)
         });
     }
 

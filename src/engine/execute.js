@@ -148,6 +148,12 @@ class BlockCached {
         this.mutation = cached.mutation;
 
         /**
+         * Block disabled.
+         * @type {?object}
+         */
+        this.disabled = cached.disabled;
+
+        /**
          * Is the opcode a hat (event responder) block.
          * @type {boolean}
          */
@@ -293,6 +299,11 @@ const execute = function (sequencer, thread, recursiveCall) {
             sequencer.retireThread(thread);
             return;
         }
+    }
+
+    const disabled = blockCached.disabled;
+    if (disabled) {
+        return;
     }
 
     const opcode = blockCached.opcode;
