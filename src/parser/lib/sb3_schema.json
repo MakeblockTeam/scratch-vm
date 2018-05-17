@@ -27,18 +27,23 @@
             "type": "array",
             "items": [
                 {
-                    "allOf": [
-                        {"$ref": "sb3_definitions.json#/definitions/stage" },
-                        {"$ref": "sb3_definitions.json#/definitions/target"}
+                    "oneOf": [
+                        {
+                            "allOf": [
+                                {"$ref": "sb3_definitions.json#/definitions/stage" },
+                                {"$ref": "sb3_definitions.json#/definitions/target"}
+                            ]
+                        },
+                        {
+                            "allOf": [
+                                {"$ref": "sb3_definitions.json#/definitions/sprite"},
+                                {"$ref": "sb3_definitions.json#/definitions/target"}
+                            ]
+                        }
                     ]
+                    
                 }
-            ],
-            "additionalItems": {
-                "allOf": [
-                    {"$ref": "sb3_definitions.json#/definitions/sprite"},
-                    {"$ref": "sb3_definitions.json#/definitions/target"}
-                ]
-            }
+            ]
         }
     },
     "required": [
