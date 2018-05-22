@@ -569,7 +569,11 @@ class Runtime extends EventEmitter {
                 const opcode = convertedBlock.json.type;
                 categoryInfo.blocks.push(convertedBlock);
                 if (blockInfo.blockType !== BlockType.EVENT) {
-                    this._primitives[opcode] = convertedBlock.info.func;
+                    if (convertedBlock.info.func) {
+                        this._primitives[opcode] = convertedBlock.info.func;
+                    } else {
+                        convertedBlock.info.func = this._primitives[opcode];
+                    }
                 }
                 if (blockInfo.blockType === BlockType.EVENT || blockInfo.blockType === BlockType.HAT) {
                     this._hats[opcode] = {
