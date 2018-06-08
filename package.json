@@ -76,6 +76,7 @@
   "dependencies": {
     "ajv": "^6.5.0",
     "async": "^2.6.0",
-    "gzip-js": "^0.3.2"
+    "gzip-js": "^0.3.2",
+    "uri-js": "^4.2.2"
   }
 }
