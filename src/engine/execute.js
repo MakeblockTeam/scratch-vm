@@ -329,6 +329,10 @@ const execute = function (sequencer, thread, recursiveCall) {
             thread.status = Thread.STATUS_RUNNING;
         } else if (isHat) {
             // Skip through the block (hat with no predicate).
+            // add by jeremy: 帽子块也要上报执行事件
+            runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({
+                blockId: currentBlockId, opcode: opcode}, {/*参数暂时缺省*/}));
+            thread.requestScriptGlowInFrame = true;
             return;
         } else {
             log.warn(`Could not get implementation for opcode: ${opcode}`);
