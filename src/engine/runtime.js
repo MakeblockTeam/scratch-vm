@@ -1147,9 +1147,10 @@ class Runtime extends EventEmitter {
             // needs to have a precise collection of started threads.
             let hatFields = blocks.getFields(block);
 
+            // fields 和 value 都要 check
             // If no fields are present, check inputs (horizontal blocks)
-            if (Object.keys(hatFields).length === 0) {
-                hatFields = {}; // don't overwrite the block's actual fields list
+            // if (Object.keys(hatFields).length === 0) {
+                // hatFields = {}; // don't overwrite the block's actual fields list
                 const hatInputs = blocks.getInputs(block);
                 for (const input in hatInputs) {
                     if (!hatInputs.hasOwnProperty(input)) continue;
@@ -1158,7 +1159,7 @@ class Runtime extends EventEmitter {
                     const fields = blocks.getFields(inpBlock);
                     Object.assign(hatFields, fields);
                 }
-            }
+            // }
 
             if (optMatchFields) {
                 for (var matchField in optMatchFields) {
@@ -1175,7 +1176,7 @@ class Runtime extends EventEmitter {
                         // Field mismatch.
                         return;
                     } // 若不满足判断条件，则return
-                    else if (optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField])) {
+                    else if (optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField], hatFields)) {
                         // Field mismatch.
                         return;
                     }
