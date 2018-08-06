@@ -132,6 +132,8 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
             } while (stackFrame !== null && !stackFrame.isLoop);
 
             thread.pushStack(nextBlockId);
+        } else if (blockCached._parentKey) {
+            blockCached._argValues[blockCached._parentKey] = resolvedValue;
         } else {
             thread.popStack();
         }
