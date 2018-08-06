@@ -132,6 +132,8 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
             } while (stackFrame !== null && !stackFrame.isLoop);
 
             thread.pushStack(nextBlockId);
+        } else {
+            thread.popStack();
         }
     }, rejectionReason => {
         // Promise rejected: the primitive had some error.
