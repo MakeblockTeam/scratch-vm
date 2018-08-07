@@ -132,7 +132,7 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
             } while (stackFrame !== null && !stackFrame.isLoop);
 
             thread.pushStack(nextBlockId);
-        } else if (!blockCached._parentKey) {
+        } else if (lastOperation && !blockCached._parentKey) {
             thread.popStack();
         }
     }, rejectionReason => {
