@@ -332,8 +332,7 @@ class VirtualMachine extends EventEmitter {
             });
             // Select the first target for editing, e.g., the first sprite.
             if (wholeProject && (targets.length > 1)) {
-                // By Kane: 根据项目信息中添加editing标记设置editingTarget
-                this.editingTarget = targets.find(target => target.isEditing) || targets[1];
+                this.editingTarget = targets[1];
             } else {
                 this.editingTarget = targets[0];
             }
