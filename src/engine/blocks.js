@@ -551,7 +551,7 @@ class Blocks {
             const isSpriteSpecific = isSpriteLocalVariable ||
                 (optRuntime.monitorBlockInfo.hasOwnProperty(block.opcode) &&
                 optRuntime.monitorBlockInfo[block.opcode].isSpriteSpecific);
-            block.targetId = isSpriteSpecific ? optRuntime.getEditingTarget().id : null;
+            block.targetId = block.targetId || (isSpriteSpecific ? optRuntime.getEditingTarget().id : null);
 
             if (wasMonitored && !block.isMonitored) {
                 optRuntime.requestHideMonitor(block.id);
