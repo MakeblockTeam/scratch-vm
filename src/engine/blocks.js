@@ -551,6 +551,7 @@ class Blocks {
             const isSpriteSpecific = isSpriteLocalVariable ||
                 (optRuntime.monitorBlockInfo.hasOwnProperty(block.opcode) &&
                 optRuntime.monitorBlockInfo[block.opcode].isSpriteSpecific);
+            // TODO：非点击事件创建block targetId不正确问题
             block.targetId = block.targetId || (isSpriteSpecific ? optRuntime.getEditingTarget().id : null);
 
             if (wasMonitored && !block.isMonitored) {
