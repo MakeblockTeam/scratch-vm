@@ -122,7 +122,7 @@ const flatten = function (blocks) {
  * which block they should attach to.
  * @param {int} commentIndex The current index of the top block in this list if it were in a flattened
  * list of all blocks for the target
- * @return {[Array.<object>, int]} Tuple where first item is the Scratch VM-format block list, and
+ * @return {Array<Array.<object>|int>} Tuple where first item is the Scratch VM-format block list, and
  * second item is the updated comment index
  */
 const parseBlockList = function (blockList, addBroadcastMsg, getVariableId, extensions, comments, commentIndex) {
@@ -182,6 +182,23 @@ const parseScripts = function (scripts, blocks, addBroadcastMsg, getVariableId, 
         for (let j = 0; j < convertedBlocks.length; j++) {
             blocks.createBlock(convertedBlocks[j]);
         }
+    }
+
+    // scriptIndexForComment is now greater than the index of the 'last' block in the flattened block array.
+    // If there are any comments referring to this index or any indices after it, they are comments that
+    // were originally created as block comments, detached from the block, and then had the associated block deleted.
+    // These comments should be imported as workspace comments
+    // by making their blockIDs (which currently refer to non-existing blocks)
+    // null (See #1452).
+    const blockCommentIndicesToFix = Object.keys(comments).filter(k => k >= scriptIndexForComment);
+    for (let i = 0; i < blockCommentIndicesToFix.length; i++) {
+        const currCommentIndex = blockCommentIndicesToFix[i];
+        const currBlockComments = comments[currCommentIndex];
+        currBlockComments.forEach(c => {
+            if (typeof c.blockId === 'number') {
+                c.blockId = null;
+            }
+        });
     }
 };
 
@@ -724,7 +741,7 @@ const specMapBlock = function (block) {
  * which block they should attach to.
  * @param {int} commentIndex The comment index for the block to be parsed if it were in a flattened
  * list of all blocks for the target
- * @return {[object, int]} Tuple where first item is the Scratch VM-format block (or null if unsupported object),
+ * @return {Array.<object|int>} Tuple where first item is the Scratch VM-format block (or null if unsupported object),
  * and second item is the updated comment index (after this block and its children are parsed)
  */
 const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extensions, comments, commentIndex) {
