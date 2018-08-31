@@ -283,7 +283,7 @@ class Target extends EventEmitter {
                     blocks.changeBlock({
                         id: id,
                         element: 'field',
-                        name: 'VARIABLE',
+                        name: variable.type === 'list' ? 'LIST' : 'VARIABLE',
                         value: id
                     }, this.runtime);
                     const monitorBlock = blocks.getBlock(variable.id);
