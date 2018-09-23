@@ -11,6 +11,11 @@ const log = require('../util/log');
  * @returns {!Promise} - a promise which will resolve to the sound when ready.
  */
 const loadSoundFromAsset = function (sound, soundAsset, runtime) {
+    // 兼容处理 by jeremy
+    if (!soundAsset) {
+        log.error('No soundAsset; cannot load sound asset: ', sound.md5);
+        return Promise.resolve(sound);
+    }
     sound.assetId = soundAsset.assetId;
     if (!runtime.audioEngine) {
         log.error('No audio engine present; cannot load sound asset: ', sound.md5);
