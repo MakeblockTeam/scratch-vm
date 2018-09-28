@@ -15,7 +15,8 @@ const loadVector_ = function (costume, costumeAsset, runtime, rotationCenter, op
         costume.assetId = storage.builtinHelper.cache(
             storage.AssetType.ImageVector,
             storage.DataFormat.SVG,
-            costumeAsset.data
+            costumeAsset.data,
+            costumeAsset.assetId
         );
         costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
     }
