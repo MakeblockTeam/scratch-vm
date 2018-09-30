@@ -1614,6 +1614,15 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
+        // 当积木在执行过程中执行拼接后再次触发线程，需要停掉之前的线程
+        this.threads.forEach(t => {
+            if (t && t.topBlock && t.blockContainer) {
+                const scripts = t.blockContainer.getScripts();
+                if (scripts.indexOf(t.topBlock) === -1) {
+                    this._stopThread(t);
+                }
+            }
+        });
         return thread;
     }
 
