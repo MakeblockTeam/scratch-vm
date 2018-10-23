@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 
-const Blocks = require('./blocks');
+const Blocks = require('./blocks_1');
 const Variable = require('../engine/variable');
 const uid = require('../util/uid');
 const {Map} = require('immutable');

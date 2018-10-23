@@ -6,15 +6,15 @@ const Buffer = require('buffer').Buffer;
 const centralDispatch = require('./dispatch/central-dispatch');
 const ExtensionManager = require('./extension-support/extension-manager');
 const log = require('./util/log');
-const Runtime = require('./engine/runtime');
-const sb2 = require('./serialization/sb2');
-const sb3 = require('./serialization/sb3');
+const Runtime = require('./engine/runtime_1');
+const sb2 = require('./serialization/sb2_1');
+const sb3 = require('./serialization/sb3_1');
 const StringUtil = require('./util/string-util');
 const formatMessage = require('format-message');
 const validate = require('./parser');
 
-const {loadCostume} = require('./import/load-costume.js');
-const {loadSound} = require('./import/load-sound.js');
+const {loadCostume} = require('./import/load-costume_1.js');
+const {loadSound} = require('./import/load-sound_1.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
 require('canvas-toBlob');
 

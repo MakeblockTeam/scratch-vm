@@ -1,7 +1,7 @@
-const RenderedTarget = require('./rendered-target');
-const Blocks = require('../engine/blocks');
-const {loadSoundFromAsset} = require('../import/load-sound');
-const {loadCostumeFromAsset} = require('../import/load-costume');
+const RenderedTarget = require('./rendered-target_1');
+const Blocks = require('../engine/blocks_1');
+const {loadSoundFromAsset} = require('../import/load-sound_1');
+const {loadCostumeFromAsset} = require('../import/load-costume_1');
 const StringUtil = require('../util/string-util');
 
 class Sprite {
