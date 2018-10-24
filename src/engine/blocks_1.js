@@ -38,6 +38,23 @@ class iBlocks extends Blocks{
         if (args.element === 'disabled') {
             block.disabled = args.value;
         }
+        // case 'field':
+        // const targets = optRuntime.targets;
+        // const prevValue = block.fields[args.name].value;
+        // if (variable) {
+        //     block.fields[args.name].value = variable.name;
+        //     block.fields[args.name].id = args.value;
+        // } else {
+        //     // Modified by Kane
+        //     targets.forEach(target => {
+        //         const blocks = target.blocks._blocks;
+        //         for (let id in blocks) {
+        //             if (blocks[id].fields[args.name] && blocks[id].fields[args.name].value === prevValue) {
+        //                 blocks[id].fields[args.name].value = args.value;
+        //             }
+        //         }
+        //     });
+        // }
     }
 
     /**

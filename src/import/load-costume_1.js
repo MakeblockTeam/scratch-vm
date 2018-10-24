@@ -141,7 +141,7 @@ const loadCostumeFromAsset = function (costume, costumeAsset, runtime, optVersio
     // Use provided rotation center and resolution if they are defined. Bitmap resolution
     // should only ever be 1 or 2.
     if (typeof costume.rotationCenterX === 'number' && !isNaN(costume.rotationCenterX) &&
-        typeof costume.rotationCenterY === 'number' && !isNaN(costume.rotationCenterY)) {
+            typeof costume.rotationCenterY === 'number' && !isNaN(costume.rotationCenterY)) {
         rotationCenter = [costume.rotationCenterX, costume.rotationCenterY];
     }
     if (costumeAsset.assetType === AssetType.ImageVector) {

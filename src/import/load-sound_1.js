@@ -25,7 +25,7 @@ const loadSoundFromAsset = function (sound, soundAsset, runtime, sprite) {
     return runtime.audioEngine.decodeSoundPlayer(Object.assign(
         {},
         sound,
-        { data: soundAsset.data }
+        {data: soundAsset.data}
     )).then(soundPlayer => {
         sound.soundId = soundPlayer.id;
         // Set the sound sample rate and sample count based on the

@@ -119,19 +119,6 @@ class RenderedTarget extends Target {
         this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
 
         /**
-         * * Modified by Kane
-         * 设备Id
-         * @type {boolean}
-         */
-        this.deviceId = null;
-
-        /**
-         * Modified by Kane
-         * 角色状态
-         * @type {boolean}
-         */
-        this.isEditing = false;
-        /**
          * Loudness for sound playback for this target, as a percentage.
          * @type {number}
          */
@@ -497,7 +484,7 @@ class RenderedTarget extends Target {
                 typeof costume.rotationCenterX !== 'undefined' &&
                 typeof costume.rotationCenterY !== 'undefined'
             ) {
-                const scale = costume.bitmapResolution || ((costume.dataFormat && costume.dataFormat === 'svg') ? 1 : 2);
+                const scale = costume.bitmapResolution || 2;
                 drawableProperties.rotationCenter = [
                     costume.rotationCenterX / scale,
                     costume.rotationCenterY / scale
@@ -738,8 +725,6 @@ class RenderedTarget extends Target {
      */
     updateAllDrawableProperties () {
         if (this.renderer) {
-            // Modified by Kane: 设备角色可能没有造型
-            if (!this.sprite.costumes || this.sprite.costumes.length === 0) return;
             const renderedDirectionScale = this._getRenderedDirectionAndScale();
             const costume = this.getCostumes()[this.currentCostume];
             const bitmapResolution = costume.bitmapResolution || 2;
@@ -1042,15 +1027,8 @@ class RenderedTarget extends Target {
         newClone.currentCostume = this.currentCostume;
         newClone.rotationStyle = this.rotationStyle;
         newClone.effects = JSON.parse(JSON.stringify(this.effects));
-<<<<<<< HEAD
-        newClone.variables = JSON.parse(JSON.stringify(this.variables));
-        newClone.lists = JSON.parse(JSON.stringify(this.lists));
-        newClone.deviceId = this.deviceId;
-        newClone.initDrawable();
-=======
         newClone.variables = this.duplicateVariables();
         newClone.initDrawable(StageLayering.SPRITE_LAYER);
->>>>>>> upstream/develop
         newClone.updateAllDrawableProperties();
         // Place behind the current target.
         newClone.goBehindOther(this);
@@ -1075,13 +1053,7 @@ class RenderedTarget extends Target {
             newTarget.currentCostume = this.currentCostume;
             newTarget.rotationStyle = this.rotationStyle;
             newTarget.effects = JSON.parse(JSON.stringify(this.effects));
-<<<<<<< HEAD
-            newTarget.variables = JSON.parse(JSON.stringify(this.variables));
-            newTarget.lists = JSON.parse(JSON.stringify(this.lists));
-            newTarget.deviceId = this.deviceId;
-=======
             newTarget.variables = this.duplicateVariables(newTarget.blocks);
->>>>>>> upstream/develop
             newTarget.updateAllDrawableProperties();
             newTarget.goBehindOther(this);
             return newTarget;
@@ -1155,10 +1127,8 @@ class RenderedTarget extends Target {
         const costumes = this.getCostumes();
         return {
             id: this.id,
-            deviceId: this.deviceId,
             name: this.getName(),
             isStage: this.isStage,
-            isEditing: this.runtime._editingTarget === this,
             x: this.x,
             y: this.y,
             size: this.size,
@@ -1187,9 +1157,6 @@ class RenderedTarget extends Target {
      * Dispose, destroying any run-time properties.
      */
     dispose () {
-        for (let key in this.variables) {
-            this.deleteVariable(key);
-        }
         this.runtime.changeCloneCounter(-1);
         this.runtime.stopForTarget(this);
         this.runtime.removeExecutable(this);

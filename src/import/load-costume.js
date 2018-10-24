@@ -163,6 +163,7 @@ const loadCostume = function (md5ext, costume, runtime, optVersion) {
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
     const assetType = (ext === 'svg') ? AssetType.ImageVector : AssetType.ImageBitmap;
+
     return runtime.storage.load(assetType, md5, ext).then(costumeAsset => {
         costume.dataFormat = ext;
         return loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion);

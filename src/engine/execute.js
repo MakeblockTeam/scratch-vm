@@ -190,12 +190,6 @@ class BlockCached {
         this.mutation = cached.mutation;
 
         /**
-         * Block disabled.
-         * @type {?object}
-         */
-        this.disabled = cached.disabled;
-
-        /**
          * Is the opcode a hat (event responder) block.
          * @type {boolean}
          */

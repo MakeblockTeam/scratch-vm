@@ -379,7 +379,6 @@ const serializeVariables = function (variables) {
     obj.variables = Object.create(null);
     obj.lists = Object.create(null);
     obj.broadcasts = Object.create(null);
-    obj.comms = Object.create(null);
     for (const varId in variables) {
         const v = variables[varId];
         if (v.type === Variable.BROADCAST_MESSAGE_TYPE) {
@@ -388,10 +387,6 @@ const serializeVariables = function (variables) {
         }
         if (v.type === Variable.LIST_TYPE) {
             obj.lists[varId] = [v.name, v.value];
-            continue;
-        }
-        if (v.type === Variable.COMM_TYPE) {
-            obj.comms[varId] = [v.name, v.value];
             continue;
         }
 
@@ -430,16 +425,9 @@ const serializeComments = function (comments) {
  * @param {Set} extensions A set of extensions to add extension IDs to
  * @return {object} A serialized representation of the given target.
  */
-<<<<<<< HEAD
-const serializeTarget = function (target, runtime) {
-    const obj = Object.create(null);
-    obj.deviceId = target.deviceId;
-    obj.isEditing = target.id === (runtime._editingTarget ? runtime._editingTarget.id : false);
-=======
 const serializeTarget = function (target, extensions) {
     const obj = Object.create(null);
     let targetExtensions = [];
->>>>>>> upstream/develop
     obj.isStage = target.isStage;
     obj.name = obj.isStage ? 'Stage' : target.name;
     const vars = serializeVariables(target.variables);
@@ -533,7 +521,6 @@ const serialize = function (runtime, targetId) {
 
     // Assemble payload and return
     obj.meta = meta;
-
     return obj;
 };
 
@@ -756,8 +743,6 @@ const deserializeFields = function (fields) {
             obj[fieldName].variableType = Variable.SCALAR_TYPE;
         } else if (fieldName === 'LIST') {
             obj[fieldName].variableType = Variable.LIST_TYPE;
-        } else if (fieldName === 'COMM_VARIABLE') {
-            obj[fieldName].variableType = Variable.COMM_TYPE;
         }
     }
     return obj;
@@ -798,10 +783,11 @@ const deserializeBlocks = function (blocks) {
  * Parse a single "Scratch object" and create all its in-memory VM objects.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
  * @param {!Runtime} runtime Runtime object to load all structures into.
+ * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
  * @param {JSZip} zip Sb3 file describing this project (to load assets from)
  * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
  */
-const parseScratchObject = function (object, runtime, zip) {
+const parseScratchObject = function (object, runtime, extensions, zip) {
     if (!object.hasOwnProperty('name')) {
         // Watcher/monitor - skip this object until those are implemented in VM.
         // @todo
@@ -824,6 +810,13 @@ const parseScratchObject = function (object, runtime, zip) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
             const blockJSON = object.blocks[blockId];
             blocks.createBlock(blockJSON);
+
+            // If the block is from an extension, record it.
+            const index = blockJSON.opcode.indexOf('_');
+            const prefix = blockJSON.opcode.substring(0, index);
+            if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
+                if (prefix !== '') extensions.extensionIDs.add(prefix);
+            }
         }
     }
     // Costumes from JSON.
@@ -881,15 +874,7 @@ const parseScratchObject = function (object, runtime, zip) {
         // process has been completed.
     });
     // Create the first clone, and load its run-state from JSON.
-<<<<<<< HEAD
-    const target = sprite.createClone();
-    // 还原target的id
-    if (object.id) {
-        target.id = object.id;
-    }
-=======
     const target = sprite.createClone(object.isStage ? StageLayering.BACKGROUND_LAYER : StageLayering.SPRITE_LAYER);
->>>>>>> upstream/develop
     // Load target properties from JSON.
     if (object.hasOwnProperty('tempo')) {
         target.tempo = object.tempo;
@@ -946,19 +931,6 @@ const parseScratchObject = function (object, runtime, zip) {
             target.variables[newBroadcast.id] = newBroadcast;
         }
     }
-<<<<<<< HEAD
-    if (object.hasOwnProperty('comms')) {
-        for (const commId in object.comms) {
-            const comm = object.comms[commId];
-            const newComm = new Variable(
-                commId, // var id is the index of the variable desc array in the variables obj
-                comm[0], // name of the variable
-                Variable.COMM_TYPE, // type of the variable
-                (comm.length === 3) ? comm[2] : false // isPersistent/isCloud
-            );
-            newComm.value = comm[1];
-            target.variables[newComm.id] = newComm;
-=======
     if (object.hasOwnProperty('comments')) {
         for (const commentId in object.comments) {
             const comment = object.comments[commentId];
@@ -975,7 +947,6 @@ const parseScratchObject = function (object, runtime, zip) {
                 newComment.blockId = comment.blockId;
             }
             target.comments[newComment.id] = newComment;
->>>>>>> upstream/develop
         }
     }
     if (object.hasOwnProperty('x')) {
@@ -1002,26 +973,12 @@ const parseScratchObject = function (object, runtime, zip) {
     if (object.hasOwnProperty('isStage')) {
         target.isStage = object.isStage;
     }
-<<<<<<< HEAD
-
-    // Modified by Kane: 角色的编辑状态
-    if (object.hasOwnProperty('isEditing')) {
-        target.isEditing = object.isEditing;
-    }
-
-    // modified by Kane: 设备角色有设备ID
-    if (object.hasOwnProperty('deviceId')) {
-        target.deviceId = object.deviceId;
-    }
-    
-=======
     if (object.hasOwnProperty('targetPaneOrder')) {
         // Temporarily store the 'targetPaneOrder' property
         // so that we can correctly order sprites in the target pane.
         // This will be deleted after we are done parsing and ordering the targets list.
         target.targetPaneOrder = object.targetPaneOrder;
     }
->>>>>>> upstream/develop
     Promise.all(costumePromises).then(costumes => {
         sprite.costumes = costumes;
     });
@@ -1040,14 +997,6 @@ const parseScratchObject = function (object, runtime, zip) {
  * @returns {Promise.<ImportedProject>} Promise that resolves to the list of targets after the project is deserialized
  */
 const deserialize = function (json, runtime, zip, isSingleSprite) {
-<<<<<<< HEAD
-    return Promise.all(
-        ((isSingleSprite ? [json] : json.targets) || []).map(target =>
-            parseScratchObject(target, runtime, zip))
-    ).then(targets => ({
-        targets
-    }));
-=======
     const extensions = {
         extensionIDs: new Set(),
         extensionURLs: new Map()
@@ -1078,7 +1027,6 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
             targets,
             extensions
         }));
->>>>>>> upstream/develop
 };
 
 module.exports = {

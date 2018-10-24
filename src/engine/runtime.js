@@ -3,7 +3,7 @@ const {OrderedMap} = require('immutable');
 const escapeHtml = require('escape-html');
 
 const ArgumentType = require('../extension-support/argument-type');
-const Blocks = require('./blocks_1');
+const Blocks = require('./blocks');
 const BlockType = require('../extension-support/block-type');
 const Profiler = require('./profiler');
 const Sequencer = require('./sequencer');
@@ -518,20 +518,6 @@ class Runtime extends EventEmitter {
         return 300;
     }
 
-    /**
-     * mscratch block 脚本被执行 emit 事件
-     */
-    static get BLOCK_SCRIPT_RAN () {
-        return 'BLOCK_SCRIPT_RAN';
-    }
-
-    /**
-     * runtime 被注销时
-     */
-    static get RUNTIME_DISPOSE () {
-        return 'RUNTIME_DISPOSE';
-    }
-
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
 
@@ -667,11 +653,7 @@ class Runtime extends EventEmitter {
                 const opcode = convertedBlock.json.type;
                 categoryInfo.blocks.push(convertedBlock);
                 if (blockInfo.blockType !== BlockType.EVENT) {
-                    if (convertedBlock.info.func) {
-                        this._primitives[opcode] = convertedBlock.info.func;
-                    } else {
-                        convertedBlock.info.func = this._primitives[opcode];
-                    }
+                    this._primitives[opcode] = convertedBlock.info.func;
                 }
                 if (blockInfo.blockType === BlockType.EVENT || blockInfo.blockType === BlockType.HAT) {
                     this._hats[opcode] = {
@@ -722,11 +704,13 @@ class Runtime extends EventEmitter {
                 colourSecondary: categoryInfo.color2,
                 colourTertiary: categoryInfo.color3,
                 outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
-                args0: [{
-                    type: 'field_dropdown',
-                    name: menuName,
-                    options: options
-                }]
+                args0: [
+                    {
+                        type: 'field_dropdown',
+                        name: menuName,
+                        options: options
+                    }
+                ]
             }
         };
     }
@@ -946,11 +930,7 @@ class Runtime extends EventEmitter {
     getBlocksXML () {
         const xmlParts = [];
         for (const categoryInfo of this._blockInfo) {
-            const {
-                name,
-                color1,
-                color2
-            } = categoryInfo;
+            const {name, color1, color2} = categoryInfo;
             const paletteBlocks = categoryInfo.blocks.filter(block => !block.info.hideFromPalette);
             const colorXML = `colour="${color1}" secondaryColour="${color2}"`;
 
@@ -1271,14 +1251,12 @@ class Runtime extends EventEmitter {
         for (let i = 0; i < this.threads.length; i++) {
             // Don't re-add the script if it's already running
             if (this.threads[i].topBlock === topBlockId && this.threads[i].status !== Thread.STATUS_DONE &&
-                this.threads[i].updateMonitor) {
+                    this.threads[i].updateMonitor) {
                 return;
             }
         }
         // Otherwise add it.
-        this._pushThread(topBlockId, optTarget, {
-            updateMonitor: true
-        });
+        this._pushThread(topBlockId, optTarget, {updateMonitor: true});
     }
 
     /**
@@ -1322,9 +1300,7 @@ class Runtime extends EventEmitter {
 
         for (const opts in optMatchFields) {
             if (!optMatchFields.hasOwnProperty(opts)) continue;
-            // modified by jeremy: string 类型变大写，其他原样返回
-            optMatchFields[opts] = typeof optMatchFields[opts] === 'string' ?
-                optMatchFields[opts].toUpperCase() : optMatchFields[opts];
+            optMatchFields[opts] = optMatchFields[opts].toUpperCase();
         }
 
         // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
@@ -1344,10 +1320,9 @@ class Runtime extends EventEmitter {
             // needs to have a precise collection of started threads.
             let hatFields = blocks.getFields(block);
 
-            // fields 和 value 都要 check
             // If no fields are present, check inputs (horizontal blocks)
-            // if (Object.keys(hatFields).length === 0) {
-                // hatFields = {}; // don't overwrite the block's actual fields list
+            if (Object.keys(hatFields).length === 0) {
+                hatFields = {}; // don't overwrite the block's actual fields list
                 const hatInputs = blocks.getInputs(block);
                 for (const input in hatInputs) {
                     if (!hatInputs.hasOwnProperty(input)) continue;
@@ -1356,24 +1331,12 @@ class Runtime extends EventEmitter {
                     const fields = blocks.getFields(inpBlock);
                     Object.assign(hatFields, fields);
                 }
-            // }
+            }
 
             if (optMatchFields) {
-                for (var matchField in optMatchFields) {
-                    // modified by Hyman: 为帽子块增加输入参数
-                    // var val = hatFields[matchField] ? hatFields[matchField].value : hatFields.TEXT.value;
-                    var val;
-                    if (!hatFields[matchField]) { // 不存在此字段则跳过
-                        continue;
-                    } else {
-                        val = (hatFields[matchField].value || '').toUpperCase();
-                    }
-                    // 源码为：if (val.toUpperCase() !== optMatchFields[matchField]) {
-                    if (!optMatchFields.matchFunc && val !== optMatchFields[matchField]) {
-                        // Field mismatch.
-                        return;
-                    } // 若不满足判断条件，则return
-                    else if (optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField], hatFields)) {
+                for (const matchField in optMatchFields) {
+                    if (hatFields[matchField].value.toUpperCase() !==
+                        optMatchFields[matchField]) {
                         // Field mismatch.
                         return;
                     }
@@ -1417,7 +1380,6 @@ class Runtime extends EventEmitter {
      */
     dispose () {
         this.stopAll();
-        this.emit(Runtime.RUNTIME_DISPOSE);
         this.targets.map(this.disposeTarget, this);
         this._monitorState = OrderedMap({});
         // @todo clear out extensions? turboMode? etc.
@@ -1597,7 +1559,7 @@ class Runtime extends EventEmitter {
         // flag will still indicate that a script ran.
         this._emitProjectRunStatus(
             this.threads.length + doneThreads.length -
-            this._getMonitorThreadCount([...this.threads, ...doneThreads]));
+                this._getMonitorThreadCount([...this.threads, ...doneThreads]));
         if (this.renderer) {
             // @todo: Only render when this.redrawRequested or clones rendered.
             if (this.profiler !== null) {
@@ -1766,13 +1728,9 @@ class Runtime extends EventEmitter {
      */
     glowBlock (blockId, isGlowing) {
         if (isGlowing) {
-            this.emit(Runtime.BLOCK_GLOW_ON, {
-                id: blockId
-            });
+            this.emit(Runtime.BLOCK_GLOW_ON, {id: blockId});
         } else {
-            this.emit(Runtime.BLOCK_GLOW_OFF, {
-                id: blockId
-            });
+            this.emit(Runtime.BLOCK_GLOW_OFF, {id: blockId});
         }
     }
 
@@ -1783,13 +1741,9 @@ class Runtime extends EventEmitter {
      */
     glowScript (topBlockId, isGlowing) {
         if (isGlowing) {
-            this.emit(Runtime.SCRIPT_GLOW_ON, {
-                id: topBlockId
-            });
+            this.emit(Runtime.SCRIPT_GLOW_ON, {id: topBlockId});
         } else {
-            this.emit(Runtime.SCRIPT_GLOW_OFF, {
-                id: topBlockId
-            });
+            this.emit(Runtime.SCRIPT_GLOW_OFF, {id: topBlockId});
         }
     }
 
@@ -1815,10 +1769,7 @@ class Runtime extends EventEmitter {
      * @param {string} value Value to show associated with the block.
      */
     visualReport (blockId, value) {
-        this.emit(Runtime.VISUAL_REPORT, {
-            id: blockId,
-            value: String(value)
-        });
+        this.emit(Runtime.VISUAL_REPORT, {id: blockId, value: String(value)});
     }
 
     /**

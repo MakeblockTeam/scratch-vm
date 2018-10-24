@@ -12,14 +12,28 @@ const sb2 = require('./serialization/sb2_1');
 const sb3 = require('./serialization/sb3_1');
 const StringUtil = require('./util/string-util');
 const formatMessage = require('format-message');
-const validate = require('./parser');
+const validate = require('scratch-parser');
 
-const {loadCostume} = require('./import/load-costume_1.js');
-const {loadSound} = require('./import/load-sound_1.js');
+const Variable = require('./engine/variable');
+
+const {loadCostume} = require('./import/load-costume.js');
+const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
+
+const CORE_EXTENSIONS = [
+    // 'motion',
+    // 'looks',
+    // 'sound',
+    // 'events',
+    // 'control',
+    // 'sensing',
+    // 'operators',
+    // 'variables',
+    // 'myBlocks'
+];
 
 /**
  * Handles connections between blocks, stage, and extensions.
@@ -370,7 +384,7 @@ class VirtualMachine extends EventEmitter {
      * @returns {Promise} Promise that resolves after the project has loaded
      */
     fromJSON (json) {
-        log.warn('fromJSON is now just a wrapper around loadProject, please use that function instead.');
+        log.warning('fromJSON is now just a wrapper around loadProject, please use that function instead.');
         return this.loadProject(json);
     }
 
@@ -396,18 +410,34 @@ class VirtualMachine extends EventEmitter {
             return Promise.reject('Unable to verify Scratch Project version.');
         };
         return deserializePromise()
-            .then(({targets}) =>
-                this.installTargets(targets, true));
+            .then(({targets, extensions}) =>
+                this.installTargets(targets, extensions, true));
     }
 
     /**
      * Install `deserialize` results: zero or more targets after the extensions (if any) used by those targets.
      * @param {Array.<Target>} targets - the targets to be installed
+     * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
      * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
      * @returns {Promise} resolved once targets have been installed
      */
-    installTargets (targets, wholeProject) {
+    installTargets (targets, extensions, wholeProject) {
         const extensionPromises = [];
+
+        if (wholeProject) {
+            CORE_EXTENSIONS.forEach(extensionID => {
+                if (!this.extensionManager.isExtensionLoaded(extensionID)) {
+                    extensionPromises.push(this.extensionManager.loadExtensionURL(extensionID));
+                }
+            });
+        }
+
+        extensions.extensionIDs.forEach(extensionID => {
+            if (!this.extensionManager.isExtensionLoaded(extensionID)) {
+                const extensionURL = extensions.extensionURLs.get(extensionID) || extensionID;
+                extensionPromises.push(this.extensionManager.loadExtensionURL(extensionURL));
+            }
+        });
 
         targets = targets.filter(target => !!target);
 
@@ -495,8 +525,8 @@ class VirtualMachine extends EventEmitter {
         // Validate & parse
 
         return sb2.deserialize(sprite, this.runtime, true, zip)
-            .then(({targets}) =>
-                this.installTargets(targets, false));
+            .then(({targets, extensions}) =>
+                this.installTargets(targets, extensions, false));
     }
 
     /**
@@ -510,7 +540,7 @@ class VirtualMachine extends EventEmitter {
 
         return sb3
             .deserialize(sprite, this.runtime, zip, true)
-            .then(({targets}) => this.installTargets(targets, false));
+            .then(({targets, extensions}) => this.installTargets(targets, extensions, false));
     }
 
     /**

@@ -173,12 +173,6 @@ class Sequencer {
         if (!currentBlockId) {
             // A "null block" - empty branch.
             thread.popStack();
-        } else if (thread.topBlock === currentBlockId) {
-            const block = thread.blockContainer.getBlock(currentBlockId);
-            const blockDisabled = thread.blockContainer.getDisabled(block);
-            if (blockDisabled) {
-                thread.popStack();
-            }
         }
         // Save the current block ID to notice if we did control flow.
         while ((currentBlockId = thread.peekStack())) {
@@ -263,7 +257,7 @@ class Sequencer {
                     // since loops need to be re-executed.
                     continue;
 
-                } else if (stackFrame.waitingReporter && !stackFrame.reported.hasOwnProperty(stackFrame.waitingReporter)) {
+                } else if (stackFrame.waitingReporter) {
                     // This level of the stack was waiting for a value.
                     // This means a reporter has just returned - so don't go
                     // to the next block for this level of the stack.

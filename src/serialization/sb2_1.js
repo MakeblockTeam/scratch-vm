@@ -18,9 +18,9 @@ const Variable = require('../engine/variable');
 const MonitorRecord = require('../engine/monitor-record');
 const StageLayering = require('../engine/stage-layering');
 
-const { loadCostume } = require('../import/load-costume.js');
-const { loadSound } = require('../import/load-sound.js');
-const { deserializeCostume, deserializeSound } = require('./deserialize-assets.js');
+const {loadCostume} = require('../import/load-costume_1.js');
+const {loadSound} = require('../import/load-sound_1.js');
+const {deserializeCostume, deserializeSound} = require('./deserialize-assets.js');
 
 // Constants used during deserialization of an SB2 file
 const CORE_EXTENSIONS = [
@@ -304,15 +304,15 @@ const parseMonitorObject = (object, runtime, targets, extensions) => {
 
     // Convert numbered mode into strings for better understandability.
     switch (object.mode) {
-        case 1:
-            object.mode = 'default';
-            break;
-        case 2:
-            object.mode = 'large';
-            break;
-        case 3:
-            object.mode = 'slider';
-            break;
+    case 1:
+        object.mode = 'default';
+        break;
+    case 2:
+        object.mode = 'large';
+        break;
+    case 3:
+        object.mode = 'slider';
+        break;
     }
 
     // Create a monitor record for the runtime's monitorState
@@ -1020,42 +1020,42 @@ const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extension
 
     // Updates for blocks that have new menus (e.g. in Looks)
     switch (oldOpcode) {
-        case 'comeToFront':
-            activeBlock.fields.FRONT_BACK = {
-                name: 'FRONT_BACK',
-                value: 'front'
-            };
-            break;
-        case 'goBackByLayers:':
-            activeBlock.fields.FORWARD_BACKWARD = {
-                name: 'FORWARD_BACKWARD',
-                value: 'backward'
-            };
-            break;
-        case 'backgroundIndex':
-            activeBlock.fields.NUMBER_NAME = {
-                name: 'NUMBER_NAME',
-                value: 'number'
-            };
-            break;
-        case 'sceneName':
-            activeBlock.fields.NUMBER_NAME = {
-                name: 'NUMBER_NAME',
-                value: 'name'
-            };
-            break;
-        case 'costumeIndex':
-            activeBlock.fields.NUMBER_NAME = {
-                name: 'NUMBER_NAME',
-                value: 'number'
-            };
-            break;
-        case 'costumeName':
-            activeBlock.fields.NUMBER_NAME = {
-                name: 'NUMBER_NAME',
-                value: 'name'
-            };
-            break;
+    case 'comeToFront':
+        activeBlock.fields.FRONT_BACK = {
+            name: 'FRONT_BACK',
+            value: 'front'
+        };
+        break;
+    case 'goBackByLayers:':
+        activeBlock.fields.FORWARD_BACKWARD = {
+            name: 'FORWARD_BACKWARD',
+            value: 'backward'
+        };
+        break;
+    case 'backgroundIndex':
+        activeBlock.fields.NUMBER_NAME = {
+            name: 'NUMBER_NAME',
+            value: 'number'
+        };
+        break;
+    case 'sceneName':
+        activeBlock.fields.NUMBER_NAME = {
+            name: 'NUMBER_NAME',
+            value: 'name'
+        };
+        break;
+    case 'costumeIndex':
+        activeBlock.fields.NUMBER_NAME = {
+            name: 'NUMBER_NAME',
+            value: 'number'
+        };
+        break;
+    case 'costumeName':
+        activeBlock.fields.NUMBER_NAME = {
+            name: 'NUMBER_NAME',
+            value: 'name'
+        };
+        break;
     }
 
     // Special cases to generate mutations.
@@ -1119,12 +1119,12 @@ const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extension
 
         // Assign correct opcode based on the block shape.
         switch (returnCode) {
-            case 'r':
-                activeBlock.opcode = 'argument_reporter_string_number';
-                break;
-            case 'b':
-                activeBlock.opcode = 'argument_reporter_boolean';
-                break;
+        case 'r':
+            activeBlock.opcode = 'argument_reporter_string_number';
+            break;
+        case 'b':
+            activeBlock.opcode = 'argument_reporter_boolean';
+            break;
         }
     }
     return [activeBlock, commentIndex];

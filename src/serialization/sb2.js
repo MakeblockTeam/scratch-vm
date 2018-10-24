@@ -608,16 +608,6 @@ const parseScratchObject = function (object, runtime, extensions, topLevel, zip)
         target.targetPaneOrder = object.indexInLibrary;
     }
 
-    // Modified by Kane: 角色的编辑状态
-    if (object.hasOwnProperty('isEditing')) {
-        target.isEditing = object.isEditing;
-    }
-
-    // modified by Kane: 设备角色有设备ID
-    if (object.hasOwnProperty('deviceId')) {
-        target.deviceId = object.deviceId;
-    }
-
     target.isStage = topLevel;
 
     Promise.all(costumePromises).then(costumes => {

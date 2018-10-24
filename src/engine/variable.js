@@ -25,9 +25,6 @@ class Variable {
         case Variable.LIST_TYPE:
             this.value = [];
             break;
-        case Variable.COMM_TYPE:
-            this.value = 0;
-            break;
         case Variable.BROADCAST_MESSAGE_TYPE:
             this.value = this.name;
             break;
@@ -59,13 +56,6 @@ class Variable {
         return 'list';
     }
 
-    /**
-     * Type representation for comm variables.
-     * @const {string}
-     */
-    static get COMM_TYPE () {
-        return 'comm';
-    }
     /**
      * Type representation for list variables.
      * @const {string}

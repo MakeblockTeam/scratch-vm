@@ -14,9 +14,9 @@ const log = require('../util/log');
 const uid = require('../util/uid');
 const MathUtil = require('../util/math-util');
 
-const { loadCostume } = require('../import/load-costume.js');
-const { loadSound } = require('../import/load-sound.js');
-const { deserializeCostume, deserializeSound } = require('./deserialize-assets.js');
+const {loadCostume} = require('../import/load-costume_1.js');
+const {loadSound} = require('../import/load-sound_1.js');
+const {deserializeCostume, deserializeSound} = require('./deserialize-assets.js');
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -428,6 +428,9 @@ const serializeComments = function (comments) {
 const serializeTarget = function (target, extensions) {
     const obj = Object.create(null);
     let targetExtensions = [];
+    // TOFIX: 是否需要这个，有待验证
+    // obj.deviceId = target.deviceId;
+    // obj.isEditing = target.id === (runtime._editingTarget ? runtime._editingTarget.id : false);
     obj.isStage = target.isStage;
     obj.name = obj.isStage ? 'Stage' : target.name;
     const vars = serializeVariables(target.variables);
@@ -545,134 +548,134 @@ const deserializeInputDesc = function (inputDescOrId, parentId, isShadow, blocks
     primitiveObj.inputs = Object.create(null);
     // need a reference to parent id
     switch (inputDescOrId[0]) {
-        case MATH_NUM_PRIMITIVE: {
-            primitiveObj.opcode = 'math_number';
-            primitiveObj.fields = {
-                NUM: {
-                    name: 'NUM',
-                    value: inputDescOrId[1]
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case POSITIVE_NUM_PRIMITIVE: {
-            primitiveObj.opcode = 'math_positive_number';
-            primitiveObj.fields = {
-                NUM: {
-                    name: 'NUM',
-                    value: inputDescOrId[1]
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case WHOLE_NUM_PRIMITIVE: {
-            primitiveObj.opcode = 'math_whole_number';
-            primitiveObj.fields = {
-                NUM: {
-                    name: 'NUM',
-                    value: inputDescOrId[1]
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case INTEGER_NUM_PRIMITIVE: {
-            primitiveObj.opcode = 'math_integer';
-            primitiveObj.fields = {
-                NUM: {
-                    name: 'NUM',
-                    value: inputDescOrId[1]
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case ANGLE_NUM_PRIMITIVE: {
-            primitiveObj.opcode = 'math_angle';
-            primitiveObj.fields = {
-                NUM: {
-                    name: 'NUM',
-                    value: inputDescOrId[1]
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case COLOR_PICKER_PRIMITIVE: {
-            primitiveObj.opcode = 'colour_picker';
-            primitiveObj.fields = {
-                COLOUR: {
-                    name: 'COLOUR',
-                    value: inputDescOrId[1]
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case TEXT_PRIMITIVE: {
-            primitiveObj.opcode = 'text';
-            primitiveObj.fields = {
-                TEXT: {
-                    name: 'TEXT',
-                    value: inputDescOrId[1]
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case BROADCAST_PRIMITIVE: {
-            primitiveObj.opcode = 'event_broadcast_menu';
-            primitiveObj.fields = {
-                BROADCAST_OPTION: {
-                    name: 'BROADCAST_OPTION',
-                    value: inputDescOrId[1],
-                    id: inputDescOrId[2],
-                    variableType: Variable.BROADCAST_MESSAGE_TYPE
-                }
-            };
-            primitiveObj.topLevel = false;
-            break;
-        }
-        case VAR_PRIMITIVE: {
-            primitiveObj.opcode = 'data_variable';
-            primitiveObj.fields = {
-                VARIABLE: {
-                    name: 'VARIABLE',
-                    value: inputDescOrId[1],
-                    id: inputDescOrId[2],
-                    variableType: Variable.SCALAR_TYPE
-                }
-            };
-            if (inputDescOrId.length > 3) {
-                primitiveObj.topLevel = true;
-                primitiveObj.x = inputDescOrId[3];
-                primitiveObj.y = inputDescOrId[4];
+    case MATH_NUM_PRIMITIVE: {
+        primitiveObj.opcode = 'math_number';
+        primitiveObj.fields = {
+            NUM: {
+                name: 'NUM',
+                value: inputDescOrId[1]
             }
-            break;
-        }
-        case LIST_PRIMITIVE: {
-            primitiveObj.opcode = 'data_listcontents';
-            primitiveObj.fields = {
-                LIST: {
-                    name: 'LIST',
-                    value: inputDescOrId[1],
-                    id: inputDescOrId[2],
-                    variableType: Variable.LIST_TYPE
-                }
-            };
-            if (inputDescOrId.length > 3) {
-                primitiveObj.topLevel = true;
-                primitiveObj.x = inputDescOrId[3];
-                primitiveObj.y = inputDescOrId[4];
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case POSITIVE_NUM_PRIMITIVE: {
+        primitiveObj.opcode = 'math_positive_number';
+        primitiveObj.fields = {
+            NUM: {
+                name: 'NUM',
+                value: inputDescOrId[1]
             }
-            break;
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case WHOLE_NUM_PRIMITIVE: {
+        primitiveObj.opcode = 'math_whole_number';
+        primitiveObj.fields = {
+            NUM: {
+                name: 'NUM',
+                value: inputDescOrId[1]
+            }
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case INTEGER_NUM_PRIMITIVE: {
+        primitiveObj.opcode = 'math_integer';
+        primitiveObj.fields = {
+            NUM: {
+                name: 'NUM',
+                value: inputDescOrId[1]
+            }
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case ANGLE_NUM_PRIMITIVE: {
+        primitiveObj.opcode = 'math_angle';
+        primitiveObj.fields = {
+            NUM: {
+                name: 'NUM',
+                value: inputDescOrId[1]
+            }
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case COLOR_PICKER_PRIMITIVE: {
+        primitiveObj.opcode = 'colour_picker';
+        primitiveObj.fields = {
+            COLOUR: {
+                name: 'COLOUR',
+                value: inputDescOrId[1]
+            }
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case TEXT_PRIMITIVE: {
+        primitiveObj.opcode = 'text';
+        primitiveObj.fields = {
+            TEXT: {
+                name: 'TEXT',
+                value: inputDescOrId[1]
+            }
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case BROADCAST_PRIMITIVE: {
+        primitiveObj.opcode = 'event_broadcast_menu';
+        primitiveObj.fields = {
+            BROADCAST_OPTION: {
+                name: 'BROADCAST_OPTION',
+                value: inputDescOrId[1],
+                id: inputDescOrId[2],
+                variableType: Variable.BROADCAST_MESSAGE_TYPE
+            }
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
+    case VAR_PRIMITIVE: {
+        primitiveObj.opcode = 'data_variable';
+        primitiveObj.fields = {
+            VARIABLE: {
+                name: 'VARIABLE',
+                value: inputDescOrId[1],
+                id: inputDescOrId[2],
+                variableType: Variable.SCALAR_TYPE
+            }
+        };
+        if (inputDescOrId.length > 3) {
+            primitiveObj.topLevel = true;
+            primitiveObj.x = inputDescOrId[3];
+            primitiveObj.y = inputDescOrId[4];
         }
-        default: {
-            log.error(`Found unknown primitive type during deserialization: ${JSON.stringify(inputDescOrId)}`);
-            return null;
+        break;
+    }
+    case LIST_PRIMITIVE: {
+        primitiveObj.opcode = 'data_listcontents';
+        primitiveObj.fields = {
+            LIST: {
+                name: 'LIST',
+                value: inputDescOrId[1],
+                id: inputDescOrId[2],
+                variableType: Variable.LIST_TYPE
+            }
+        };
+        if (inputDescOrId.length > 3) {
+            primitiveObj.topLevel = true;
+            primitiveObj.x = inputDescOrId[3];
+            primitiveObj.y = inputDescOrId[4];
         }
+        break;
+    }
+    default: {
+        log.error(`Found unknown primitive type during deserialization: ${JSON.stringify(inputDescOrId)}`);
+        return null;
+    }
     }
     blocks[newId] = primitiveObj;
     return newId;
@@ -876,6 +879,10 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
     // Create the first clone, and load its run-state from JSON.
     const target = sprite.createClone(object.isStage ? StageLayering.BACKGROUND_LAYER : StageLayering.SPRITE_LAYER);
     // Load target properties from JSON.
+    // TOFIX: 还原target的id ?
+    if (object.id) {
+        target.id = object.id;
+    }
     if (object.hasOwnProperty('tempo')) {
         target.tempo = object.tempo;
     }
@@ -1016,7 +1023,7 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
     // so that their corresponding render drawables can be created in
     // their layer order (e.g. back to front)
     const targetObjects = ((isSingleSprite ? [json] : json.targets) || [])
-        .map((t, i) => Object.assign(t, { targetPaneOrder: i }))
+        .map((t, i) => Object.assign(t, {targetPaneOrder: i}))
         .sort((a, b) => a.layerOrder - b.layerOrder);
 
     return Promise.all(

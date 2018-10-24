@@ -189,15 +189,6 @@ class Blocks {
     }
 
     /**
-     * Get block disabled.
-     * @param {?object} block The block to query.
-     * @return {?object} Mutation for the block.
-     */
-    getDisabled (block) {
-        return (typeof block === 'undefined') ? false : block.disabled;
-    }
-
-    /**
      * Get the top-level script for a given block.
      * @param {?string} id ID of block to query.
      * @return {?string} ID of top-level script block.
@@ -490,19 +481,6 @@ class Blocks {
         }
     }
 
-    deleteVariable (e, optRuntime) {
-        // Modified by Kane
-        const targets = optRuntime.targets;
-        targets.forEach(target => {
-            const blocks = target.blocks._blocks;
-            for (let id in blocks) {
-                if (blocks[id].fields.VARIABLE && blocks[id].fields.VARIABLE.value === e.name) {
-                    blocks[id].deleted = true;
-                }
-            }
-        });
-    }
-
     // ---------------------------------------------------------------------
 
     /**
@@ -544,7 +522,7 @@ class Blocks {
      */
     changeBlock (args, optRuntime) {
         // Validate
-        if (['field', 'mutation', 'checkbox', 'disabled'].indexOf(args.element) === -1) return;
+        if (['field', 'mutation', 'checkbox'].indexOf(args.element) === -1) return;
         const block = this._blocks[args.id];
         if (typeof block === 'undefined') return;
         const wasMonitored = block.isMonitored;
@@ -556,21 +534,9 @@ class Blocks {
                 args.name === 'BROADCAST_OPTION') {
                 // Get variable name using the id in args.value.
                 const variable = optRuntime.getEditingTarget().lookupVariableById(args.value);
-                const targets = optRuntime.targets;
-                const prevValue = block.fields[args.name].value;
                 if (variable) {
                     block.fields[args.name].value = variable.name;
                     block.fields[args.name].id = args.value;
-                } else {
-                    // Modified by Kane
-                    targets.forEach(target => {
-                        const blocks = target.blocks._blocks;
-                        for (let id in blocks) {
-                            if (blocks[id].fields[args.name] && blocks[id].fields[args.name].value === prevValue) {
-                                blocks[id].fields[args.name].value = args.value;
-                            }
-                        }
-                    });
                 }
             } else {
                 // Changing the value in a dropdown
@@ -633,9 +599,6 @@ class Blocks {
             }
             break;
         }
-        case 'disabled':
-            block.disabled = args.value;
-            break;
         }
 
         this.resetCache();
@@ -727,10 +690,6 @@ class Blocks {
             return;
         }
 
-        // TODO: 未知块处理
-        if (!block) {
-            return;
-        }
         // Delete children
         if (block.next !== null) {
             this.deleteBlock(block.next);
@@ -958,15 +917,6 @@ class Blocks {
      */
     blockToXML (blockId, comments) {
         const block = this._blocks[blockId];
-
-        // TODO: 未知块处理
-        if (!block) {
-            return '';
-        }
-        // Modified by Kane: 删除变量
-        if (block.deleted) {
-            return block.next ? this.blockToXML(block.next) : '';
-        }
         // Encode properties of this block.
         const tagName = (block.shadow) ? 'shadow' : 'block';
         let xmlString =
@@ -1135,8 +1085,7 @@ BlocksExecuteCache.getCached = function (blocks, blockId, CacheType) {
             opcode: blocks.getOpcode(block),
             fields: blocks.getFields(block),
             inputs: blocks.getInputs(block),
-            mutation: blocks.getMutation(block),
-            disabled: blocks.getDisabled(block)
+            mutation: blocks.getMutation(block)
         };
     } else {
         cached = new CacheType(blocks, {
@@ -1144,8 +1093,7 @@ BlocksExecuteCache.getCached = function (blocks, blockId, CacheType) {
             opcode: blocks.getOpcode(block),
             fields: blocks.getFields(block),
             inputs: blocks.getInputs(block),
-            mutation: blocks.getMutation(block),
-            disabled: blocks.getDisabled(block)
+            mutation: blocks.getMutation(block)
         });
     }
 
