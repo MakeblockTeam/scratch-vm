@@ -52,18 +52,25 @@ class Scratch3MusicBlocks {
         this._concurrencyCounter = 0;
 
         /**
-         * An array of audio buffers, one for each drum sound.
+         * An array of sound players, one for each drum sound.
          * @type {Array}
          * @private
          */
-        this._drumBuffers = [];
+        this._drumPlayers = [];
 
         /**
-         * An array of arrays of audio buffers. Each instrument has one or more audio buffers.
+         * An array of arrays of sound players. Each instrument has one or more audio players.
          * @type {Array[]}
          * @private
          */
-        this._instrumentBufferArrays = [];
+        this._instrumentPlayerArrays = [];
+
+        /**
+         * An array of arrays of sound players. Each instrument mya have an audio player for each playable note.
+         * @type {Array[]}
+         * @private
+         */
+        this._instrumentPlayerNoteArrays = [];
 
         /**
          * An array of audio bufferSourceNodes. Each time you play an instrument or drum sound,
@@ -87,14 +94,15 @@ class Scratch3MusicBlocks {
         const loadingPromises = [];
         this.DRUM_INFO.forEach((drumInfo, index) => {
             const filePath = `drums/${drumInfo.fileName}`;
-            const promise = this._storeSound(filePath, index, this._drumBuffers);
+            const promise = this._storeSound(filePath, index, this._drumPlayers);
             loadingPromises.push(promise);
         });
         this.INSTRUMENT_INFO.forEach((instrumentInfo, instrumentIndex) => {
-            this._instrumentBufferArrays[instrumentIndex] = [];
+            this._instrumentPlayerArrays[instrumentIndex] = [];
+            this._instrumentPlayerNoteArrays[instrumentIndex] = [];
             instrumentInfo.samples.forEach((sample, noteIndex) => {
                 const filePath = `instruments/${instrumentInfo.dirName}/${sample}`;
-                const promise = this._storeSound(filePath, noteIndex, this._instrumentBufferArrays[instrumentIndex]);
+                const promise = this._storeSound(filePath, noteIndex, this._instrumentPlayerArrays[instrumentIndex]);
                 loadingPromises.push(promise);
             });
         });
@@ -104,22 +112,22 @@ class Scratch3MusicBlocks {
     }
 
     /**
-     * Decode a sound and store the buffer in an array.
+     * Decode a sound and store the player in an array.
      * @param {string} filePath - the audio file name.
-     * @param {number} index - the index at which to store the audio buffer.
-     * @param {array} bufferArray - the array of buffers in which to store it.
+     * @param {number} index - the index at which to store the audio player.
+     * @param {array} playerArray - the array of players in which to store it.
      * @return {Promise} - a promise which will resolve once the sound has been stored.
      */
-    _storeSound (filePath, index, bufferArray) {
+    _storeSound (filePath, index, playerArray) {
         const fullPath = `${filePath}.mp3`;
 
         if (!assetData[fullPath]) return;
 
-        // The sound buffer has already been downloaded via the manifest file required above.
+        // The sound player has already been downloaded via the manifest file required above.
         const soundBuffer = assetData[fullPath];
 
-        return this._decodeSound(soundBuffer).then(buffer => {
-            bufferArray[index] = buffer;
+        return this._decodeSound(soundBuffer).then(player => {
+            playerArray[index] = player;
         });
     }
 
@@ -129,24 +137,14 @@ class Scratch3MusicBlocks {
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
     _decodeSound (soundBuffer) {
-        const context = this.runtime.audioEngine && this.runtime.audioEngine.audioContext;
+        const engine = this.runtime.audioEngine;
 
-        if (!context) {
+        if (!engine) {
             return Promise.reject(new Error('No Audio Context Detected'));
         }
 
         // Check for newer promise-based API
-        if (context.decodeAudioData.length === 1) {
-            return context.decodeAudioData(soundBuffer);
-        } else { // eslint-disable-line no-else-return
-            // Fall back to callback API
-            return new Promise((resolve, reject) =>
-                context.decodeAudioData(soundBuffer,
-                    buffer => resolve(buffer),
-                    error => reject(error)
-                )
-            );
-        }
+        return engine.decodeSoundPlayer({data: {buffer: soundBuffer}});
     }
 
     /**
@@ -167,7 +165,7 @@ class Scratch3MusicBlocks {
 
     /**
      * An array of info about each drum.
-     * @type {object[]} an array of objects.
+     * @type {object[]}
      * @param {string} name - the translatable name to display in the drums menu.
      * @param {string} fileName - the name of the audio file containing the drum sound.
      */
@@ -304,7 +302,7 @@ class Scratch3MusicBlocks {
 
     /**
      * An array of info about each instrument.
-     * @type {object[]} an array of objects.
+     * @type {object[]}
      * @param {string} name - the translatable name to display in the instruments menu.
      * @param {string} dirName - the name of the directory containing audio samples for this instrument.
      * @param {number} [releaseTime] - an optional duration for the release portion of each note.
@@ -499,6 +497,79 @@ class Scratch3MusicBlocks {
     }
 
     /**
+     * An array that is a mapping from MIDI instrument numbers to Scratch instrument numbers.
+     * @type {number[]}
+     */
+    get MIDI_INSTRUMENTS () {
+        return [
+            // Acoustic Grand, Bright Acoustic, Electric Grand, Honky-Tonk
+            1, 1, 1, 1,
+            // Electric Piano 1, Electric Piano 2, Harpsichord, Clavinet
+            2, 2, 4, 4,
+            // Celesta, Glockenspiel, Music Box, Vibraphone
+            17, 17, 17, 16,
+            // Marimba, Xylophone, Tubular Bells, Dulcimer
+            19, 16, 17, 17,
+            // Drawbar Organ, Percussive Organ, Rock Organ, Church Organ
+            3, 3, 3, 3,
+            // Reed Organ, Accordion, Harmonica, Tango Accordion
+            3, 3, 3, 3,
+            // Nylon String Guitar, Steel String Guitar, Electric Jazz Guitar, Electric Clean Guitar
+            4, 4, 5, 5,
+            // Electric Muted Guitar, Overdriven Guitar,Distortion Guitar, Guitar Harmonics
+            5, 5, 5, 5,
+            // Acoustic Bass, Electric Bass (finger), Electric Bass (pick), Fretless Bass
+            6, 6, 6, 6,
+            // Slap Bass 1, Slap Bass 2, Synth Bass 1, Synth Bass 2
+            6, 6, 6, 6,
+            // Violin, Viola, Cello, Contrabass
+            8, 8, 8, 8,
+            // Tremolo Strings, Pizzicato Strings, Orchestral Strings, Timpani
+            8, 7, 8, 19,
+            // String Ensemble 1, String Ensemble 2, SynthStrings 1, SynthStrings 2
+            8, 8, 8, 8,
+            // Choir Aahs, Voice Oohs, Synth Voice, Orchestra Hit
+            15, 15, 15, 19,
+            // Trumpet, Trombone, Tuba, Muted Trumpet
+            9, 9, 9, 9,
+            // French Horn, Brass Section, SynthBrass 1, SynthBrass 2
+            9, 9, 9, 9,
+            // Soprano Sax, Alto Sax, Tenor Sax, Baritone Sax
+            11, 11, 11, 11,
+            // Oboe, English Horn, Bassoon, Clarinet
+            14, 14, 14, 10,
+            // Piccolo, Flute, Recorder, Pan Flute
+            12, 12, 13, 13,
+            // Blown Bottle, Shakuhachi, Whistle, Ocarina
+            13, 13, 12, 12,
+            // Lead 1 (square), Lead 2 (sawtooth), Lead 3 (calliope), Lead 4 (chiff)
+            20, 20, 20, 20,
+            // Lead 5 (charang), Lead 6 (voice), Lead 7 (fifths), Lead 8 (bass+lead)
+            20, 20, 20, 20,
+            // Pad 1 (new age), Pad 2 (warm), Pad 3 (polysynth), Pad 4 (choir)
+            21, 21, 21, 21,
+            // Pad 5 (bowed), Pad 6 (metallic), Pad 7 (halo), Pad 8 (sweep)
+            21, 21, 21, 21,
+            // FX 1 (rain), FX 2 (soundtrack), FX 3 (crystal), FX 4 (atmosphere)
+            21, 21, 21, 21,
+            // FX 5 (brightness), FX 6 (goblins), FX 7 (echoes), FX 8 (sci-fi)
+            21, 21, 21, 21,
+            // Sitar, Banjo, Shamisen, Koto
+            4, 4, 4, 4,
+            // Kalimba, Bagpipe, Fiddle, Shanai
+            17, 14, 8, 10,
+            // Tinkle Bell, Agogo, Steel Drums, Woodblock
+            17, 17, 18, 19,
+            // Taiko Drum, Melodic Tom, Synth Drum, Reverse Cymbal
+            1, 1, 1, 1,
+            // Guitar Fret Noise, Breath Noise, Seashore, Bird Tweet
+            21, 21, 21, 21,
+            // Telephone Ring, Helicopter, Applause, Gunshot
+            21, 21, 21, 21
+        ];
+    }
+
+    /**
      * The key to load & store a target's music-related state.
      * @type {string}
      */
@@ -584,7 +655,11 @@ class Scratch3MusicBlocks {
     getInfo () {
         return {
             id: 'music',
-            name: 'Music',
+            name: formatMessage({
+                id: 'music.categoryName',
+                default: 'Music',
+                description: 'Label for the Music extension category'
+            }),
             menuIconURI: menuIconURI,
             blockIconURI: blockIconURI,
             blocks: [
@@ -653,6 +728,22 @@ class Scratch3MusicBlocks {
                             defaultValue: 1
                         }
                     }
+                },
+                {
+                    opcode: 'midiSetInstrument',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'music.midiSetInstrument',
+                        default: 'set instrument to [INSTRUMENT]',
+                        description: 'set the instrument for notes played according to a mapping of MIDI codes'
+                    }),
+                    arguments: {
+                        INSTRUMENT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    },
+                    hideFromPalette: true
                 },
                 {
                     opcode: 'setTempo',
@@ -728,26 +819,34 @@ class Scratch3MusicBlocks {
      */
     _playDrumNum (util, drumNum) {
         if (util.runtime.audioEngine === null) return;
-        if (util.target.audioPlayer === null) return;
+        if (util.target.sprite.soundBank === null) return;
         // If we're playing too many sounds, do not play the drum sound.
         if (this._concurrencyCounter > Scratch3MusicBlocks.CONCURRENCY_LIMIT) {
             return;
         }
-        const outputNode = util.target.audioPlayer.getInputNode();
-        const context = util.runtime.audioEngine.audioContext;
-        const bufferSource = context.createBufferSource();
-        bufferSource.buffer = this._drumBuffers[drumNum];
-        bufferSource.connect(outputNode);
-        bufferSource.start();
 
-        const bufferSourceIndex = this._bufferSources.length;
-        this._bufferSources.push(bufferSource);
+        const player = this._drumPlayers[drumNum];
+
+        if (typeof player === 'undefined') return;
+
+        if (player.isPlaying && !player.isStarting) {
+            // Take the internal player state and create a new player with it.
+            // `.play` does this internally but then instructs the sound to
+            // stop.
+            player.take();
+        }
+
+        const engine = util.runtime.audioEngine;
+        const chain = engine.createEffectChain();
+        chain.setEffectsFromTarget(util.target);
+        player.connect(chain);
 
         this._concurrencyCounter++;
-        bufferSource.onended = () => {
+        player.once('stop', () => {
             this._concurrencyCounter--;
-            delete this._bufferSources[bufferSourceIndex];
-        };
+        });
+
+        player.play();
     }
 
     /**
@@ -806,7 +905,7 @@ class Scratch3MusicBlocks {
      */
     _playNote (util, note, durationSec) {
         if (util.runtime.audioEngine === null) return;
-        if (util.target.audioPlayer === null) return;
+        if (util.target.sprite.soundBank === null) return;
 
         // If we're playing too many sounds, do not play the note.
         if (this._concurrencyCounter > Scratch3MusicBlocks.CONCURRENCY_LIMIT) {
@@ -821,28 +920,37 @@ class Scratch3MusicBlocks {
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
 
         // If the audio sample has not loaded yet, bail out
-        if (typeof this._instrumentBufferArrays[inst] === 'undefined') return;
-        if (typeof this._instrumentBufferArrays[inst][sampleIndex] === 'undefined') return;
+        if (typeof this._instrumentPlayerArrays[inst] === 'undefined') return;
+        if (typeof this._instrumentPlayerArrays[inst][sampleIndex] === 'undefined') return;
 
-        // Create the audio buffer to play the note, and set its pitch
-        const context = util.runtime.audioEngine.audioContext;
-        const bufferSource = context.createBufferSource();
+        // Fetch the sound player to play the note.
+        const engine = util.runtime.audioEngine;
 
-        const bufferSourceIndex = this._bufferSources.length;
-        this._bufferSources.push(bufferSource);
+        if (!this._instrumentPlayerNoteArrays[inst][note]) {
+            this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
+        }
 
-        bufferSource.buffer = this._instrumentBufferArrays[inst][sampleIndex];
+        const player = this._instrumentPlayerNoteArrays[inst][note];
+
+        if (player.isPlaying && !player.isStarting) {
+            // Take the internal player state and create a new player with it.
+            // `.play` does this internally but then instructs the sound to
+            // stop.
+            player.take();
+        }
+
+        const chain = engine.createEffectChain();
+        chain.setEffectsFromTarget(util.target);
+
+        // Set its pitch.
         const sampleNote = sampleArray[sampleIndex];
-        bufferSource.playbackRate.value = this._ratioForPitchInterval(note - sampleNote);
+        const notePitchInterval = this._ratioForPitchInterval(note - sampleNote);
 
-        // Create a gain node for this note, and connect it to the sprite's audioPlayer.
-        const gainNode = context.createGain();
-        bufferSource.connect(gainNode);
-        const outputNode = util.target.audioPlayer.getInputNode();
-        gainNode.connect(outputNode);
-
-        // Start playing the note
-        bufferSource.start();
+        // Create a gain node for this note, and connect it to the sprite's
+        // simulated effectChain.
+        const context = engine.audioContext;
+        const releaseGain = context.createGain();
+        releaseGain.connect(chain.getInputNode());
 
         // Schedule the release of the note, ramping its gain down to zero,
         // and then stopping the sound.
@@ -852,16 +960,24 @@ class Scratch3MusicBlocks {
         }
         const releaseStart = context.currentTime + durationSec;
         const releaseEnd = releaseStart + releaseDuration;
-        gainNode.gain.setValueAtTime(1, releaseStart);
-        gainNode.gain.linearRampToValueAtTime(0.0001, releaseEnd);
-        bufferSource.stop(releaseEnd);
+        releaseGain.gain.setValueAtTime(1, releaseStart);
+        releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
 
-        // Update the concurrency counter
         this._concurrencyCounter++;
-        bufferSource.onended = () => {
+        player.once('stop', () => {
             this._concurrencyCounter--;
-            delete this._bufferSources[bufferSourceIndex];
-        };
+        });
+
+        // Start playing the note
+        player.play();
+        // Connect the player to the gain node.
+        player.connect({getInputNode () {
+            return releaseGain;
+        }});
+        // Set playback now after play creates the outputNode.
+        player.outputNode.playbackRate.value = notePitchInterval;
+        // Schedule playback to stop.
+        player.outputNode.stop(releaseEnd);
     }
 
     /**
@@ -956,10 +1072,35 @@ class Scratch3MusicBlocks {
      * @property {int} INSTRUMENT - the number of the instrument to select.
      */
     setInstrument (args, util) {
+        this._setInstrument(args.INSTRUMENT, util, false);
+    }
+
+    /**
+     * Select an instrument for playing notes according to a mapping of MIDI codes to Scratch instrument numbers.
+     * This block is implemented for compatibility with old Scratch projects that use the 'midiInstrument:' block.
+     * @param {object} args - the block arguments.
+     * @param {object} util - utility object provided by the runtime.
+     * @property {int} INSTRUMENT - the MIDI number of the instrument to select.
+     */
+    midiSetInstrument (args, util) {
+        this._setInstrument(args.INSTRUMENT, util, true);
+    }
+
+    /**
+     * Internal code to select an instrument for playing notes. If mapMidi is true, set the instrument according to
+     * the MIDI to Scratch instrument mapping.
+     * @param {number} instNum - the instrument number.
+     * @param {object} util - utility object provided by the runtime.
+     * @param {boolean} mapMidi - whether or not instNum is a MIDI instrument number.
+     */
+    _setInstrument (instNum, util, mapMidi) {
         const musicState = this._getMusicState(util.target);
-        let instNum = Cast.toNumber(args.INSTRUMENT);
+        instNum = Cast.toNumber(instNum);
         instNum = Math.round(instNum);
         instNum -= 1; // instruments are one-indexed
+        if (mapMidi) {
+            instNum = (this.MIDI_INSTRUMENTS[instNum] || 0) - 1;
+        }
         instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
         musicState.currentInstrument = instNum;
     }

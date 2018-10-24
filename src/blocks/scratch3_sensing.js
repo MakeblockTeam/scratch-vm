@@ -42,6 +42,7 @@ class Scratch3SensingBlocks {
         this.runtime.on('ANSWER', this._onAnswer.bind(this));
         this.runtime.on('PROJECT_START', this._resetAnswer.bind(this));
         this.runtime.on('PROJECT_STOP_ALL', this._clearAllQuestions.bind(this));
+        this.runtime.on('STOP_FOR_TARGET', this._clearTargetQuestions.bind(this));
     }
 
     /**
@@ -68,6 +69,7 @@ class Scratch3SensingBlocks {
             sensing_loud: this.isLoud,
             sensing_askandwait: this.askAndWait,
             sensing_answer: this.getAnswer,
+            sensing_username: this.getUsername,
             sensing_userid: () => {} // legacy no-op block
         };
     }
@@ -133,6 +135,21 @@ class Scratch3SensingBlocks {
         this.runtime.emit('QUESTION', null);
     }
 
+    _clearTargetQuestions (stopTarget) {
+        const currentlyAsking = this._questionList.length > 0 && this._questionList[0][2] === stopTarget;
+        this._questionList = this._questionList.filter(question => (
+            question[2] !== stopTarget
+        ));
+
+        if (currentlyAsking) {
+            if (this._questionList.length > 0) {
+                this._askNextQuestion();
+            } else {
+                this.runtime.emit('QUESTION', null);
+            }
+        }
+    }
+
     askAndWait (args, util) {
         const _target = util.target;
         return new Promise(resolve => {
@@ -149,16 +166,7 @@ class Scratch3SensingBlocks {
     }
 
     touchingObject (args, util) {
-        const requestedObject = args.TOUCHINGOBJECTMENU;
-        if (requestedObject === '_mouse_') {
-            const mouseX = util.ioQuery('mouse', 'getClientX');
-            const mouseY = util.ioQuery('mouse', 'getClientY');
-            return util.target.isTouchingPoint(mouseX, mouseY);
-        } else if (requestedObject === '_edge_') {
-            return util.target.isTouchingEdge();
-        }
-        return util.target.isTouchingSprite(requestedObject);
-
+        return util.target.isTouchingObject(args.TOUCHINGOBJECTMENU);
     }
 
     touchingColor (args, util) {
@@ -314,6 +322,10 @@ class Scratch3SensingBlocks {
 
         // Otherwise, 0
         return 0;
+    }
+
+    getUsername (args, util) {
+        return util.ioQuery('userData', 'getUsername');
     }
 }
 

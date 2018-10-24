@@ -58,6 +58,13 @@ class BlockUtility {
     }
 
     /**
+     * Set the thread to yield until the next tick of the runtime.
+     */
+    yieldTick () {
+        this.thread.status = Thread.STATUS_YIELD_TICK;
+    }
+
+    /**
      * Start a branch in the current block.
      * @param {number} branchNum Which branch to step to (i.e., 1, 2).
      * @param {boolean} isLoop Whether this block is a loop.
@@ -97,12 +104,21 @@ class BlockUtility {
     }
 
     /**
-     * Get names for parameters for the given procedure.
+     * Get names and ids of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
      * @return {Array.<string>} List of param names for a procedure.
      */
     getProcedureParamNamesAndIds (procedureCode) {
         return this.thread.target.blocks.getProcedureParamNamesAndIds(procedureCode);
+    }
+
+    /**
+     * Get names, ids, and defaults of parameters for the given procedure.
+     * @param {string} procedureCode Procedure code for procedure to query.
+     * @return {Array.<string>} List of param names for a procedure.
+     */
+    getProcedureParamNamesIdsAndDefaults (procedureCode) {
+        return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
     }
 
     /**
