@@ -152,6 +152,14 @@ class RenderedTarget extends Target {
          * @type {string}
          */
         this.videoState = RenderedTarget.VIDEO_STATE.ON;
+
+        /**
+         * The language to use for speech synthesis, in the text2speech extension.
+         * It is initialized to null so that on extension load, we can check for
+         * this and try setting it using the editor locale.
+         * @type {string}
+         */
+        this.textToSpeechLanguage = null;
     }
 
     /**
@@ -900,6 +908,8 @@ class RenderedTarget extends Target {
             // of what layers are present
             this.renderer.setDrawableOrder(this.drawableID, Infinity, StageLayering.SPRITE_LAYER);
         }
+
+        this.runtime.setExecutablePosition(this, Infinity);
     }
 
     /**
@@ -911,6 +921,8 @@ class RenderedTarget extends Target {
             // of what layers are present
             this.renderer.setDrawableOrder(this.drawableID, -Infinity, StageLayering.SPRITE_LAYER, false);
         }
+
+        this.runtime.setExecutablePosition(this, -Infinity);
     }
 
     /**
@@ -921,6 +933,8 @@ class RenderedTarget extends Target {
         if (this.renderer) {
             this.renderer.setDrawableOrder(this.drawableID, nLayers, StageLayering.SPRITE_LAYER, true);
         }
+
+        this.runtime.moveExecutable(this, nLayers);
     }
 
     /**
@@ -931,6 +945,8 @@ class RenderedTarget extends Target {
         if (this.renderer) {
             this.renderer.setDrawableOrder(this.drawableID, -nLayers, StageLayering.SPRITE_LAYER, true);
         }
+
+        this.runtime.moveExecutable(this, -nLayers);
     }
 
     /**
@@ -943,6 +959,9 @@ class RenderedTarget extends Target {
                 other.drawableID, 0, StageLayering.SPRITE_LAYER, true);
             this.renderer.setDrawableOrder(this.drawableID, otherLayer, StageLayering.SPRITE_LAYER);
         }
+
+        const executionPosition = this.runtime.executableTargets.indexOf(other);
+        this.runtime.setExecutablePosition(this, executionPosition);
     }
 
     /**
@@ -1055,9 +1074,6 @@ class RenderedTarget extends Target {
      */
     onStopAll () {
         this.clearEffects();
-        if (this.sprite.soundBank) {
-            this.sprite.soundBank.stopAllSounds();
-        }
     }
 
     /**
@@ -1128,6 +1144,7 @@ class RenderedTarget extends Target {
             variables: this.variables,
             costumes: costumes,
             sounds: this.getSounds(),
+            textToSpeechLanguage: this.textToSpeechLanguage,
             tempo: this.tempo,
             volume: this.volume,
             videoTransparency: this.videoTransparency,
@@ -1142,6 +1159,7 @@ class RenderedTarget extends Target {
     dispose () {
         this.runtime.changeCloneCounter(-1);
         this.runtime.stopForTarget(this);
+        this.runtime.removeExecutable(this);
         this.sprite.removeClone(this);
         if (this.renderer && this.drawableID !== null) {
             this.renderer.destroyDrawable(this.drawableID, this.isStage ?

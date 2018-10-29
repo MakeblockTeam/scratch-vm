@@ -445,6 +445,7 @@ const serializeTarget = function (target, extensions) {
         if (target.hasOwnProperty('tempo')) obj.tempo = target.tempo;
         if (target.hasOwnProperty('videoTransparency')) obj.videoTransparency = target.videoTransparency;
         if (target.hasOwnProperty('videoState')) obj.videoState = target.videoState;
+        if (target.hasOwnProperty('textToSpeechLanguage')) obj.textToSpeechLanguage = target.textToSpeechLanguage;
     } else { // The stage does not need the following properties, but sprites should
         obj.visible = target.visible;
         obj.x = target.x;
@@ -843,7 +844,10 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // any translation that needs to happen will happen in the process
         // of building up the costume object into an sb3 format
         return deserializeCostume(costume, runtime, zip)
-            .then(() => loadCostume(costumeMd5Ext, costume, runtime));
+            .then(asset => {
+                costume.asset = asset;
+                return loadCostume(costumeMd5Ext, costume, runtime);
+            });
         // Only attempt to load the costume after the deserialization
         // process has been completed
     });
@@ -868,7 +872,10 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // any translation that needs to happen will happen in the process
         // of building up the costume object into an sb3 format
         return deserializeSound(sound, runtime, zip)
-            .then(() => loadSound(sound, runtime, sprite));
+            .then(asset => {
+                sound.asset = asset;
+                return loadSound(sound, runtime, sprite);
+            });
         // Only attempt to load the sound after the deserialization
         // process has been completed.
     });
@@ -886,6 +893,9 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
     }
     if (object.hasOwnProperty('videoState')) {
         target.videoState = object.videoState;
+    }
+    if (object.hasOwnProperty('textToSpeechLanguage')) {
+        target.textToSpeechLanguage = object.textToSpeechLanguage;
     }
     if (object.hasOwnProperty('variables')) {
         for (const varId in object.variables) {

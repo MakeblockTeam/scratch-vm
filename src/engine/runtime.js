@@ -113,6 +113,12 @@ class Runtime extends EventEmitter {
         this.targets = [];
 
         /**
+         * Targets in reverse order of execution. Shares its order with drawables.
+         * @type {Array.<!Target>}
+         */
+        this.executableTargets = [];
+
+        /**
          * A list of threads that are currently running in the VM.
          * Threads are added when execution starts and pruned when execution ends.
          * @type {Array.<Thread>}
@@ -378,6 +384,15 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Event name for target being stopped by a stop for target call.
+     * Used by blocks that need to stop individual targets.
+     * @const {string}
+     */
+    static get STOP_FOR_TARGET () {
+        return 'STOP_FOR_TARGET';
+    }
+
+    /**
      * Event name for visual value report.
      * @const {string}
      */
@@ -442,11 +457,19 @@ class Runtime extends EventEmitter {
     }
 
     /**
-     * Event name for reporting that a peripheral has encountered an error.
+     * Event name for reporting that a peripheral has encountered a request error.
      * @const {string}
      */
-    static get PERIPHERAL_ERROR () {
-        return 'PERIPHERAL_ERROR';
+    static get PERIPHERAL_REQUEST_ERROR () {
+        return 'PERIPHERAL_REQUEST_ERROR';
+    }
+
+    /**
+     * Event name for reporting that a peripheral has encountered a disconnect error.
+     * @const {string}
+     */
+    static get PERIPHERAL_DISCONNECT_ERROR () {
+        return 'PERIPHERAL_DISCONNECT_ERROR';
     }
 
     /**
@@ -1245,7 +1268,7 @@ class Runtime extends EventEmitter {
      * @param {Target=} optTarget Optionally, a target to restrict to.
      */
     allScriptsDo (f, optTarget) {
-        let targets = this.targets;
+        let targets = this.executableTargets;
         if (optTarget) {
             targets = [optTarget];
         }
@@ -1363,6 +1386,68 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Add a target to the execution order.
+     * @param {Target} executableTarget target to add
+     */
+    addExecutable (executableTarget) {
+        this.executableTargets.push(executableTarget);
+    }
+
+    /**
+     * Move a target in the execution order by a relative amount.
+     *
+     * A positve number will make the target execute earlier. A negative number
+     * will make the target execute later in the order.
+     *
+     * @param {Target} executableTarget target to move
+     * @param {number} delta number of positions to move target by
+     * @returns {number} new position in execution order
+     */
+    moveExecutable (executableTarget, delta) {
+        const oldIndex = this.executableTargets.indexOf(executableTarget);
+        this.executableTargets.splice(oldIndex, 1);
+        let newIndex = oldIndex + delta;
+        if (newIndex > this.executableTargets.length) {
+            newIndex = this.executableTargets.length;
+        }
+        if (newIndex <= 0) {
+            if (this.executableTargets.length > 0 && this.executableTargets[0].isStage) {
+                newIndex = 1;
+            } else {
+                newIndex = 0;
+            }
+        }
+        this.executableTargets.splice(newIndex, 0, executableTarget);
+        return newIndex;
+    }
+
+    /**
+     * Set a target to execute at a specific position in the execution order.
+     *
+     * Infinity will set the target to execute first. 0 will set the target to
+     * execute last (before the stage).
+     *
+     * @param {Target} executableTarget target to move
+     * @param {number} newIndex position in execution order to place the target
+     * @returns {number} new position in the execution order
+     */
+    setExecutablePosition (executableTarget, newIndex) {
+        const oldIndex = this.executableTargets.indexOf(executableTarget);
+        return this.moveExecutable(executableTarget, newIndex - oldIndex);
+    }
+
+    /**
+     * Remove a target from the execution set.
+     * @param {Target} executableTarget target to remove
+     */
+    removeExecutable (executableTarget) {
+        const oldIndex = this.executableTargets.indexOf(executableTarget);
+        if (oldIndex > -1) {
+            this.executableTargets.splice(oldIndex, 1);
+        }
+    }
+
+    /**
      * Dispose of a target.
      * @param {!Target} disposingTarget Target to dispose of.
      */
@@ -1382,6 +1467,9 @@ class Runtime extends EventEmitter {
      * @param {Thread=} optThreadException Optional thread to skip.
      */
     stopForTarget (target, optThreadException) {
+        // Emit stop event to allow blocks to clean up any state.
+        this.emit(Runtime.STOP_FOR_TARGET, target, optThreadException);
+
         // Stop any threads on the target.
         for (let i = 0; i < this.threads.length; i++) {
             if (this.threads[i] === optThreadException) {
