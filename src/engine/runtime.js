@@ -17,6 +17,7 @@ const Variable = require('./variable');
 
 // Virtual I/O devices.
 const Clock = require('../io/clock');
+const Cloud = require('../io/cloud');
 const DeviceManager = require('../io/deviceManager');
 const Keyboard = require('../io/keyboard');
 const Mouse = require('../io/mouse');
@@ -262,6 +263,7 @@ class Runtime extends EventEmitter {
         /** @type {Object.<string, Object>} */
         this.ioDevices = {
             clock: new Clock(),
+            cloud: new Cloud(),
             deviceManager: new DeviceManager(),
             keyboard: new Keyboard(this),
             mouse: new Mouse(this),
@@ -398,6 +400,14 @@ class Runtime extends EventEmitter {
      */
     static get VISUAL_REPORT () {
         return 'VISUAL_REPORT';
+    }
+
+    /**
+     * Event name for project loaded report.
+     * @const {string}
+     */
+    static get PROJECT_LOADED () {
+        return 'PROJECT_LOADED';
     }
 
     /**
@@ -1383,6 +1393,7 @@ class Runtime extends EventEmitter {
         this.targets.map(this.disposeTarget, this);
         this._monitorState = OrderedMap({});
         // @todo clear out extensions? turboMode? etc.
+        this.ioDevices.cloud.clear();
     }
 
     /**
@@ -1908,6 +1919,13 @@ class Runtime extends EventEmitter {
      */
     clonesAvailable () {
         return this._cloneCounter < Runtime.MAX_CLONES;
+    }
+
+    /**
+     * Report that the project has loaded in the Virtual Machine.
+     */
+    emitProjectLoaded () {
+        this.emit(Runtime.PROJECT_LOADED);
     }
 
     /**

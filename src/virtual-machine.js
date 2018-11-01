@@ -218,6 +218,10 @@ class VirtualMachine extends EventEmitter {
         this.runtime.ioDevices.video.setProvider(videoProvider);
     }
 
+    setCloudProvider (cloudProvider) {
+        this.runtime.ioDevices.cloud.setProvider(cloudProvider);
+    }
+
     /**
      * Tell the specified extension to scan for a peripheral.
      * @param {string} extensionId - the id of the extension.
@@ -280,6 +284,7 @@ class VirtualMachine extends EventEmitter {
 
         return validationPromise
             .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
+            .then(() => this.runtime.emitProjectLoaded())
             .catch(error => {
                 // Intentionally rejecting here (want errors to be handled by caller)
                 if (error.hasOwnProperty('validationError')) {
@@ -463,6 +468,7 @@ class VirtualMachine extends EventEmitter {
             this.emitTargetsUpdate();
             this.emitWorkspaceUpdate();
             this.runtime.setEditingTarget(this.editingTarget);
+            this.runtime.ioDevices.cloud.setStage(this.runtime.getTargetForStage());
         });
     }
 
