@@ -12,6 +12,8 @@ const TargetType = require('../extension-support/target-type');
 const Thread = require('./thread');
 const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
+const StageLayering = require('./stage-layering');
+const Variable = require('./variable');
 
 // Virtual I/O devices.
 const Clock = require('../io/clock');
@@ -19,7 +21,11 @@ const DeviceManager = require('../io/deviceManager');
 const Keyboard = require('../io/keyboard');
 const Mouse = require('../io/mouse');
 const MouseWheel = require('../io/mouseWheel');
+const UserData = require('../io/userData');
 const Video = require('../io/video');
+
+const StringUtil = require('../util/string-util');
+const uid = require('../util/uid');
 
 const defaultBlockPackages = {
     scratch3_control: require('../blocks/scratch3_control'),
@@ -35,7 +41,7 @@ const defaultBlockPackages = {
 
 /**
  * Information used for converting Scratch argument types into scratch-blocks data.
- * @type {object.<ArgumentType, {shadowType: string, fieldType: string}>}}
+ * @type {object.<ArgumentType, {shadowType: string, fieldType: string}>}
  */
 const ArgumentTypeMap = (() => {
     const map = {};
@@ -56,6 +62,10 @@ const ArgumentTypeMap = (() => {
     };
     map[ArgumentType.BOOLEAN] = {
         check: 'Boolean'
+    };
+    map[ArgumentType.MATRIX] = {
+        shadowType: 'matrix',
+        fieldType: 'MATRIX'
     };
     return map;
 })();
@@ -103,6 +113,12 @@ class Runtime extends EventEmitter {
         this.targets = [];
 
         /**
+         * Targets in reverse order of execution. Shares its order with drawables.
+         * @type {Array.<!Target>}
+         */
+        this.executableTargets = [];
+
+        /**
          * A list of threads that are currently running in the VM.
          * Threads are added when execution starts and pruned when execution ends.
          * @type {Array.<Thread>}
@@ -117,14 +133,14 @@ class Runtime extends EventEmitter {
          * These will execute on `_editingTarget.`
          * @type {!Blocks}
          */
-        this.flyoutBlocks = new Blocks();
+        this.flyoutBlocks = new Blocks(true /* force no glow */);
 
         /**
          * Storage container for monitor blocks.
          * These will execute on a target maybe
          * @type {!Blocks}
          */
-        this.monitorBlocks = new Blocks();
+        this.monitorBlocks = new Blocks(true /* force no glow */);
 
         /**
          * Currently known editing target for the VM.
@@ -250,8 +266,14 @@ class Runtime extends EventEmitter {
             keyboard: new Keyboard(this),
             mouse: new Mouse(this),
             mouseWheel: new MouseWheel(this),
+            userData: new UserData(),
             video: new Video(this)
         };
+
+        /**
+         * A list of extensions, used to manage hardware connection.
+         */
+        this.peripheralExtensions = {};
 
         /**
          * A runtime profiler that records timed events for later playback to
@@ -310,6 +332,22 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Event name for turning on turbo mode.
+     * @const {string}
+     */
+    static get TURBO_MODE_ON () {
+        return 'TURBO_MODE_ON';
+    }
+
+    /**
+     * Event name for turning off turbo mode.
+     * @const {string}
+     */
+    static get TURBO_MODE_OFF () {
+        return 'TURBO_MODE_OFF';
+    }
+
+    /**
      * Event name when the project is started (threads may not necessarily be
      * running).
      * @const {string}
@@ -343,6 +381,15 @@ class Runtime extends EventEmitter {
      */
     static get PROJECT_STOP_ALL () {
         return 'PROJECT_STOP_ALL';
+    }
+
+    /**
+     * Event name for target being stopped by a stop for target call.
+     * Used by blocks that need to stop individual targets.
+     * @const {string}
+     */
+    static get STOP_FOR_TARGET () {
+        return 'STOP_FOR_TARGET';
     }
 
     /**
@@ -394,6 +441,54 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Event name for updating the available set of peripheral devices.
+     * @const {string}
+     */
+    static get PERIPHERAL_LIST_UPDATE () {
+        return 'PERIPHERAL_LIST_UPDATE';
+    }
+
+    /**
+     * Event name for reporting that a peripheral has connected.
+     * @const {string}
+     */
+    static get PERIPHERAL_CONNECTED () {
+        return 'PERIPHERAL_CONNECTED';
+    }
+
+    /**
+     * Event name for reporting that a peripheral has encountered a request error.
+     * @const {string}
+     */
+    static get PERIPHERAL_REQUEST_ERROR () {
+        return 'PERIPHERAL_REQUEST_ERROR';
+    }
+
+    /**
+     * Event name for reporting that a peripheral has encountered a disconnect error.
+     * @const {string}
+     */
+    static get PERIPHERAL_DISCONNECT_ERROR () {
+        return 'PERIPHERAL_DISCONNECT_ERROR';
+    }
+
+    /**
+     * Event name for reporting that a peripheral has not been discovered.
+     * @const {string}
+     */
+    static get PERIPHERAL_SCAN_TIMEOUT () {
+        return 'PERIPHERAL_SCAN_TIMEOUT';
+    }
+
+    /**
+     * Event name to indicate that the microphone is being used to stream audio.
+     * @const {string}
+     */
+    static get MIC_LISTENING () {
+        return 'MIC_LISTENING';
+    }
+
+    /**
      * Event name for reporting that blocksInfo was updated.
      * @const {string}
      */
@@ -421,20 +516,6 @@ class Runtime extends EventEmitter {
      */
     static get MAX_CLONES () {
         return 300;
-    }
-
-    /**
-     * mscratch block 脚本被执行 emit 事件
-     */
-    static get BLOCK_SCRIPT_RAN () {
-        return 'BLOCK_SCRIPT_RAN';
-    }
-
-    /**
-     * runtime 被注销时
-     */
-    static get RUNTIME_DISPOSE () {
-        return 'RUNTIME_DISPOSE';
     }
 
     // -----------------------------------------------------------------------------
@@ -510,11 +591,12 @@ class Runtime extends EventEmitter {
         const categoryInfo = {
             id: extensionInfo.id,
             name: maybeFormatMessage(extensionInfo.name),
+            showStatusButton: extensionInfo.showStatusButton,
             blockIconURI: extensionInfo.blockIconURI,
             menuIconURI: extensionInfo.menuIconURI,
-            color1: '#FF6680',
-            color2: '#FF4D6A',
-            color3: '#FF3355',
+            color1: extensionInfo.colour || '#0FBD8C',
+            color2: extensionInfo.colourSecondary || '#0DA57A',
+            color3: extensionInfo.colourTertiary || '#0B8E69',
             blocks: [],
             menus: []
         };
@@ -535,6 +617,7 @@ class Runtime extends EventEmitter {
         let extensionBlocks = [];
         for (const categoryInfo of this._blockInfo) {
             if (extensionInfo.id === categoryInfo.id) {
+                categoryInfo.name = maybeFormatMessage(extensionInfo.name);
                 categoryInfo.blocks = [];
                 categoryInfo.menus = [];
                 this._fillExtensionCategory(categoryInfo, extensionInfo);
@@ -559,6 +642,7 @@ class Runtime extends EventEmitter {
                 categoryInfo.menus.push(convertedMenu);
             }
         }
+
         for (const blockInfo of extensionInfo.blocks) {
             if (blockInfo === '---') {
                 categoryInfo.blocks.push(ConvertedSeparator);
@@ -569,11 +653,7 @@ class Runtime extends EventEmitter {
                 const opcode = convertedBlock.json.type;
                 categoryInfo.blocks.push(convertedBlock);
                 if (blockInfo.blockType !== BlockType.EVENT) {
-                    if (convertedBlock.info.func) {
-                        this._primitives[opcode] = convertedBlock.info.func;
-                    } else {
-                        convertedBlock.info.func = this._primitives[opcode];
-                    }
+                    this._primitives[opcode] = convertedBlock.info.func;
                 }
                 if (blockInfo.blockType === BlockType.EVENT || blockInfo.blockType === BlockType.HAT) {
                     this._hats[opcode] = {
@@ -624,11 +704,13 @@ class Runtime extends EventEmitter {
                 colourSecondary: categoryInfo.color2,
                 colourTertiary: categoryInfo.color3,
                 outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
-                args0: [{
-                    type: 'field_dropdown',
-                    name: menuName,
-                    options: options
-                }]
+                args0: [
+                    {
+                        type: 'field_dropdown',
+                        name: menuName,
+                        options: options
+                    }
+                ]
             }
         };
     }
@@ -665,11 +747,15 @@ class Runtime extends EventEmitter {
         };
 
         // If an icon for the extension exists, prepend it to each block, with a vertical separator.
-        if (categoryInfo.blockIconURI) {
+        // We can overspecify an icon for each block, but if no icon exists on a block, fall back to
+        // the category block icon.
+        const iconURI = blockInfo.blockIconURI || categoryInfo.blockIconURI;
+
+        if (iconURI) {
             blockJSON.message0 = '%1 %2';
             const iconJSON = {
                 type: 'field_image',
-                src: categoryInfo.blockIconURI,
+                src: iconURI,
                 width: 40,
                 height: 40
             };
@@ -750,8 +836,12 @@ class Runtime extends EventEmitter {
             }
         }
 
-        // Add icon to the bottom right of a loop block
-        if (blockInfo.blockType === BlockType.LOOP) {
+        if (blockInfo.blockType === BlockType.REPORTER) {
+            if (!blockInfo.disableMonitor && context.inputList.length === 0) {
+                blockJSON.checkboxInFlyout = true;
+            }
+        } else if (blockInfo.blockType === BlockType.LOOP) {
+            // Add icon to the bottom right of a loop block
             blockJSON[`lastDummyAlign${outLineNum}`] = 'RIGHT';
             blockJSON[`message${outLineNum}`] = '%1';
             blockJSON[`args${outLineNum}`] = [{
@@ -840,11 +930,7 @@ class Runtime extends EventEmitter {
     getBlocksXML () {
         const xmlParts = [];
         for (const categoryInfo of this._blockInfo) {
-            const {
-                name,
-                color1,
-                color2
-            } = categoryInfo;
+            const {name, color1, color2} = categoryInfo;
             const paletteBlocks = categoryInfo.blocks.filter(block => !block.info.hideFromPalette);
             const colorXML = `colour="${color1}" secondaryColour="${color2}"`;
 
@@ -859,7 +945,13 @@ class Runtime extends EventEmitter {
             const menuIconXML = menuIconURI ?
                 `iconURI="${menuIconURI}"` : '';
 
-            xmlParts.push(`<category name="${name}" id="${categoryInfo.id}" ${colorXML} ${menuIconXML}>`);
+            let statusButtonXML = '';
+            if (categoryInfo.showStatusButton) {
+                statusButtonXML = 'showStatusButton="true"';
+            }
+
+            xmlParts.push(`<category name="${name}" id="${categoryInfo.id}"
+                ${statusButtonXML} ${colorXML} ${menuIconXML}>`);
             xmlParts.push.apply(xmlParts, paletteBlocks.map(block => block.xml));
             xmlParts.push('</category>');
         }
@@ -872,6 +964,68 @@ class Runtime extends EventEmitter {
     getBlocksJSON () {
         return this._blockInfo.reduce(
             (result, categoryInfo) => result.concat(categoryInfo.blocks.map(blockInfo => blockInfo.json)), []);
+    }
+
+    /**
+     * Register an extension that communications with a hardware peripheral by id,
+     * to have access to it and its peripheral functions in the future.
+     * @param {string} extensionId - the id of the extension.
+     * @param {object} extension - the extension to register.
+     */
+    registerPeripheralExtension (extensionId, extension) {
+        this.peripheralExtensions[extensionId] = extension;
+    }
+
+    /**
+     * Tell the specified extension to scan for a peripheral.
+     * @param {string} extensionId - the id of the extension.
+     */
+    scanForPeripheral (extensionId) {
+        if (this.peripheralExtensions[extensionId]) {
+            this.peripheralExtensions[extensionId].scan();
+        }
+    }
+
+    /**
+     * Connect to the extension's specified peripheral.
+     * @param {string} extensionId - the id of the extension.
+     * @param {number} peripheralId - the id of the peripheral.
+     */
+    connectPeripheral (extensionId, peripheralId) {
+        if (this.peripheralExtensions[extensionId]) {
+            this.peripheralExtensions[extensionId].connect(peripheralId);
+        }
+    }
+
+    /**
+     * Disconnect from the extension's connected peripheral.
+     * @param {string} extensionId - the id of the extension.
+     */
+    disconnectPeripheral (extensionId) {
+        if (this.peripheralExtensions[extensionId]) {
+            this.peripheralExtensions[extensionId].disconnect();
+        }
+    }
+
+    /**
+     * Returns whether the extension has a currently connected peripheral.
+     * @param {string} extensionId - the id of the extension.
+     * @return {boolean} - whether the extension has a connected peripheral.
+     */
+    getPeripheralIsConnected (extensionId) {
+        let isConnected = false;
+        if (this.peripheralExtensions[extensionId]) {
+            isConnected = this.peripheralExtensions[extensionId].isConnected();
+        }
+        return isConnected;
+    }
+
+    /**
+     * Emit an event to indicate that the microphone is being used to stream audio.
+     * @param {boolean} listening - true if the microphone is currently listening.
+     */
+    emitMicListening (listening) {
+        this.emit(Runtime.MIC_LISTENING, listening);
     }
 
     /**
@@ -935,6 +1089,7 @@ class Runtime extends EventEmitter {
      */
     attachRenderer (renderer) {
         this.renderer = renderer;
+        this.renderer.setLayerGroupOrdering(StageLayering.LAYER_GROUPS);
     }
 
     /**
@@ -943,6 +1098,15 @@ class Runtime extends EventEmitter {
      */
     attachV2SVGAdapter (svgAdapter) {
         this.v2SvgAdapter = svgAdapter;
+    }
+
+    /**
+     * Set the bitmap adapter for the VM/runtime, which converts scratch 2
+     * bitmaps to scratch 3 bitmaps. (Scratch 3 bitmaps are all bitmap resolution 2)
+     * @param {!function} bitmapAdapter The adapter to attach
+     */
+    attachV2BitmapAdapter (bitmapAdapter) {
+        this.v2BitmapAdapter = bitmapAdapter;
     }
 
     /**
@@ -1032,6 +1196,19 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Return whether a thread is waiting for more information or done.
+     * @param {?Thread} thread Thread object to check.
+     * @return {boolean} True if the thread is waiting
+     */
+    isWaitingThread (thread) {
+        return (
+            thread.status === Thread.STATUS_PROMISE_WAIT ||
+            thread.status === Thread.STATUS_YIELD_TICK ||
+            !this.isActiveThread(thread)
+        );
+    }
+
+    /**
      * Toggle a script.
      * @param {!string} topBlockId ID of block that starts the script.
      * @param {?object} opts optional arguments to toggle script
@@ -1074,14 +1251,12 @@ class Runtime extends EventEmitter {
         for (let i = 0; i < this.threads.length; i++) {
             // Don't re-add the script if it's already running
             if (this.threads[i].topBlock === topBlockId && this.threads[i].status !== Thread.STATUS_DONE &&
-                this.threads[i].updateMonitor) {
+                    this.threads[i].updateMonitor) {
                 return;
             }
         }
         // Otherwise add it.
-        this._pushThread(topBlockId, optTarget, {
-            updateMonitor: true
-        });
+        this._pushThread(topBlockId, optTarget, {updateMonitor: true});
     }
 
     /**
@@ -1093,7 +1268,7 @@ class Runtime extends EventEmitter {
      * @param {Target=} optTarget Optionally, a target to restrict to.
      */
     allScriptsDo (f, optTarget) {
-        let targets = this.targets;
+        let targets = this.executableTargets;
         if (optTarget) {
             targets = [optTarget];
         }
@@ -1125,9 +1300,7 @@ class Runtime extends EventEmitter {
 
         for (const opts in optMatchFields) {
             if (!optMatchFields.hasOwnProperty(opts)) continue;
-            // modified by jeremy: string 类型变大写，其他原样返回
-            optMatchFields[opts] = typeof optMatchFields[opts] === 'string' ?
-                optMatchFields[opts].toUpperCase() : optMatchFields[opts];
+            optMatchFields[opts] = optMatchFields[opts].toUpperCase();
         }
 
         // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
@@ -1147,10 +1320,9 @@ class Runtime extends EventEmitter {
             // needs to have a precise collection of started threads.
             let hatFields = blocks.getFields(block);
 
-            // fields 和 value 都要 check
             // If no fields are present, check inputs (horizontal blocks)
-            // if (Object.keys(hatFields).length === 0) {
-                // hatFields = {}; // don't overwrite the block's actual fields list
+            if (Object.keys(hatFields).length === 0) {
+                hatFields = {}; // don't overwrite the block's actual fields list
                 const hatInputs = blocks.getInputs(block);
                 for (const input in hatInputs) {
                     if (!hatInputs.hasOwnProperty(input)) continue;
@@ -1159,24 +1331,12 @@ class Runtime extends EventEmitter {
                     const fields = blocks.getFields(inpBlock);
                     Object.assign(hatFields, fields);
                 }
-            // }
+            }
 
             if (optMatchFields) {
-                for (var matchField in optMatchFields) {
-                    // modified by Hyman: 为帽子块增加输入参数
-                    // var val = hatFields[matchField] ? hatFields[matchField].value : hatFields.TEXT.value;
-                    var val;
-                    if (!hatFields[matchField]) { // 不存在此字段则跳过
-                        continue;
-                    } else {
-                        val = (hatFields[matchField].value || '').toUpperCase();
-                    }
-                    // 源码为：if (val.toUpperCase() !== optMatchFields[matchField]) {
-                    if (!optMatchFields.matchFunc && val !== optMatchFields[matchField]) {
-                        // Field mismatch.
-                        return;
-                    } // 若不满足判断条件，则return
-                    else if (optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField], hatFields)) {
+                for (const matchField in optMatchFields) {
+                    if (hatFields[matchField].value.toUpperCase() !==
+                        optMatchFields[matchField]) {
                         // Field mismatch.
                         return;
                     }
@@ -1220,10 +1380,71 @@ class Runtime extends EventEmitter {
      */
     dispose () {
         this.stopAll();
-        this.emit(Runtime.RUNTIME_DISPOSE);
         this.targets.map(this.disposeTarget, this);
         this._monitorState = OrderedMap({});
         // @todo clear out extensions? turboMode? etc.
+    }
+
+    /**
+     * Add a target to the execution order.
+     * @param {Target} executableTarget target to add
+     */
+    addExecutable (executableTarget) {
+        this.executableTargets.push(executableTarget);
+    }
+
+    /**
+     * Move a target in the execution order by a relative amount.
+     *
+     * A positve number will make the target execute earlier. A negative number
+     * will make the target execute later in the order.
+     *
+     * @param {Target} executableTarget target to move
+     * @param {number} delta number of positions to move target by
+     * @returns {number} new position in execution order
+     */
+    moveExecutable (executableTarget, delta) {
+        const oldIndex = this.executableTargets.indexOf(executableTarget);
+        this.executableTargets.splice(oldIndex, 1);
+        let newIndex = oldIndex + delta;
+        if (newIndex > this.executableTargets.length) {
+            newIndex = this.executableTargets.length;
+        }
+        if (newIndex <= 0) {
+            if (this.executableTargets.length > 0 && this.executableTargets[0].isStage) {
+                newIndex = 1;
+            } else {
+                newIndex = 0;
+            }
+        }
+        this.executableTargets.splice(newIndex, 0, executableTarget);
+        return newIndex;
+    }
+
+    /**
+     * Set a target to execute at a specific position in the execution order.
+     *
+     * Infinity will set the target to execute first. 0 will set the target to
+     * execute last (before the stage).
+     *
+     * @param {Target} executableTarget target to move
+     * @param {number} newIndex position in execution order to place the target
+     * @returns {number} new position in the execution order
+     */
+    setExecutablePosition (executableTarget, newIndex) {
+        const oldIndex = this.executableTargets.indexOf(executableTarget);
+        return this.moveExecutable(executableTarget, newIndex - oldIndex);
+    }
+
+    /**
+     * Remove a target from the execution set.
+     * @param {Target} executableTarget target to remove
+     */
+    removeExecutable (executableTarget) {
+        const oldIndex = this.executableTargets.indexOf(executableTarget);
+        if (oldIndex > -1) {
+            this.executableTargets.splice(oldIndex, 1);
+        }
     }
 
     /**
@@ -1246,6 +1467,9 @@ class Runtime extends EventEmitter {
      * @param {Thread=} optThreadException Optional thread to skip.
      */
     stopForTarget (target, optThreadException) {
+        // Emit stop event to allow blocks to clean up any state.
+        this.emit(Runtime.STOP_FOR_TARGET, target, optThreadException);
+
         // Stop any threads on the target.
         for (let i = 0; i < this.threads.length; i++) {
             if (this.threads[i] === optThreadException) {
@@ -1335,7 +1559,7 @@ class Runtime extends EventEmitter {
         // flag will still indicate that a script ran.
         this._emitProjectRunStatus(
             this.threads.length + doneThreads.length -
-            this._getMonitorThreadCount([...this.threads, ...doneThreads]));
+                this._getMonitorThreadCount([...this.threads, ...doneThreads]));
         if (this.renderer) {
             // @todo: Only render when this.redrawRequested or clones rendered.
             if (this.profiler !== null) {
@@ -1432,7 +1656,7 @@ class Runtime extends EventEmitter {
             const target = thread.target;
             if (target === this._editingTarget) {
                 const blockForThread = thread.blockGlowInFrame;
-                if (thread.requestScriptGlowInFrame) {
+                if (thread.requestScriptGlowInFrame || thread.stackClick) {
                     let script = target.blocks.getTopLevelScript(blockForThread);
                     if (!script) {
                         // Attempt to find in flyout blocks.
@@ -1504,13 +1728,9 @@ class Runtime extends EventEmitter {
      */
     glowBlock (blockId, isGlowing) {
         if (isGlowing) {
-            this.emit(Runtime.BLOCK_GLOW_ON, {
-                id: blockId
-            });
+            this.emit(Runtime.BLOCK_GLOW_ON, {id: blockId});
         } else {
-            this.emit(Runtime.BLOCK_GLOW_OFF, {
-                id: blockId
-            });
+            this.emit(Runtime.BLOCK_GLOW_OFF, {id: blockId});
         }
     }
 
@@ -1521,13 +1741,9 @@ class Runtime extends EventEmitter {
      */
     glowScript (topBlockId, isGlowing) {
         if (isGlowing) {
-            this.emit(Runtime.SCRIPT_GLOW_ON, {
-                id: topBlockId
-            });
+            this.emit(Runtime.SCRIPT_GLOW_ON, {id: topBlockId});
         } else {
-            this.emit(Runtime.SCRIPT_GLOW_OFF, {
-                id: topBlockId
-            });
+            this.emit(Runtime.SCRIPT_GLOW_OFF, {id: topBlockId});
         }
     }
 
@@ -1553,34 +1769,43 @@ class Runtime extends EventEmitter {
      * @param {string} value Value to show associated with the block.
      */
     visualReport (blockId, value) {
-        this.emit(Runtime.VISUAL_REPORT, {
-            id: blockId,
-            value: String(value)
-        });
+        this.emit(Runtime.VISUAL_REPORT, {id: blockId, value: String(value)});
     }
 
     /**
      * Add a monitor to the state. If the monitor already exists in the state,
-     * overwrites it.
+     * updates those properties that are defined in the given monitor record.
      * @param {!MonitorRecord} monitor Monitor to add.
      */
     requestAddMonitor (monitor) {
-        this._monitorState = this._monitorState.set(monitor.get('id'), monitor);
+        const id = monitor.get('id');
+        if (!this.requestUpdateMonitor(monitor)) { // update monitor if it exists in the state
+            // if the monitor did not exist in the state, add it
+            this._monitorState = this._monitorState.set(id, monitor);
+        }
     }
 
     /**
-     * Update a monitor in the state. Does nothing if the monitor does not already
-     * exist in the state.
+     * Update a monitor in the state and report success/failure of update.
      * @param {!Map} monitor Monitor values to update. Values on the monitor with overwrite
      *     values on the old monitor with the same ID. If a value isn't defined on the new monitor,
      *     the old monitor will keep its old value.
+     * @return {boolean} true if monitor exists in the state and was updated, false if it did not exist.
      */
     requestUpdateMonitor (monitor) {
         const id = monitor.get('id');
         if (this._monitorState.has(id)) {
             this._monitorState =
-                this._monitorState.set(id, this._monitorState.get(id).merge(monitor));
+                // Use mergeWith here to prevent undefined values from overwriting existing ones
+                this._monitorState.set(id, this._monitorState.get(id).mergeWith((prev, next) => {
+                    if (typeof next === 'undefined' || next === null) {
+                        return prev;
+                    }
+                    return next;
+                }, monitor));
+            return true;
         }
+        return false;
     }
 
     /**
@@ -1590,6 +1815,31 @@ class Runtime extends EventEmitter {
      */
     requestRemoveMonitor (monitorId) {
         this._monitorState = this._monitorState.delete(monitorId);
+    }
+
+    /**
+     * Hides a monitor and returns success/failure of action.
+     * @param {!string} monitorId ID of the monitor to hide.
+     * @return {boolean} true if monitor exists and was updated, false otherwise
+     */
+    requestHideMonitor (monitorId) {
+        return this.requestUpdateMonitor(new Map([
+            ['id', monitorId],
+            ['visible', false]
+        ]));
+    }
+
+    /**
+     * Shows a monitor and returns success/failure of action.
+     * not exist in the state.
+     * @param {!string} monitorId ID of the monitor to show.
+     * @return {boolean} true if monitor exists and was updated, false otherwise
+     */
+    requestShowMonitor (monitorId) {
+        return this.requestUpdateMonitor(new Map([
+            ['id', monitorId],
+            ['visible', true]
+        ]));
     }
 
     /**
@@ -1698,6 +1948,59 @@ class Runtime extends EventEmitter {
      */
     getEditingTarget () {
         return this._editingTarget;
+    }
+
+    getAllVarNamesOfType (varType) {
+        let varNames = [];
+        for (const target of this.targets) {
+            const targetVarNames = target.getAllVariableNamesInScopeByType(varType, true);
+            varNames = varNames.concat(targetVarNames);
+        }
+        return varNames;
+    }
+
+    /**
+     * Get the label or label function for an opcode
+     * @param {string} extendedOpcode - the opcode you want a label for
+     * @return {object} - object with label and category
+     * @property {string} category - the category for this opcode
+     * @property {Function} [labelFn] - function to generate the label for this opcode
+     * @property {string} [label] - the label for this opcode if `labelFn` is absent
+     */
+    getLabelForOpcode (extendedOpcode) {
+        const [category, opcode] = StringUtil.splitFirst(extendedOpcode, '_');
+        if (!(category && opcode)) return;
+
+        const categoryInfo = this._blockInfo.find(ci => ci.id === category);
+        if (!categoryInfo) return;
+
+        const block = categoryInfo.blocks.find(b => b.info.opcode === opcode);
+        if (!block) return;
+
+        // TODO: should this use some other category? Also, we may want to format the label in a locale-specific way.
+        return {
+            category: 'data',
+            label: `${categoryInfo.name}: ${block.info.text}`
+        };
+    }
+
+    /**
+     * Create a new global variable avoiding conflicts with other variable names.
+     * @param {string} variableName The desired variable name for the new global variable.
+     * This can be turned into a fresh name as necessary.
+     * @param {string} optVarId An optional ID to use for the variable. A new one will be generated
+     * if a falsey value for this parameter is provided.
+     * @param {string} optVarType The type of the variable to create. Defaults to Variable.SCALAR_TYPE.
+     * @return {Variable} The new variable that was created.
+     */
+    createNewGlobalVariable (variableName, optVarId, optVarType) {
+        const varType = (typeof optVarType === 'string') ? optVarType : Variable.SCALAR_TYPE;
+        const allVariableNames = this.getAllVarNamesOfType(varType);
+        const newName = StringUtil.unusedName(variableName, allVariableNames);
+        const variable = new Variable(optVarId || uid(), newName, varType);
+        const stage = this.getTargetForStage();
+        stage.variables[variable.id] = variable;
+        return variable;
     }
 
     /**

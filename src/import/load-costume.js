@@ -1,7 +1,108 @@
 const StringUtil = require('../util/string-util');
 const log = require('../util/log');
-const DEFAULT_SVG = `<?xml version="1.0" encoding="UTF-8"?><svg width="1" height="1" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect width="1" height="1" fill="none" stroke="none"></rect></svg>`;
-const DEFAULT_SVG_DATA = (new TextEncoder()).encode(DEFAULT_SVG);
+
+const loadVector_ = function (costume, costumeAsset, runtime, rotationCenter, optVersion) {
+    let svgString = costumeAsset.decodeText();
+    // SVG Renderer load fixes "quirks" associated with Scratch 2 projects
+    if (optVersion && optVersion === 2 && !runtime.v2SvgAdapter) {
+        log.error('No V2 SVG adapter present; SVGs may not render correctly.');
+    } else if (optVersion && optVersion === 2 && runtime.v2SvgAdapter) {
+        runtime.v2SvgAdapter.loadString(svgString, true /* fromVersion2 */);
+        svgString = runtime.v2SvgAdapter.toString();
+        // Put back into storage
+        const storage = runtime.storage;
+        costumeAsset.encodeTextData(svgString, storage.DataFormat.SVG);
+        costume.assetId = storage.builtinHelper.cache(
+            storage.AssetType.ImageVector,
+            storage.DataFormat.SVG,
+            costumeAsset.data
+        );
+        costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
+    }
+    // createSVGSkin does the right thing if rotationCenter isn't provided, so it's okay if it's
+    // undefined here
+    costume.skinId = runtime.renderer.createSVGSkin(svgString, rotationCenter);
+    costume.size = runtime.renderer.getSkinSize(costume.skinId);
+    // Now we should have a rotationCenter even if we didn't before
+    if (!rotationCenter) {
+        rotationCenter = runtime.renderer.getSkinRotationCenter(costume.skinId);
+        costume.rotationCenterX = rotationCenter[0];
+        costume.rotationCenterY = rotationCenter[1];
+        costume.bitmapResolution = 1;
+    }
+
+    return Promise.resolve(costume);
+};
+
+const loadBitmap_ = function (costume, costumeAsset, runtime, rotationCenter) {
+    return new Promise((resolve, reject) => {
+        const imageElement = new Image();
+        const onError = function () {
+            // eslint-disable-next-line no-use-before-define
+            removeEventListeners();
+            reject('Image load failed');
+        };
+        const onLoad = function () {
+            // eslint-disable-next-line no-use-before-define
+            removeEventListeners();
+            resolve(imageElement);
+        };
+        const removeEventListeners = function () {
+            imageElement.removeEventListener('error', onError);
+            imageElement.removeEventListener('load', onLoad);
+        };
+        imageElement.addEventListener('error', onError);
+        imageElement.addEventListener('load', onLoad);
+        const src = costumeAsset.encodeDataURI();
+        if (costume.bitmapResolution === 1 && !runtime.v2BitmapAdapter) {
+            log.error('No V2 bitmap adapter present; bitmaps may not render correctly.');
+        } else if (costume.bitmapResolution === 1) {
+            runtime.v2BitmapAdapter.convertResolution1Bitmap(src, (error, dataURI) => {
+                if (error) {
+                    log.error(error);
+                } else if (dataURI) {
+                    // Put back into storage
+                    const storage = runtime.storage;
+                    costume.assetId = storage.builtinHelper.cache(
+                        storage.AssetType.ImageBitmap,
+                        storage.DataFormat.PNG,
+                        runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI)
+                    );
+                    costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
+                }
+                // Regardless of if conversion succeeds, convert it to bitmap resolution 2,
+                // since all code from here on will assume that.
+                if (rotationCenter) {
+                    rotationCenter[0] = rotationCenter[0] * 2;
+                    rotationCenter[1] = rotationCenter[1] * 2;
+                    costume.rotationCenterX = rotationCenter[0];
+                    costume.rotationCenterY = rotationCenter[1];
+                }
+                costume.bitmapResolution = 2;
+                // Use original src if conversion fails.
+                // The image will appear half-sized.
+                imageElement.src = dataURI ? dataURI : src;
+            });
+        } else {
+            imageElement.src = src;
+        }
+    }).then(imageElement => {
+        // createBitmapSkin does the right thing if costume.bitmapResolution or rotationCenter are undefined...
+        costume.skinId = runtime.renderer.createBitmapSkin(imageElement, costume.bitmapResolution, rotationCenter);
+        const renderSize = runtime.renderer.getSkinSize(costume.skinId);
+        costume.size = [renderSize[0] * 2, renderSize[1] * 2]; // Actual size, since all bitmaps are resolution 2
+
+        if (!rotationCenter) {
+            rotationCenter = runtime.renderer.getSkinRotationCenter(costume.skinId);
+            // Actual rotation center, since all bitmaps are resolution 2
+            costume.rotationCenterX = rotationCenter[0] * 2;
+            costume.rotationCenterY = rotationCenter[1] * 2;
+            costume.bitmapResolution = 2;
+        }
+        return costume;
+    });
+};
+
 /**
  * Initialize a costume from an asset asynchronously.
  * Do not call this unless there is a renderer attached.
@@ -17,91 +118,24 @@ const DEFAULT_SVG_DATA = (new TextEncoder()).encode(DEFAULT_SVG);
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
 const loadCostumeFromAsset = function (costume, costumeAsset, runtime, optVersion) {
-    if (!costumeAsset) {
-        const defaultAssetId = runtime.storage.defaultAssetId.ImageVector;
-        const asset = runtime.storage.builtinHelper.assets[defaultAssetId];
-        costumeAsset = new runtime.storage.Asset(asset.type, asset.id, asset.format, DEFAULT_SVG_DATA);
-        costume.dataFormat = asset.format;
-    }
     costume.assetId = costumeAsset.assetId;
     const renderer = runtime.renderer;
     if (!renderer) {
         log.error('No rendering module present; cannot load costume: ', costume.name);
-        return costume;
+        return Promise.resolve(costume);
     }
     const AssetType = runtime.storage.AssetType;
     let rotationCenter;
-    if (costume.rotationCenterX && costume.rotationCenterY && costume.bitmapResolution) {
-        rotationCenter = [
-            costume.rotationCenterX / costume.bitmapResolution,
-            costume.rotationCenterY / costume.bitmapResolution
-        ];
+    // Use provided rotation center and resolution if they are defined. Bitmap resolution
+    // should only ever be 1 or 2.
+    if (typeof costume.rotationCenterX === 'number' && !isNaN(costume.rotationCenterX) &&
+            typeof costume.rotationCenterY === 'number' && !isNaN(costume.rotationCenterY)) {
+        rotationCenter = [costume.rotationCenterX, costume.rotationCenterY];
     }
     if (costumeAsset.assetType === AssetType.ImageVector) {
-        let svgString = costumeAsset.decodeText();
-        // modified by Kane: 找不到图片处理
-        if (!svgString || svgString.indexOf('</html>') !== -1) {
-            costumeAsset.data = DEFAULT_SVG_DATA;
-            svgString = DEFAULT_SVG;
-        }
-        // SVG Renderer load fixes "quirks" associated with Scratch 2 projects
-        if (optVersion && optVersion === 2 && runtime.v2SvgAdapter) {
-            runtime.v2SvgAdapter.loadString(svgString);
-            svgString = runtime.v2SvgAdapter.toString();
-            // Put back into storage
-            const storage = runtime.storage;
-            costumeAsset.encodeTextData(svgString, storage.DataFormat.SVG);
-            costume.assetId = storage.builtinHelper.cache(
-                storage.AssetType.ImageVector,
-                storage.DataFormat.SVG,
-                costumeAsset.data
-            );
-            costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
-        }
-        // createSVGSkin does the right thing if rotationCenter isn't provided, so it's okay if it's
-        // undefined here
-        costume.skinId = renderer.createSVGSkin(svgString, rotationCenter);
-        costume.size = renderer.getSkinSize(costume.skinId);
-        // Now we should have a rotationCenter even if we didn't before
-        if (!rotationCenter) {
-            rotationCenter = renderer.getSkinRotationCenter(costume.skinId);
-            costume.rotationCenterX = rotationCenter[0];
-            costume.rotationCenterY = rotationCenter[1];
-        }
-
-        return costume;
+        return loadVector_(costume, costumeAsset, runtime, rotationCenter, optVersion);
     }
-
-    return new Promise(resolve => {
-        const imageElement = new Image();
-        const onError = function () {
-            // eslint-disable-next-line no-use-before-define
-            imageElement.src = `data:image/svg+xml,${encodeURI(DEFAULT_SVG)}`;
-        };
-        const onLoad = function () {
-            // eslint-disable-next-line no-use-before-define
-            removeEventListeners();
-            resolve(imageElement);
-        };
-        const removeEventListeners = function () {
-            imageElement.removeEventListener('error', onError);
-            imageElement.removeEventListener('load', onLoad);
-        };
-        imageElement.addEventListener('error', onError);
-        imageElement.addEventListener('load', onLoad);
-        imageElement.src = costumeAsset.encodeDataURI();
-    }).then(imageElement => {
-        // createBitmapSkin does the right thing if costume.bitmapResolution or rotationCenter are undefined...
-        costume.skinId = renderer.createBitmapSkin(imageElement, costume.bitmapResolution, rotationCenter);
-        costume.size = renderer.getSkinSize(costume.skinId);
-
-        if (!rotationCenter) {
-            rotationCenter = renderer.getSkinRotationCenter(costume.skinId);
-            costume.rotationCenterX = rotationCenter[0] * 2;
-            costume.rotationCenterY = rotationCenter[1] * 2;
-        }
-        return costume;
-    });
+    return loadBitmap_(costume, costumeAsset, runtime, rotationCenter, optVersion);
 };
 
 /**
@@ -129,10 +163,14 @@ const loadCostume = function (md5ext, costume, runtime, optVersion) {
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
     const assetType = (ext === 'svg') ? AssetType.ImageVector : AssetType.ImageBitmap;
+
     return runtime.storage.load(assetType, md5, ext).then(costumeAsset => {
         costume.dataFormat = ext;
         return loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion);
-    });
+    })
+        .catch(e => {
+            log.error(e);
+        });
 };
 
 module.exports = {

@@ -2,6 +2,7 @@ const log = require('../util/log');
 const MathUtil = require('../util/math-util');
 const StringUtil = require('../util/string-util');
 const Target = require('../engine/target');
+const StageLayering = require('../engine/stage-layering');
 
 /**
  * Rendered target: instance of a sprite (clone), or the stage.
@@ -118,19 +119,6 @@ class RenderedTarget extends Target {
         this.rotationStyle = RenderedTarget.ROTATION_STYLE_ALL_AROUND;
 
         /**
-         * * Modified by Kane
-         * 设备Id
-         * @type {boolean}
-         */
-        this.deviceId = null;
-
-        /**
-         * Modified by Kane
-         * 角色状态
-         * @type {boolean}
-         */
-        this.isEditing = false;
-        /**
          * Loudness for sound playback for this target, as a percentage.
          * @type {number}
          */
@@ -164,14 +152,23 @@ class RenderedTarget extends Target {
          * @type {string}
          */
         this.videoState = RenderedTarget.VIDEO_STATE.ON;
+
+        /**
+         * The language to use for speech synthesis, in the text2speech extension.
+         * It is initialized to null so that on extension load, we can check for
+         * this and try setting it using the editor locale.
+         * @type {string}
+         */
+        this.textToSpeechLanguage = null;
     }
 
     /**
      * Create a drawable with the this.renderer.
+     * @param {boolean} layerGroup The layer group this drawable should be added to
      */
-    initDrawable () {
+    initDrawable (layerGroup) {
         if (this.renderer) {
-            this.drawableID = this.renderer.createDrawable();
+            this.drawableID = this.renderer.createDrawable(layerGroup);
         }
         // If we're a clone, start the hats.
         if (!this.isOriginal) {
@@ -181,21 +178,30 @@ class RenderedTarget extends Target {
         }
     }
 
+    get audioPlayer () {
+        /* eslint-disable no-console */
+        console.warn('get audioPlayer deprecated, please update to use .sprite.soundBank methods');
+        console.warn(new Error('stack for debug').stack);
+        /* eslint-enable no-console */
+        const bank = this.sprite.soundBank;
+        const audioPlayerProxy = {
+            playSound: soundId => bank.play(this, soundId)
+        };
+
+        Object.defineProperty(this, 'audioPlayer', {
+            configurable: false,
+            enumerable: true,
+            writable: false,
+            value: audioPlayerProxy
+        });
+
+        return audioPlayerProxy;
+    }
+
     /**
      * Initialize the audio player for this sprite or clone.
      */
     initAudio () {
-        this.audioPlayer = null;
-        if (this.runtime && this.runtime.audioEngine) {
-            this.audioPlayer = this.runtime.audioEngine.createPlayer();
-            // If this is a clone, it gets a reference to its parent's activeSoundPlayers object.
-            if (!this.isOriginal) {
-                const parent = this.sprite.clones[0];
-                if (parent && parent.audioPlayer) {
-                    this.audioPlayer.activeSoundPlayers = parent.audioPlayer.activeSoundPlayers;
-                }
-            }
-        }
     }
 
     /**
@@ -251,6 +257,17 @@ class RenderedTarget extends Target {
     }
 
     /**
+     * Round a number to n digits
+     * @param {number} value The number to be rounded
+     * @param {number} places The number of decimal places to round to
+     * @return {number} The rounded number
+     */
+    _roundCoord (value, places) {
+        const power = Math.pow(10, places);
+        return Math.round(value * power) / power;
+    }
+
+    /**
      * Set the X and Y coordinates.
      * @param {!number} x New X coordinate, in Scratch coordinates.
      * @param {!number} y New Y coordinate, in Scratch coordinates.
@@ -263,6 +280,8 @@ class RenderedTarget extends Target {
         const oldY = this.y;
         if (this.renderer) {
             const position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
+            position[0] = this._roundCoord(position[0], 8);
+            position[1] = this._roundCoord(position[1], 8);
             this.x = position[0];
             this.y = position[1];
 
@@ -274,8 +293,8 @@ class RenderedTarget extends Target {
                 this.runtime.requestRedraw();
             }
         } else {
-            this.x = x;
-            this.y = y;
+            this.x = this._roundCoord(x, 8);
+            this.y = this._roundCoord(y, 8);
         }
         this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY, force);
         this.runtime.requestTargetsUpdate(this);
@@ -465,7 +484,7 @@ class RenderedTarget extends Target {
                 typeof costume.rotationCenterX !== 'undefined' &&
                 typeof costume.rotationCenterY !== 'undefined'
             ) {
-                const scale = costume.bitmapResolution || ((costume.dataFormat && costume.dataFormat === 'svg') ? 1 : 2);
+                const scale = costume.bitmapResolution || 2;
                 drawableProperties.rotationCenter = [
                     costume.rotationCenterX / scale,
                     costume.rotationCenterY / scale
@@ -486,7 +505,7 @@ class RenderedTarget extends Target {
      * @param {?int} index Index at which to add costume
      */
     addCostume (costumeObject, index) {
-        if (index) {
+        if (typeof index === 'number' && !isNaN(index)) {
             this.sprite.addCostumeAt(costumeObject, index);
         } else {
             this.sprite.addCostumeAt(costumeObject, this.sprite.costumes.length);
@@ -523,12 +542,19 @@ class RenderedTarget extends Target {
     /**
      * Delete a costume by index.
      * @param {number} index Costume index to be deleted
+     * @return {?object} The costume that was deleted or null
+     * if the index was out of bounds of the costumes list or
+     * this target only has one costume.
      */
     deleteCostume (index) {
         const originalCostumeCount = this.sprite.costumes.length;
-        if (originalCostumeCount === 1) return;
+        if (originalCostumeCount === 1) return null;
 
-        this.sprite.deleteCostumeAt(index);
+        if (index < 0 || index >= originalCostumeCount) {
+            return null;
+        }
+
+        const deletedCostume = this.sprite.deleteCostumeAt(index);
 
         if (index === this.currentCostume && index === originalCostumeCount - 1) {
             this.setCostume(index - 1);
@@ -539,6 +565,7 @@ class RenderedTarget extends Target {
         }
 
         this.runtime.requestTargetsUpdate(this);
+        return deletedCostume;
     }
 
     /**
@@ -549,7 +576,7 @@ class RenderedTarget extends Target {
     addSound (soundObject, index) {
         const usedNames = this.sprite.sounds.map(sound => sound.name);
         soundObject.name = StringUtil.unusedName(soundObject.name, usedNames);
-        if (index) {
+        if (typeof index === 'number' && !isNaN(index)) {
             this.sprite.sounds.splice(index, 0, soundObject);
         } else {
             this.sprite.sounds.push(soundObject);
@@ -574,12 +601,17 @@ class RenderedTarget extends Target {
     /**
      * Delete a sound by index.
      * @param {number} index Sound index to be deleted
+     * @return {object} The deleted sound object, or null if no sound was deleted.
      */
     deleteSound (index) {
-        this.sprite.sounds = this.sprite.sounds
-            .slice(0, index)
-            .concat(this.sprite.sounds.slice(index + 1));
+        // Make sure the sound index is not out of bounds
+        if (index < 0 || index >= this.sprite.sounds.length) {
+            return null;
+        }
+        // Delete the sound at the given index
+        const deletedSound = this.sprite.sounds.splice(index, 1)[0];
         this.runtime.requestTargetsUpdate(this);
+        return deletedSound;
     }
 
     /**
@@ -639,6 +671,47 @@ class RenderedTarget extends Target {
     }
 
     /**
+     * Reorder costume list by moving costume at costumeIndex to newIndex.
+     * @param {!number} costumeIndex Index of the costume to move.
+     * @param {!number} newIndex New index for that costume.
+     * @returns {boolean} If a change occurred (i.e. if the indices do not match)
+     */
+    reorderCostume (costumeIndex, newIndex) {
+        newIndex = MathUtil.clamp(newIndex, 0, this.sprite.costumes.length - 1);
+        costumeIndex = MathUtil.clamp(costumeIndex, 0, this.sprite.costumes.length - 1);
+
+        if (newIndex === costumeIndex) return false;
+
+        const currentCostume = this.getCurrentCostume();
+        const costume = this.sprite.costumes[costumeIndex];
+
+        // Use the sprite method for deleting costumes because setCostume is handled manually
+        this.sprite.deleteCostumeAt(costumeIndex);
+
+        this.addCostume(costume, newIndex);
+        this.currentCostume = this.getCostumeIndexByName(currentCostume.name);
+        return true;
+    }
+
+    /**
+     * Reorder sound list by moving sound at soundIndex to newIndex.
+     * @param {!number} soundIndex Index of the sound to move.
+     * @param {!number} newIndex New index for that sound.
+     * @returns {boolean} If a change occurred (i.e. if the indices do not match)
+     */
+    reorderSound (soundIndex, newIndex) {
+        newIndex = MathUtil.clamp(newIndex, 0, this.sprite.sounds.length - 1);
+        soundIndex = MathUtil.clamp(soundIndex, 0, this.sprite.sounds.length - 1);
+
+        if (newIndex === soundIndex) return false;
+
+        const sound = this.sprite.sounds[soundIndex];
+        this.deleteSound(soundIndex);
+        this.addSound(sound, newIndex);
+        return true;
+    }
+
+    /**
      * Get full sound list
      * @return {object[]} list of sounds
      */
@@ -652,8 +725,6 @@ class RenderedTarget extends Target {
      */
     updateAllDrawableProperties () {
         if (this.renderer) {
-            // Modified by Kane: 设备角色可能没有造型
-            if (!this.sprite.costumes || this.sprite.costumes.length === 0) return;
             const renderedDirectionScale = this._getRenderedDirectionAndScale();
             const costume = this.getCostumes()[this.currentCostume];
             const bitmapResolution = costume.bitmapResolution || 2;
@@ -725,6 +796,23 @@ class RenderedTarget extends Target {
     }
 
     /**
+     * Return whether this target is touching the mouse, an edge, or a sprite.
+     * @param {string} requestedObject an id for mouse or edge, or a sprite name.
+     * @return {boolean} True if the sprite is touching the object.
+     */
+    isTouchingObject (requestedObject) {
+        if (requestedObject === '_mouse_') {
+            if (!this.runtime.ioDevices.mouse) return false;
+            const mouseX = this.runtime.ioDevices.mouse.getClientX();
+            const mouseY = this.runtime.ioDevices.mouse.getClientY();
+            return this.isTouchingPoint(mouseX, mouseY);
+        } else if (requestedObject === '_edge_') {
+            return this.isTouchingEdge();
+        }
+        return this.isTouchingSprite(requestedObject);
+    }
+
+    /**
      * Return whether touching a point.
      * @param {number} x X coordinate of test point.
      * @param {number} y Y coordinate of test point.
@@ -732,15 +820,7 @@ class RenderedTarget extends Target {
      */
     isTouchingPoint (x, y) {
         if (this.renderer) {
-            // @todo: Update once pick is in Scratch coordinates.
-            // Limits test to this Drawable, so this will return true
-            // even if the clone is obscured by another Drawable.
-            const pickResult = this.runtime.renderer.pick(
-                x, y,
-                null, null,
-                [this.drawableID]
-            );
-            return pickResult === this.drawableID;
+            return this.renderer.drawableTouching(this.drawableID, x, y);
         }
         return false;
     }
@@ -812,22 +892,37 @@ class RenderedTarget extends Target {
         return false;
     }
 
+    getLayerOrder () {
+        if (this.renderer) {
+            return this.renderer.getDrawableOrder(this.drawableID);
+        }
+        return null;
+    }
+
     /**
      * Move to the front layer.
      */
-    goToFront () {
+    goToFront () { // This should only ever be used for sprites
         if (this.renderer) {
-            this.renderer.setDrawableOrder(this.drawableID, Infinity);
+            // Let the renderer re-order the sprite based on its knowledge
+            // of what layers are present
+            this.renderer.setDrawableOrder(this.drawableID, Infinity, StageLayering.SPRITE_LAYER);
         }
+
+        this.runtime.setExecutablePosition(this, Infinity);
     }
 
     /**
      * Move to the back layer.
      */
-    goToBack () {
+    goToBack () { // This should only ever be used for sprites
         if (this.renderer) {
-            this.renderer.setDrawableOrder(this.drawableID, -Infinity, false, 1);
+            // Let the renderer re-order the sprite based on its knowledge
+            // of what layers are present
+            this.renderer.setDrawableOrder(this.drawableID, -Infinity, StageLayering.SPRITE_LAYER, false);
         }
+
+        this.runtime.setExecutablePosition(this, -Infinity);
     }
 
     /**
@@ -836,8 +931,10 @@ class RenderedTarget extends Target {
      */
     goForwardLayers (nLayers) {
         if (this.renderer) {
-            this.renderer.setDrawableOrder(this.drawableID, nLayers, true, 1);
+            this.renderer.setDrawableOrder(this.drawableID, nLayers, StageLayering.SPRITE_LAYER, true);
         }
+
+        this.runtime.moveExecutable(this, nLayers);
     }
 
     /**
@@ -846,8 +943,10 @@ class RenderedTarget extends Target {
      */
     goBackwardLayers (nLayers) {
         if (this.renderer) {
-            this.renderer.setDrawableOrder(this.drawableID, -nLayers, true, 1);
+            this.renderer.setDrawableOrder(this.drawableID, -nLayers, StageLayering.SPRITE_LAYER, true);
         }
+
+        this.runtime.moveExecutable(this, -nLayers);
     }
 
     /**
@@ -857,9 +956,12 @@ class RenderedTarget extends Target {
     goBehindOther (other) {
         if (this.renderer) {
             const otherLayer = this.renderer.setDrawableOrder(
-                other.drawableID, 0, true);
-            this.renderer.setDrawableOrder(this.drawableID, otherLayer);
+                other.drawableID, 0, StageLayering.SPRITE_LAYER, true);
+            this.renderer.setDrawableOrder(this.drawableID, otherLayer, StageLayering.SPRITE_LAYER);
         }
+
+        const executionPosition = this.runtime.executableTargets.indexOf(other);
+        this.runtime.setExecutablePosition(this, executionPosition);
     }
 
     /**
@@ -925,10 +1027,8 @@ class RenderedTarget extends Target {
         newClone.currentCostume = this.currentCostume;
         newClone.rotationStyle = this.rotationStyle;
         newClone.effects = JSON.parse(JSON.stringify(this.effects));
-        newClone.variables = JSON.parse(JSON.stringify(this.variables));
-        newClone.lists = JSON.parse(JSON.stringify(this.lists));
-        newClone.deviceId = this.deviceId;
-        newClone.initDrawable();
+        newClone.variables = this.duplicateVariables();
+        newClone.initDrawable(StageLayering.SPRITE_LAYER);
         newClone.updateAllDrawableProperties();
         // Place behind the current target.
         newClone.goBehindOther(this);
@@ -944,8 +1044,8 @@ class RenderedTarget extends Target {
             const newTarget = newSprite.createClone();
             // Copy all properties.
             // @todo refactor with clone methods
-            newTarget.x = Math.random() * 400 / 2;
-            newTarget.y = Math.random() * 300 / 2;
+            newTarget.x = (Math.random() - 0.5) * 400 / 2;
+            newTarget.y = (Math.random() - 0.5) * 300 / 2;
             newTarget.direction = this.direction;
             newTarget.draggable = this.draggable;
             newTarget.visible = this.visible;
@@ -953,9 +1053,7 @@ class RenderedTarget extends Target {
             newTarget.currentCostume = this.currentCostume;
             newTarget.rotationStyle = this.rotationStyle;
             newTarget.effects = JSON.parse(JSON.stringify(this.effects));
-            newTarget.variables = JSON.parse(JSON.stringify(this.variables));
-            newTarget.lists = JSON.parse(JSON.stringify(this.lists));
-            newTarget.deviceId = this.deviceId;
+            newTarget.variables = this.duplicateVariables(newTarget.blocks);
             newTarget.updateAllDrawableProperties();
             newTarget.goBehindOther(this);
             return newTarget;
@@ -976,10 +1074,6 @@ class RenderedTarget extends Target {
      */
     onStopAll () {
         this.clearEffects();
-        if (this.audioPlayer) {
-            this.audioPlayer.stopAllSounds();
-            this.audioPlayer.clearEffects();
-        }
     }
 
     /**
@@ -1033,10 +1127,8 @@ class RenderedTarget extends Target {
         const costumes = this.getCostumes();
         return {
             id: this.id,
-            deviceId: this.deviceId,
             name: this.getName(),
             isStage: this.isStage,
-            isEditing: this.runtime._editingTarget === this,
             x: this.x,
             y: this.y,
             size: this.size,
@@ -1047,11 +1139,12 @@ class RenderedTarget extends Target {
             costumeCount: costumes.length,
             visible: this.visible,
             rotationStyle: this.rotationStyle,
+            comments: this.comments,
             blocks: this.blocks._blocks,
             variables: this.variables,
-            lists: this.lists,
             costumes: costumes,
             sounds: this.getSounds(),
+            textToSpeechLanguage: this.textToSpeechLanguage,
             tempo: this.tempo,
             volume: this.volume,
             videoTransparency: this.videoTransparency,
@@ -1064,22 +1157,18 @@ class RenderedTarget extends Target {
      * Dispose, destroying any run-time properties.
      */
     dispose () {
-        for (let key in this.variables) {
-            this.deleteVariable(key);
-        }
         this.runtime.changeCloneCounter(-1);
         this.runtime.stopForTarget(this);
+        this.runtime.removeExecutable(this);
         this.sprite.removeClone(this);
         if (this.renderer && this.drawableID !== null) {
-            this.renderer.destroyDrawable(this.drawableID);
+            this.renderer.destroyDrawable(this.drawableID, this.isStage ?
+                StageLayering.BACKGROUND_LAYER :
+                StageLayering.SPRITE_LAYER);
             if (this.visible) {
                 this.emit(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this);
                 this.runtime.requestRedraw();
             }
-        }
-        if (this.audioPlayer) {
-            this.audioPlayer.stopAllSounds();
-            this.audioPlayer.dispose();
         }
     }
 }
