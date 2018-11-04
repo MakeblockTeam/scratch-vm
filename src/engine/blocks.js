@@ -478,10 +478,13 @@ class Blocks {
 
             // Variable blocks may be sprite specific depending on the owner of the variable
             let isSpriteLocalVariable = false;
+            let isVariable = false;
             if (block.opcode === 'data_variable') {
+                isVariable = true;
                 isSpriteLocalVariable = !optRuntime.getEditingTarget().isStage &&
                     optRuntime.getEditingTarget().variables[block.fields.VARIABLE.id];
             } else if (block.opcode === 'data_listcontents') {
+                isVariable = true;
                 isSpriteLocalVariable = !optRuntime.getEditingTarget().isStage &&
                     optRuntime.getEditingTarget().variables[block.fields.LIST.id];
             }
@@ -490,7 +493,9 @@ class Blocks {
             const isSpriteSpecific = isSpriteLocalVariable ||
                 (optRuntime.monitorBlockInfo.hasOwnProperty(block.opcode) &&
                 optRuntime.monitorBlockInfo[block.opcode].isSpriteSpecific);
-            block.targetId = isSpriteSpecific ? optRuntime.getEditingTarget().id : null;
+            // TODO: 临时将其他勾选作为设备 block
+            const isDeviceMonitorBlock = !isVariable && !optRuntime.monitorBlockInfo.hasOwnProperty(block.opcode);
+            block.targetId = isSpriteSpecific || isDeviceMonitorBlock ? optRuntime.getEditingTarget().id : null;
 
             if (wasMonitored && !block.isMonitored) {
                 optRuntime.requestRemoveMonitor(block.id);
