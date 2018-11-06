@@ -411,7 +411,15 @@ const parseScratchObject = function (object, runtime, extensions, topLevel, zip)
             // If there is no internet connection, or if the asset is not in storage
             // for some reason, and we are doing a local .sb2 import, (e.g. zip is provided)
             // the file name of the costume should be the baseLayerID followed by the file ext
-            const assetFileName = `${costumeSource.baseLayerID}.${ext}`;
+            let assetFileName = `${costumeSource.baseLayerID}.${ext}`;
+            // sb2文件gif、jpg等造型会被保存成png格式的文件
+            if (zip && zip.files) {
+                if (!zip.files[assetFileName] && zip.files[assetFileName.replace(ext, 'png')]) {
+                    costume.dataFormat = 'png';
+                    costume.md5 = costume.md5.replace(ext, 'png');
+                    assetFileName = assetFileName.replace(ext, 'png');
+                }
+            }
             costumePromises.push(deserializeCostume(costume, runtime, zip, assetFileName)
                 .then(asset => {
                     costume.asset = asset;

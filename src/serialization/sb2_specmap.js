@@ -1289,6 +1289,21 @@ const specMap = {
             }
         ]
     },
+    '&&': {
+        opcode: 'operator_and',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'boolean',
+                inputName: 'OPERAND1'
+            },
+            {
+                type: 'input',
+                inputOp: 'boolean',
+                inputName: 'OPERAND2'
+            }
+        ]
+    },
     '|': {
         opcode: 'operator_or',
         argMap: [
