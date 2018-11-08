@@ -246,6 +246,16 @@ const globalBroadcastMsgStateGenerator = (function () {
  */
 const parseMonitorObject = (object, runtime, targets, extensions) => {
     let target = null;
+    const opcode = specMap[object.cmd].opcode;
+    const extIndex = opcode.indexOf('_');
+    const extID = opcode.substring(0, extIndex);
+
+    // All non-core extensions should be added by blocks at this point
+    // We can assume this is an unintended monitor and skip parsing if it belongs to a non-core extension
+    if (CORE_EXTENSIONS.indexOf(extID) === -1) {
+        if (extID !== '') return;
+    }
+
     // List blocks don't come in with their target name set.
     // Find the target by searching for a target with matching variable name/type.
     if (!object.hasOwnProperty('target')) {
@@ -403,7 +413,11 @@ const parseScratchObject = function (object, runtime, extensions, topLevel, zip)
             // the file name of the costume should be the baseLayerID followed by the file ext
             const assetFileName = `${costumeSource.baseLayerID}.${ext}`;
             costumePromises.push(deserializeCostume(costume, runtime, zip, assetFileName)
-                .then(() => loadCostume(costume.md5, costume, runtime, 2 /* optVersion */)));
+                .then(asset => {
+                    costume.asset = asset;
+                    return loadCostume(costume.md5, costume, runtime, 2 /* optVersion */);
+                })
+            );
         }
     }
     // Sounds from JSON
@@ -437,7 +451,10 @@ const parseScratchObject = function (object, runtime, extensions, topLevel, zip)
             // followed by the file ext
             const assetFileName = `${soundSource.soundID}.${ext}`;
             soundPromises.push(deserializeSound(sound, runtime, zip, assetFileName)
-                .then(() => loadSound(sound, runtime, sprite)));
+                .then(asset => {
+                    sound.asset = asset;
+                    return loadSound(sound, runtime, sprite);
+                }));
         }
     }
 
@@ -453,12 +470,18 @@ const parseScratchObject = function (object, runtime, extensions, topLevel, zip)
     if (object.hasOwnProperty('variables')) {
         for (let j = 0; j < object.variables.length; j++) {
             const variable = object.variables[j];
+            // A variable is a cloud variable if:
+            // - the project says it's a cloud variable, and
+            // - it's a stage variable, and
+            // - the runtime can support another cloud variable
+            const isCloud = variable.isPersistent && topLevel && runtime.canAddCloudVariable();
             const newVariable = new Variable(
                 getVariableId(variable.name, Variable.SCALAR_TYPE),
                 variable.name,
                 Variable.SCALAR_TYPE,
-                variable.isPersistent
+                isCloud
             );
+            if (isCloud) runtime.addCloudVariable();
             newVariable.value = variable.value;
             target.variables[newVariable.id] = newVariable;
         }
@@ -917,6 +940,12 @@ const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extension
                 fieldName = 'BROADCAST_OPTION';
                 if (shadowObscured) {
                     fieldValue = '';
+                }
+            } else if (expectedArg.inputOp === 'sensing_of_object_menu') {
+                if (shadowObscured) {
+                    fieldValue = '_stage_';
+                } else if (fieldValue === 'Stage') {
+                    fieldValue = '_stage_';
                 }
             } else if (expectedArg.inputOp === 'music.menu.DRUM') {
                 if (shadowObscured) {

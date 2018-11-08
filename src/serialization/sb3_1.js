@@ -393,7 +393,7 @@ const serializeVariables = function (variables) {
         // otherwise should be a scalar type
         obj.variables[varId] = [v.name, v.value];
         // only scalar vars have the potential to be cloud vars
-        if (v.isPersistent) obj.variables[varId].push(true);
+        if (v.isCloud) obj.variables[varId].push(true);
     }
     return obj;
 };
@@ -826,6 +826,9 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
     const costumePromises = (object.costumes || []).map(costumeSource => {
         // @todo: Make sure all the relevant metadata is being pulled out.
         const costume = {
+            // costumeSource only has an asset if an image is being uploaded as
+            // a sprite
+            asset: costumeSource.asset,
             assetId: costumeSource.assetId,
             skinId: null,
             name: costumeSource.name,
@@ -847,7 +850,10 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // any translation that needs to happen will happen in the process
         // of building up the costume object into an sb3 format
         return deserializeCostume(costume, runtime, zip)
-            .then(() => loadCostume(costumeMd5Ext, costume, runtime));
+            .then(asset => {
+                costume.asset = asset;
+                return loadCostume(costumeMd5Ext, costume, runtime);
+            });
         // Only attempt to load the costume after the deserialization
         // process has been completed
     });
@@ -872,7 +878,10 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // any translation that needs to happen will happen in the process
         // of building up the costume object into an sb3 format
         return deserializeSound(sound, runtime, zip)
-            .then(() => loadSound(sound, runtime, sprite));
+            .then(asset => {
+                sound.asset = asset;
+                return loadSound(sound, runtime, sprite);
+            });
         // Only attempt to load the sound after the deserialization
         // process has been completed.
     });
@@ -901,12 +910,19 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
     if (object.hasOwnProperty('variables')) {
         for (const varId in object.variables) {
             const variable = object.variables[varId];
+            // A variable is a cloud variable if:
+            // - the project says it's a cloud variable, and
+            // - it's a stage variable, and
+            // - the runtime can support another cloud variable
+            const isCloud = (variable.length === 3) && variable[2] &&
+                object.isStage && runtime.canAddCloudVariable();
             const newVariable = new Variable(
                 varId, // var id is the index of the variable desc array in the variables obj
                 variable[0], // name of the variable
                 Variable.SCALAR_TYPE, // type of the variable
-                (variable.length === 3) ? variable[2] : false // isPersistent/isCloud
+                isCloud
             );
+            if (isCloud) runtime.addCloudVariable();
             newVariable.value = variable[1];
             target.variables[newVariable.id] = newVariable;
         }

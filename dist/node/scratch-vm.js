@@ -3210,7 +3210,7 @@ module.exports = function() {
 /*! exports provided: name, version, description, author, license, homepage, repository, main, browser, scripts, dependencies, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = {"name":"scratch-vm-mobile","version":"0.2.0-beta.0.2","description":"Virtual Machine for Scratch 3.0","author":"jeremy.yang@makeblock.com","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./src/index.js","scripts":{"build":"npm run docs && webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","docs":"jsdoc -c .jsdoc.json","extract:core":"mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js","i18n:src":"npm run extract:core","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run docs && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/"},"dependencies":{"arraybuffer-loader":"^1.0.6","atob":"2.1.2","btoa":"1.2.1","canvas-toBlob":"1.0.0","decode-html":"2.0.0","diff-match-patch":"1.0.4","escape-html":"1.0.3","format-message":"6.2.1","htmlparser2":"3.9.2","immutable":"3.8.1","jszip":"^3.1.5","minilog":"3.1.0","nets":"3.2.0","scratch-parser":"4.3.2","scratch-svg-renderer":"^0.1.0-prerelease.1515800444","scratch-translate-extension-languages":"0.0.20180521154850","socket.io-client":"2.0.4","text-encoding":"0.6.4","worker-loader":"^1.1.1"},"devDependencies":{"@babel/core":"^7.1.2","@babel/plugin-transform-classes":"^7.1.0","@babel/preset-env":"^7.1.0","adm-zip":"0.4.11","babel-eslint":"^10.0.1","babel-loader":"^8.0.4","copy-webpack-plugin":"^4.5.4","docdash":"^1.0.0","eslint":"^5.3.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.5","file-loader":"^2.0.0","format-message-cli":"6.2.0","gh-pages":"^1.2.0","in-publish":"^2.0.0","jsdoc":"^3.5.5","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","pngjs":"^3.3.2","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^1.0.0","script-loader":"0.7.2","stats.js":"^0.17.0","tap":"^12.0.1","tiny-worker":"^2.1.1","webpack":"^4.16.5","webpack-cli":"^3.1.0","webpack-dev-server":"^3.1.5"}};
+module.exports = {"name":"scratch-vm-mobile","version":"0.2.0-beta.0.2","description":"Virtual Machine for Scratch 3.0","author":"jeremy.yang@makeblock.com","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./src/index.js","scripts":{"build":"npm run docs && webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","docs":"jsdoc -c .jsdoc.json","extract:core":"mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js","i18n:src":"npm run extract:core","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run docs && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/"},"dependencies":{"arraybuffer-loader":"^1.0.6","atob":"2.1.2","btoa":"1.2.1","canvas-toBlob":"1.0.0","decode-html":"2.0.0","diff-match-patch":"1.0.4","escape-html":"1.0.3","format-message":"6.2.1","htmlparser2":"3.10.0","immutable":"3.8.1","jszip":"^3.1.5","minilog":"3.1.0","nets":"3.2.0","scratch-parser":"4.3.2","scratch-svg-renderer":"^0.1.0-prerelease.1515800444","scratch-translate-extension-languages":"0.0.20180521154850","socket.io-client":"2.0.4","text-encoding":"0.6.4","worker-loader":"^1.1.1"},"devDependencies":{"@babel/core":"^7.1.2","@babel/plugin-transform-classes":"^7.1.0","@babel/preset-env":"^7.1.0","adm-zip":"0.4.11","babel-eslint":"^10.0.1","babel-loader":"^8.0.4","copy-webpack-plugin":"^4.5.4","docdash":"^1.0.0","eslint":"^5.3.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.5","file-loader":"^2.0.0","format-message-cli":"6.2.0","gh-pages":"^1.2.0","in-publish":"^2.0.0","jsdoc":"^3.5.5","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","pngjs":"^3.3.2","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^1.1.0","scratch-svg-renderer":"latest","script-loader":"0.7.2","stats.js":"^0.17.0","tap":"^12.0.1","tiny-worker":"^2.1.1","webpack":"^4.16.5","webpack-cli":"^3.1.0","webpack-dev-server":"^3.1.5"}};
 
 /***/ }),
 
@@ -3531,6 +3531,10 @@ function () {
     value: function setVariableTo(args, util) {
       var variable = util.target.lookupOrCreateVariable(args.VARIABLE.id, args.VARIABLE.name);
       variable.value = args.VALUE;
+
+      if (variable.isCloud) {
+        util.ioQuery('cloud', 'requestUpdateVariable', [variable.name, args.VALUE]);
+      }
     }
   }, {
     key: "changeVariableBy",
@@ -3538,7 +3542,12 @@ function () {
       var variable = util.target.lookupOrCreateVariable(args.VARIABLE.id, args.VARIABLE.name);
       var castedValue = Cast.toNumber(variable.value);
       var dValue = Cast.toNumber(args.VALUE);
-      variable.value = castedValue + dValue;
+      var newValue = castedValue + dValue;
+      variable.value = newValue;
+
+      if (variable.isCloud) {
+        util.ioQuery('cloud', 'requestUpdateVariable', [variable.name, newValue]);
+      }
     }
   }, {
     key: "changeMonitorVisibility",
@@ -4329,69 +4338,102 @@ function () {
       this._renderBubble(util.target);
     }
     /**
-     * Utility function to set the costume or backdrop of a target.
+     * Utility function to set the costume of a target.
      * Matches the behavior of Scratch 2.0 for different types of arguments.
-     * @param {!Target} target Target to set costume/backdrop to.
+     * @param {!Target} target Target to set costume to.
      * @param {Any} requestedCostume Costume requested, e.g., 0, 'name', etc.
      * @param {boolean=} optZeroIndex Set to zero-index the requestedCostume.
      * @return {Array.<!Thread>} Any threads started by this switch.
      */
 
   }, {
-    key: "_setCostumeOrBackdrop",
-    value: function _setCostumeOrBackdrop(target, requestedCostume, optZeroIndex) {
+    key: "_setCostume",
+    value: function _setCostume(target, requestedCostume, optZeroIndex) {
       if (typeof requestedCostume === 'number') {
+        // Numbers should be treated as costume indices, always
         target.setCostume(optZeroIndex ? requestedCostume : requestedCostume - 1);
       } else {
-        var costumeIndex = target.getCostumeIndexByName(requestedCostume);
+        // Strings should be treated as costume names, where possible
+        var costumeIndex = target.getCostumeIndexByName(requestedCostume.toString());
 
-        if (costumeIndex > -1) {
+        if (costumeIndex !== -1) {
           target.setCostume(costumeIndex);
-        } else if (requestedCostume === 'previous costume' || requestedCostume === 'previous backdrop') {
-          target.setCostume(target.currentCostume - 1);
-        } else if (requestedCostume === 'next costume' || requestedCostume === 'next backdrop') {
+        } else if (requestedCostume === 'next costume') {
           target.setCostume(target.currentCostume + 1);
-        } else if (requestedCostume === 'random backdrop') {
-          var numCostumes = target.getCostumes().length;
+        } else if (requestedCostume === 'previous costume') {
+          target.setCostume(target.currentCostume - 1); // Try to cast the string to a number (and treat it as a costume index)
+          // Pure whitespace should not be treated as a number
+          // Note: isNaN will cast the string to a number before checking if it's NaN
+        } else if (!(isNaN(requestedCostume) || Cast.isWhiteSpace(requestedCostume))) {
+          target.setCostume(optZeroIndex ? Number(requestedCostume) : Number(requestedCostume) - 1);
+        }
+      } // Per 2.0, 'switch costume' can't start threads even in the Stage.
+
+
+      return [];
+    }
+    /**
+     * Utility function to set the backdrop of a target.
+     * Matches the behavior of Scratch 2.0 for different types of arguments.
+     * @param {!Target} stage Target to set backdrop to.
+     * @param {Any} requestedBackdrop Backdrop requested, e.g., 0, 'name', etc.
+     * @param {boolean=} optZeroIndex Set to zero-index the requestedBackdrop.
+     * @return {Array.<!Thread>} Any threads started by this switch.
+     */
+
+  }, {
+    key: "_setBackdrop",
+    value: function _setBackdrop(stage, requestedBackdrop, optZeroIndex) {
+      if (typeof requestedBackdrop === 'number') {
+        // Numbers should be treated as backdrop indices, always
+        stage.setCostume(optZeroIndex ? requestedBackdrop : requestedBackdrop - 1);
+      } else {
+        // Strings should be treated as backdrop names where possible
+        var costumeIndex = stage.getCostumeIndexByName(requestedBackdrop.toString());
+
+        if (costumeIndex !== -1) {
+          stage.setCostume(costumeIndex);
+        } else if (requestedBackdrop === 'next backdrop') {
+          stage.setCostume(stage.currentCostume + 1);
+        } else if (requestedBackdrop === 'previous backdrop') {
+          stage.setCostume(stage.currentCostume - 1);
+        } else if (requestedBackdrop === 'random backdrop') {
+          // Don't pick the current backdrop, so that the block
+          // will always have an observable effect.
+          var numCostumes = stage.getCostumes().length;
 
           if (numCostumes > 1) {
             var selectedIndex = Math.floor(Math.random() * (numCostumes - 1));
-            if (selectedIndex === target.currentCostume) selectedIndex += 1;
-            target.setCostume(selectedIndex);
-          }
-        } else {
-          var forcedNumber = Number(requestedCostume);
+            if (selectedIndex === stage.currentCostume) selectedIndex += 1;
+            stage.setCostume(selectedIndex);
+          } // Try to cast the string to a number (and treat it as a costume index)
+          // Pure whitespace should not be treated as a number
+          // Note: isNaN will cast the string to a number before checking if it's NaN
 
-          if (!isNaN(forcedNumber)) {
-            target.setCostume(optZeroIndex ? forcedNumber : forcedNumber - 1);
-          }
+        } else if (!(isNaN(requestedBackdrop) || Cast.isWhiteSpace(requestedBackdrop))) {
+          stage.setCostume(optZeroIndex ? Number(requestedBackdrop) : Number(requestedBackdrop) - 1);
         }
       }
 
-      if (target === this.runtime.getTargetForStage()) {
-        // Target is the stage - start hats.
-        var newName = target.getCostumes()[target.currentCostume].name;
-        return this.runtime.startHats('event_whenbackdropswitchesto', {
-          BACKDROP: newName
-        });
-      }
-
-      return [];
+      var newName = stage.getCostumes()[stage.currentCostume].name;
+      return this.runtime.startHats('event_whenbackdropswitchesto', {
+        BACKDROP: newName
+      });
     }
   }, {
     key: "switchCostume",
     value: function switchCostume(args, util) {
-      this._setCostumeOrBackdrop(util.target, args.COSTUME);
+      this._setCostume(util.target, args.COSTUME);
     }
   }, {
     key: "nextCostume",
     value: function nextCostume(args, util) {
-      this._setCostumeOrBackdrop(util.target, util.target.currentCostume + 1, true);
+      this._setCostume(util.target, util.target.currentCostume + 1, true);
     }
   }, {
     key: "switchBackdrop",
     value: function switchBackdrop(args) {
-      this._setCostumeOrBackdrop(this.runtime.getTargetForStage(), args.BACKDROP);
+      this._setBackdrop(this.runtime.getTargetForStage(), args.BACKDROP);
     }
   }, {
     key: "switchBackdropAndWait",
@@ -4399,7 +4441,7 @@ function () {
       // Have we run before, starting threads?
       if (!util.stackFrame.startedThreads) {
         // No - switch the backdrop.
-        util.stackFrame.startedThreads = this._setCostumeOrBackdrop(this.runtime.getTargetForStage(), args.BACKDROP);
+        util.stackFrame.startedThreads = this._setBackdrop(this.runtime.getTargetForStage(), args.BACKDROP);
 
         if (util.stackFrame.startedThreads.length === 0) {
           // Nothing was started.
@@ -4435,7 +4477,7 @@ function () {
     value: function nextBackdrop() {
       var stage = this.runtime.getTargetForStage();
 
-      this._setCostumeOrBackdrop(stage, stage.currentCostume + 1, true);
+      this._setBackdrop(stage, stage.currentCostume + 1, true);
     }
   }, {
     key: "changeEffect",
@@ -5227,7 +5269,9 @@ function () {
       var value = util.getParam(args.VALUE);
 
       if (value === null) {
-        return '';
+        // When the parameter is not found in the most recent procedure
+        // call, the default is always 0.
+        return 0;
       }
 
       return value;
@@ -5238,7 +5282,9 @@ function () {
       var value = util.getParam(args.VALUE);
 
       if (value === null) {
-        return false;
+        // When the parameter is not found in the most recent procedure
+        // call, the default is always 0.
+        return 0;
       }
 
       return value;
@@ -5836,8 +5882,9 @@ function () {
     value: function getMonitored() {
       return {
         sound_volume: {
-          getId: function getId() {
-            return 'volume';
+          isSpriteSpecific: true,
+          getId: function getId(targetId) {
+            return "".concat(targetId, "_volume");
           }
         }
       };
@@ -7600,7 +7647,7 @@ function () {
             if (e.isOutside) {
               var _newBlocks = adapter(e);
 
-              optRuntime.emitBlockEndDrag(_newBlocks);
+              optRuntime.emitBlockEndDrag(_newBlocks, e.blockId);
             }
           }
 
@@ -9864,6 +9911,8 @@ var Variable = __webpack_require__(/*! ./variable */ "./src/engine/variable.js")
 
 var Clock = __webpack_require__(/*! ../io/clock */ "./src/io/clock.js");
 
+var Cloud = __webpack_require__(/*! ../io/cloud */ "./src/io/cloud.js");
+
 var DeviceManager = __webpack_require__(/*! ../io/deviceManager */ "./src/io/deviceManager.js");
 
 var Keyboard = __webpack_require__(/*! ../io/keyboard */ "./src/io/keyboard.js");
@@ -9920,8 +9969,65 @@ var ArgumentTypeMap = function () {
     shadowType: 'matrix',
     fieldType: 'MATRIX'
   };
+  map[ArgumentType.NOTE] = {
+    shadowType: 'note',
+    fieldType: 'NOTE'
+  };
   return map;
 }();
+/**
+ * A pair of functions used to manage the cloud variable limit,
+ * to be used when adding (or attempting to add) or removing a cloud variable.
+ * @typedef {object} CloudDataManager
+ * @property {function} canAddCloudVariable A function to call to check that
+ * a cloud variable can be added.
+ * @property {function} addCloudVariable A function to call to track a new
+ * cloud variable on the runtime.
+ * @property {function} removeCloudVariable A function to call when
+ * removing an existing cloud variable.
+ * @property {function} hasCloudVariables A function to call to check that
+ * the runtime has any cloud variables.
+ */
+
+/**
+ * Creates and manages cloud variable limit in a project,
+ * and returns two functions to be used to add a new
+ * cloud variable (while checking that it can be added)
+ * and remove an existing cloud variable.
+ * These are to be called whenever attempting to create or delete
+ * a cloud variable.
+ * @return {CloudDataManager} The functions to be used when adding or removing a
+ * cloud variable.
+ */
+
+
+var cloudDataManager = function cloudDataManager() {
+  var limit = 8;
+  var count = 0;
+
+  var canAddCloudVariable = function canAddCloudVariable() {
+    return count < limit;
+  };
+
+  var addCloudVariable = function addCloudVariable() {
+    count++;
+  };
+
+  var removeCloudVariable = function removeCloudVariable() {
+    count--;
+  };
+
+  var hasCloudVariables = function hasCloudVariables() {
+    return count > 0;
+  };
+
+  return {
+    canAddCloudVariable: canAddCloudVariable,
+    addCloudVariable: addCloudVariable,
+    removeCloudVariable: removeCloudVariable,
+    hasCloudVariables: hasCloudVariables
+  };
+};
 /**
  * Predefined "Converted block info" for a separator between blocks in a block category
  * @type {ConvertedBlockInfo}
@@ -10054,6 +10160,13 @@ function (_EventEmitter) {
 
     _this._nonMonitorThreadCount = 0;
     /**
+     * All threads that finished running and were removed from this.threads
+     * by behaviour in Sequencer.stepThreads.
+     * @type {Array<Thread>}
+     */
+
+    _this._lastStepDoneThreads = null;
+    /**
      * Currently known number of clones, used to enforce clone limit.
      * @type {number}
      */
@@ -10128,6 +10241,7 @@ function (_EventEmitter) {
 
     _this.ioDevices = {
       clock: new Clock(),
+      cloud: new Cloud(),
       deviceManager: new DeviceManager(),
       keyboard: new Keyboard(_assertThisInitialized(_assertThisInitialized(_this))),
       mouse: new Mouse(_assertThisInitialized(_assertThisInitialized(_this))),
@@ -10147,6 +10261,37 @@ function (_EventEmitter) {
      */
 
     _this.profiler = null;
+    var newCloudDataManager = cloudDataManager();
+    /**
+     * Check wether the runtime has any cloud data.
+     * @type {function}
+     * @return {boolean} Whether or not the runtime currently has any
+     * cloud variables.
+     */
+
+    _this.hasCloudData = newCloudDataManager.hasCloudVariables;
+    /**
+     * A function which checks whether a new cloud variable can be added
+     * to the runtime.
+     * @type {function}
+     * @return {boolean} Whether or not a new cloud variable can be added
+     * to the runtime.
+     */
+
+    _this.canAddCloudVariable = newCloudDataManager.canAddCloudVariable;
+    /**
+     * A function that tracks a new cloud variable in the runtime,
+     * updating the cloud variable limit.
+     */
+
+    _this.addCloudVariable = newCloudDataManager.addCloudVariable;
+    /**
+     * A function which updates the runtime's cloud variable limit
+     * when removing a cloud variable.
+     * @type {function}
+     */
+
+    _this.removeCloudVariable = newCloudDataManager.removeCloudVariable;
     return _this;
   }
   /**
@@ -11184,6 +11329,14 @@ function (_EventEmitter) {
       this.stopAll();
       this.targets.map(this.disposeTarget, this);
       this._monitorState = OrderedMap({}); // @todo clear out extensions? turboMode? etc.
+
+      this.ioDevices.cloud.clear(); // Reset runtime cloud data info
+
+      var newCloudDataManager = cloudDataManager();
+      this.hasCloudData = newCloudDataManager.hasCloudVariables;
+      this.canAddCloudVariable = newCloudDataManager.canAddCloudVariable;
+      this.addCloudVariable = newCloudDataManager.addCloudVariable;
+      this.removeCloudVariable = newCloudDataManager.removeCloudVariable;
     }
     /**
      * Add a target to the execution order.
@@ -11397,7 +11550,11 @@ function (_EventEmitter) {
       // flag will still indicate that a script ran.
 
 
-      this._emitProjectRunStatus(this.threads.length + doneThreads.length - this._getMonitorThreadCount(_toConsumableArray(this.threads).concat(_toConsumableArray(doneThreads))));
+      this._emitProjectRunStatus(this.threads.length + doneThreads.length - this._getMonitorThreadCount(_toConsumableArray(this.threads).concat(_toConsumableArray(doneThreads)))); // Store threads that completed this iteration for testing and other
+      // internal purposes.
+
+
+      this._lastStepDoneThreads = doneThreads;
 
       if (this.renderer) {
         // @todo: Only render when this.redrawRequested or clones rendered.
@@ -11642,12 +11799,13 @@ function (_EventEmitter) {
     /**
      * Emit event to indicate that the block drag has ended with the blocks outside the blocks workspace
      * @param {Array.<object>} blocks The set of blocks dragged to the GUI
+     * @param {string} topBlockId The original id of the top block being dragged
      */
 
   }, {
     key: "emitBlockEndDrag",
-    value: function emitBlockEndDrag(blocks) {
-      this.emit(Runtime.BLOCK_DRAG_END, blocks);
+    value: function emitBlockEndDrag(blocks, topBlockId) {
+      this.emit(Runtime.BLOCK_DRAG_END, blocks, topBlockId);
     }
     /**
      * Emit value for reporter to show in the blocks.
@@ -11825,6 +11983,15 @@ function (_EventEmitter) {
     key: "clonesAvailable",
     value: function clonesAvailable() {
       return this._cloneCounter < Runtime.MAX_CLONES;
+    }
+    /**
+     * Report that the project has loaded in the Virtual Machine.
+     */
+
+  }, {
+    key: "emitProjectLoaded",
+    value: function emitProjectLoaded() {
+      this.emit(Runtime.PROJECT_LOADED);
     }
     /**
      * Report that a new target has been created, possibly by cloning an existing target.
@@ -12166,6 +12333,16 @@ function (_EventEmitter) {
       return 'VISUAL_REPORT';
     }
     /**
+     * Event name for project loaded report.
+     * @const {string}
+     */
+
+  }, {
+    key: "PROJECT_LOADED",
+    get: function get() {
+      return 'PROJECT_LOADED';
+    }
+    /**
      * Event name for targets update report.
      * @const {string}
      */
@@ -12462,9 +12639,7 @@ function () {
       var numActiveThreads = Infinity; // Whether `stepThreads` has run through a full single tick.
 
       var ranFirstTick = false;
-      var doneThreads = this.runtime.threads.map(function () {
-        return null;
-      }); // Conditions for continuing to stepping threads:
+      var doneThreads = []; // Conditions for continuing to stepping threads:
       // 1. We must have threads in the list, and some must be active.
       // 2. Time elapsed must be less than WORK_TIME.
       // 3. Either turbo mode, or no redraw has been requested by a primitive.
@@ -12478,20 +12653,16 @@ function () {
           this.runtime.profiler.start(stepThreadsInnerProfilerId);
         }
 
-        numActiveThreads = 0; // Attempt to run each thread one time.
+        numActiveThreads = 0;
+        var stoppedThread = false; // Attempt to run each thread one time.
 
         for (var i = 0; i < this.runtime.threads.length; i++) {
-          var activeThread = this.runtime.threads[i];
+          var activeThread = this.runtime.threads[i]; // Check if the thread is done so it is not executed.
 
           if (activeThread.stack.length === 0 || activeThread.status === Thread.STATUS_DONE) {
             // Finished with this thread.
-            doneThreads[i] = activeThread;
+            stoppedThread = true;
             continue;
-          } // A thread was removed, added or this thread was restarted.
-
-
-          if (doneThreads[i] !== null) {
-            doneThreads[i] = null;
           }
 
           if (activeThread.status === Thread.STATUS_YIELD_TICK && !ranFirstTick) {
@@ -12524,6 +12695,13 @@ function () {
 
           if (activeThread.status === Thread.STATUS_RUNNING) {
             numActiveThreads++;
+          } // Check if the thread completed while it just stepped to make
+          // sure we remove it before the next iteration of all threads.
+
+
+          if (activeThread.stack.length === 0 || activeThread.status === Thread.STATUS_DONE) {
+            // Finished with this thread.
+            stoppedThread = true;
           }
         } // We successfully ticked once. Prevents running STATUS_YIELD_TICK
         // threads on the next tick.
@@ -12533,35 +12711,27 @@ function () {
 
         if (this.runtime.profiler !== null) {
           this.runtime.profiler.stop();
-        }
-      } // Filter inactive threads from `this.runtime.threads`.
+        } // Filter inactive threads from `this.runtime.threads`.
 
 
-      numActiveThreads = 0;
+        if (stoppedThread) {
+          var nextActiveThread = 0;
 
-      for (var _i = 0; _i < this.runtime.threads.length; _i++) {
-        var thread = this.runtime.threads[_i];
+          for (var _i = 0; _i < this.runtime.threads.length; _i++) {
+            var thread = this.runtime.threads[_i];
 
-        if (doneThreads[_i] === null) {
-          this.runtime.threads[numActiveThreads] = thread;
-          numActiveThreads++;
-        }
-      }
+            if (thread.stack.length !== 0 && thread.status !== Thread.STATUS_DONE) {
+              this.runtime.threads[nextActiveThread] = thread;
+              nextActiveThread++;
+            } else {
+              doneThreads.push(thread);
+            }
+          }
 
-      this.runtime.threads.length = numActiveThreads; // Filter undefined and null values from `doneThreads`.
-
-      var numDoneThreads = 0;
-
-      for (var _i2 = 0; _i2 < doneThreads.length; _i2++) {
-        var maybeThread = doneThreads[_i2];
-
-        if (maybeThread !== null) {
-          doneThreads[numDoneThreads] = maybeThread;
-          numDoneThreads++;
+          this.runtime.threads.length = nextActiveThread;
         }
       }
 
-      doneThreads.length = numDoneThreads;
       return doneThreads;
     }
     /**
@@ -14072,6 +14242,8 @@ function () {
         if (frame.params.hasOwnProperty(paramName)) {
           return frame.params[paramName];
         }
+
+        return null;
       }
 
       return null;
@@ -14321,9 +14493,14 @@ var ArgumentType = {
   STRING: 'string',
 
   /**
-   * String value with matirx field
+   * String value with matrix field
    */
-  MATRIX: 'matrix'
+  MATRIX: 'matrix',
+
+  /**
+   * MIDI note number with note picker (piano) field
+   */
+  NOTE: 'note'
 };
 module.exports = ArgumentType;
 
@@ -15828,6 +16005,8 @@ function () {
     this.runtime = runtime; // Create a new EV3 peripheral instance
 
     this._peripheral = new EV3(this.runtime, Scratch3Ev3Blocks.EXTENSION_ID);
+    this._playNoteForPicker = this._playNoteForPicker.bind(this);
+    this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
   }
   /**
    * Define the EV3 extension.
@@ -15999,7 +16178,7 @@ function () {
           blockType: BlockType.COMMAND,
           arguments: {
             NOTE: {
-              type: ArgumentType.NUMBER,
+              type: ArgumentType.NOTE,
               defaultValue: 60
             },
             TIME: {
@@ -16136,6 +16315,15 @@ function () {
     key: "getBrightness",
     value: function getBrightness() {
       return this._peripheral.brightness;
+    }
+  }, {
+    key: "_playNoteForPicker",
+    value: function _playNoteForPicker(note, category) {
+      if (category !== this.getInfo().name) return;
+      this.beep({
+        NOTE: note,
+        TIME: 0.25
+      });
     }
   }, {
     key: "beep",
@@ -17402,6 +17590,8 @@ function () {
 
     this._onTargetCreated = this._onTargetCreated.bind(this);
     this.runtime.on('targetWasCreated', this._onTargetCreated);
+    this._playNoteForPicker = this._playNoteForPicker.bind(this);
+    this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
   }
   /**
    * Decode the full set of drum and instrument sounds, and store the audio buffers in arrays.
@@ -17594,7 +17784,7 @@ function () {
           }),
           arguments: {
             NOTE: {
-              type: ArgumentType.NUMBER,
+              type: ArgumentType.NOTE,
               defaultValue: 60
             },
             BEATS: {
@@ -17785,6 +17975,17 @@ function () {
       } else {
         this._checkStackTimer(util);
       }
+    }
+  }, {
+    key: "_playNoteForPicker",
+    value: function _playNoteForPicker(noteNum, category) {
+      if (category !== this.getInfo().name) return;
+      var util = {
+        runtime: this.runtime,
+        target: this.runtime.getEditingTarget()
+      };
+
+      this._playNote(util, noteNum, 0.25);
     }
     /**
      * Play a note using the current instrument for a duration in seconds.
@@ -24012,8 +24213,8 @@ var loadVector_ = function loadVector_(costume, costumeAsset, runtime, rotationC
     svgString = runtime.v2SvgAdapter.toString(); // Put back into storage
 
     var storage = runtime.storage;
-    costumeAsset.encodeTextData(svgString, storage.DataFormat.SVG);
-    costume.assetId = storage.builtinHelper.cache(storage.AssetType.ImageVector, storage.DataFormat.SVG, costumeAsset.data);
+    costume.asset.encodeTextData(svgString, storage.DataFormat.SVG, true);
+    costume.assetId = costume.asset.assetId;
     costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
   } // createSVGSkin does the right thing if rotationCenter isn't provided, so it's okay if it's
   // undefined here
@@ -24066,7 +24267,9 @@ var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationC
         } else if (dataURI) {
           // Put back into storage
           var storage = runtime.storage;
-          costume.assetId = storage.builtinHelper.cache(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI));
+          costume.asset = storage.createAsset(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI), null, true // generate md5
+          );
+          costume.assetId = costume.asset.assetId;
           costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
         } // Regardless of if conversion succeeds, convert it to bitmap resolution 2,
         // since all code from here on will assume that.
@@ -24170,8 +24373,9 @@ var loadCostume = function loadCostume(md5ext, costume, runtime, optVersion) {
   var md5 = idParts[0];
   var ext = idParts[1].toLowerCase();
   var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
-  return runtime.storage.load(assetType, md5, ext).then(function (costumeAsset) {
-    costume.dataFormat = ext;
+  costume.dataFormat = ext;
+  return (costume.asset && Promise.resolve(costume.asset) || runtime.storage.load(assetType, md5, ext)).then(function (costumeAsset) {
+    costume.asset = costumeAsset;
     return loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion);
   }).catch(function (e) {
     log.error(e);
@@ -24223,8 +24427,8 @@ var loadVector_ = function loadVector_(costume, costumeAsset, runtime, rotationC
     svgString = runtime.v2SvgAdapter.toString(); // Put back into storage
 
     var storage = runtime.storage;
-    costumeAsset.encodeTextData(svgString, storage.DataFormat.SVG);
-    costume.assetId = storage.builtinHelper.cache(storage.AssetType.ImageVector, storage.DataFormat.SVG, costumeAsset.data);
+    costume.asset.encodeTextData(svgString, storage.DataFormat.SVG, true);
+    costume.assetId = costume.asset.assetId;
     costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
   } // createSVGSkin does the right thing if rotationCenter isn't provided, so it's okay if it's
   // undefined here
@@ -24277,7 +24481,9 @@ var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationC
         } else if (dataURI) {
           // Put back into storage
           var storage = runtime.storage;
-          costume.assetId = storage.builtinHelper.cache(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI));
+          costume.asset = storage.createAsset(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI), null, true // generate md5
+          );
+          costume.assetId = costume.asset.assetId;
           costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
         } // Regardless of if conversion succeeds, convert it to bitmap resolution 2,
         // since all code from here on will assume that.
@@ -24381,8 +24587,9 @@ var loadCostume = function loadCostume(md5ext, costume, runtime, optVersion) {
   var md5 = idParts[0];
   var ext = idParts[1].toLowerCase();
   var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
-  return runtime.storage.load(assetType, md5, ext).then(function (costumeAsset) {
-    costume.dataFormat = ext;
+  costume.dataFormat = ext;
+  return (costume.asset && Promise.resolve(costume.asset) || runtime.storage.load(assetType, md5, ext)).then(function (costumeAsset) {
+    costume.asset = costumeAsset;
     return loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion);
   }).catch(function (e) {
     log.error(e);
@@ -24464,8 +24671,9 @@ var loadSound = function loadSound(sound, runtime, sprite) {
   var idParts = StringUtil.splitFirst(sound.md5, '.');
   var md5 = idParts[0];
   var ext = idParts[1].toLowerCase();
-  return runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext).then(function (soundAsset) {
-    sound.dataFormat = ext;
+  sound.dataFormat = ext;
+  return (sound.asset && Promise.resolve(sound.asset) || runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext)).then(function (soundAsset) {
+    sound.asset = soundAsset;
     return loadSoundFromAsset(sound, soundAsset, runtime, sprite);
   });
 };
@@ -24551,8 +24759,9 @@ var loadSound = function loadSound(sound, runtime, sprite) {
   var idParts = StringUtil.splitFirst(sound.md5, '.');
   var md5 = idParts[0];
   var ext = idParts[1].toLowerCase();
-  return runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext).then(function (soundAsset) {
-    sound.dataFormat = ext;
+  sound.dataFormat = ext;
+  return (sound.asset && Promise.resolve(sound.asset) || runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext)).then(function (soundAsset) {
+    sound.asset = soundAsset;
     return loadSoundFromAsset(sound, soundAsset, runtime, sprite);
   });
 };
@@ -24915,7 +25124,7 @@ function (_JSONRPCWebSocket) {
     _this._ws = ws;
     _this._ws.onopen = _this.requestPeripheral.bind(_assertThisInitialized(_assertThisInitialized(_this))); // only call request peripheral after socket opens
 
-    _this._ws.onerror = _this._sendDisconnectError.bind(_assertThisInitialized(_assertThisInitialized(_this)), 'ws onerror');
+    _this._ws.onerror = _this._sendRequestError.bind(_assertThisInitialized(_assertThisInitialized(_this)), 'ws onerror');
     _this._ws.onclose = _this._sendDisconnectError.bind(_assertThisInitialized(_assertThisInitialized(_this)), 'ws onclose');
     _this._availablePeripherals = {};
     _this._connectCallback = connectCallback;
@@ -25142,6 +25351,170 @@ function () {
 }();
 
 module.exports = Clock;
+
+/***/ }),
+
+/***/ "./src/io/cloud.js":
+/*!*************************!*\
+  !*** ./src/io/cloud.js ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var Variable = __webpack_require__(/*! ../engine/variable */ "./src/engine/variable.js");
+
+var log = __webpack_require__(/*! ../util/log */ "./src/util/log.js");
+
+var Cloud =
+/*#__PURE__*/
+function () {
+  /**
+   * @typedef updateVariable
+   * @param {string} name The name of the cloud variable to update on the server
+   * @param {(string | number)} value The value to update the cloud variable with.
+   */
+
+  /**
+   * A cloud data provider, responsible for managing the connection to the
+   * cloud data server and for posting data about cloud data activity to
+   * this IO device.
+   * @typedef {object} CloudProvider
+   * @property {updateVariable} updateVariable A function which sends a cloud variable
+   * update to the cloud data server.
+   * @property {Function} requestCloseConnection A function which closes
+   * the connection to the cloud data server.
+   */
+
+  /**
+   * Part of a cloud io data post indicating a cloud variable update.
+   * @typedef {object} VarUpdateData
+   * @property {string} name The name of the variable to update
+   * @property {(number | string)} value The scalar value to update the variable with
+   */
+
+  /**
+   * A cloud io data post message.
+   * @typedef {object} CloudIOData
+   * @property {VarUpdateData} varUpdate A {@link VarUpdateData} message indicating
+   * a cloud variable update
+   */
+
+  /**
+   * Cloud IO Device responsible for sending and receiving messages from
+   * cloud provider (mananging the cloud server connection) and interacting
+   * with cloud variables in the current project.
+   */
+  function Cloud() {
+    _classCallCheck(this, Cloud);
+
+    /**
+     * Reference to the cloud data provider, responsible for mananging
+     * the web socket connection to the cloud data server.
+     * @type {?CloudProvider}
+     */
+    this.provider = null;
+    /**
+     * Reference to the stage target which owns the cloud variables
+     * in the project.
+     * @type {?Target}
+     */
+
+    this.stage = null;
+  }
+  /**
+   * Set a reference to the cloud data provider.
+   * @param {CloudProvider} provider The cloud data provider
+   */
+
+
+  _createClass(Cloud, [{
+    key: "setProvider",
+    value: function setProvider(provider) {
+      this.provider = provider;
+    }
+    /**
+     * Set a reference to the stage target which owns the
+     * cloud variables in the project.
+     * @param {Target} stage The stage target
+     */
+
+  }, {
+    key: "setStage",
+    value: function setStage(stage) {
+      this.stage = stage;
+    }
+    /**
+     * Handle incoming data to this io device.
+     * @param {CloudIOData} data The {@link CloudIOData} object to process
+     */
+
+  }, {
+    key: "postData",
+    value: function postData(data) {
+      if (data.varUpdate) {
+        this.updateCloudVariable(data.varUpdate);
+      }
+    }
+    /**
+     * Request the cloud data provider to update the given variable with
+     * the given value. Does nothing if this io device does not have a provider set.
+     * @param {string} name The name of the variable to update
+     * @param {string | number} value The value to update the variable with
+     */
+
+  }, {
+    key: "requestUpdateVariable",
+    value: function requestUpdateVariable(name, value) {
+      if (this.provider) {
+        this.provider.updateVariable(name, value);
+      }
+    }
+    /**
+     * Update a cloud variable in the runtime based on the message received
+     * from the cloud provider.
+     * @param {VarUpdateData} varUpdate A {@link VarUpdateData} object describing
+     * a cloud variable update received from the cloud data provider.
+     */
+
+  }, {
+    key: "updateCloudVariable",
+    value: function updateCloudVariable(varUpdate) {
+      var varName = varUpdate.name;
+      var variable = this.stage.lookupVariableByNameAndType(varName, Variable.SCALAR_TYPE);
+
+      if (!variable || !variable.isCloud) {
+        log.warn("Received an update for a cloud variable that does not exist: ".concat(varName));
+        return;
+      }
+
+      variable.value = varUpdate.value;
+    }
+    /**
+     * Request the cloud data provider to close the web socket connection and
+     * clear this io device of references to the cloud data provider and the
+     * stage.
+     */
+
+  }, {
+    key: "clear",
+    value: function clear() {
+      if (!this.provider) return;
+      this.provider.requestCloseConnection();
+      this.provider = null;
+      this.stage = null;
+    }
+  }]);
+
+  return Cloud;
+}();
+
+module.exports = Cloud;
 
 /***/ }),
 
@@ -25861,18 +26234,34 @@ function () {
     this.runtime = runtime;
   }
   /**
-   * Activate "event_whenthisspriteclicked" hats if needed.
-   * @param  {number} x X position to be sent to the renderer.
-   * @param  {number} y Y position to be sent to the renderer.
-   * @param  {?bool} wasDragged Whether the click event was the result of
-   * a drag end.
+   * Activate "event_whenthisspriteclicked" hats.
+   * @param  {Target} target to trigger hats on.
    * @private
    */
 
 
   _createClass(Mouse, [{
     key: "_activateClickHats",
-    value: function _activateClickHats(x, y, wasDragged) {
+    value: function _activateClickHats(target) {
+      // Activate both "this sprite clicked" and "stage clicked"
+      // They were separated into two opcodes for labeling,
+      // but should act the same way.
+      // Intentionally not checking isStage to make it work when sharing blocks.
+      // @todo the blocks should be converted from one to another when shared
+      this.runtime.startHats('event_whenthisspriteclicked', null, target);
+      this.runtime.startHats('event_whenstageclicked', null, target);
+    }
+    /**
+     * Find a target by XY location
+     * @param  {number} x X position to be sent to the renderer.
+     * @param  {number} y Y position to be sent to the renderer.
+     * @return {Target} the target at that location
+     * @private
+     */
+
+  }, {
+    key: "_pickTarget",
+    value: function _pickTarget(x, y) {
       if (this.runtime.renderer) {
         var drawableID = this.runtime.renderer.pick(x, y);
 
@@ -25880,27 +26269,13 @@ function () {
           var target = this.runtime.targets[i];
 
           if (target.hasOwnProperty('drawableID') && target.drawableID === drawableID) {
-            // only activate click hat if the mouse up event wasn't
-            // the result of a drag ending
-            if (!wasDragged) {
-              // Activate both "this sprite clicked" and "stage clicked"
-              // They were separated into two opcodes for labeling,
-              // but should act the same way.
-              // Intentionally not checking isStage to make it work when sharing blocks.
-              // @todo the blocks should be converted from one to another when shared
-              this.runtime.startHats('event_whenthisspriteclicked', null, target);
-              this.runtime.startHats('event_whenstageclicked', null, target);
-            }
-
-            return;
+            return target;
           }
-        } // If haven't returned, activate click hats for stage.
-        // Still using both blocks for sharing compatibility.
+        }
+      } // Return the stage if no target was found
 
 
-        this.runtime.startHats('event_whenthisspriteclicked', null, this.runtime.getTargetForStage());
-        this.runtime.startHats('event_whenstageclicked', null, this.runtime.getTargetForStage());
-      }
+      return this.runtime.getTargetForStage();
     }
     /**
      * Mouse DOM event handler.
@@ -25921,10 +26296,25 @@ function () {
       }
 
       if (typeof data.isDown !== 'undefined') {
-        this._isDown = data.isDown; // Make sure click is within the canvas bounds to activate click hats
+        var previousDownState = this._isDown;
+        this._isDown = data.isDown; // Do not trigger if down state has not changed
 
-        if (!this._isDown && data.x > 0 && data.x < data.canvasWidth && data.y > 0 && data.y < data.canvasHeight) {
-          this._activateClickHats(data.x, data.y, data.wasDragged);
+        if (previousDownState === this._isDown) return; // Never trigger click hats at the end of a drag
+
+        if (data.wasDragged) return; // Do not activate click hats for clicks outside canvas bounds
+
+        if (!(data.x > 0 && data.x < data.canvasWidth && data.y > 0 && data.y < data.canvasHeight)) return;
+
+        var target = this._pickTarget(data.x, data.y);
+
+        var isNewMouseDown = !previousDownState && this._isDown;
+        var isNewMouseUp = previousDownState && !this._isDown; // Draggable targets start click hats on mouse up.
+        // Non-draggable targets start click hats on mouse down.
+
+        if (target.draggable && isNewMouseUp) {
+          this._activateClickHats(target);
+        } else if (!target.draggable && isNewMouseDown) {
+          this._activateClickHats(target);
         }
       }
     }
@@ -26392,14 +26782,6 @@ var deserializeSound = function deserializeSound(sound, runtime, zip, assetFileN
     return Promise.resolve(null);
   }
 
-  var assetId = sound.assetId; // TODO Is there a faster way to check that this asset
-  // has already been initialized?
-
-  if (storage.get(assetId)) {
-    // This sound has already been cached.
-    return Promise.resolve(null);
-  }
-
   if (!zip) {
     // Zip will not be provided if loading project json from server
     return Promise.resolve(null);
@@ -26412,15 +26794,14 @@ var deserializeSound = function deserializeSound(sound, runtime, zip, assetFileN
     return Promise.resolve(null);
   }
 
-  var dataFormat = sound.dataFormat.toLowerCase() === 'mp3' ? storage.DataFormat.MP3 : storage.DataFormat.WAV;
-
   if (!JSZip.support.uint8array) {
     log.error('JSZip uint8array is not supported in this browser.');
     return Promise.resolve(null);
   }
 
+  var dataFormat = sound.dataFormat.toLowerCase() === 'mp3' ? storage.DataFormat.MP3 : storage.DataFormat.WAV;
   return soundFile.async('uint8array').then(function (data) {
-    storage.builtinHelper.cache(storage.AssetType.Sound, dataFormat, data, assetId);
+    return storage.createAsset(storage.AssetType.Sound, dataFormat, data, sound.assetId);
   });
 };
 /**
@@ -26446,13 +26827,14 @@ var deserializeCostume = function deserializeCostume(costume, runtime, zip, asse
   if (!storage) {
     log.error('No storage module present; cannot load costume asset: ', fileName);
     return Promise.resolve(null);
-  } // TODO Is there a faster way to check that this asset
-  // has already been initialized?
+  }
 
-
-  if (storage.get(assetId)) {
-    // This costume has already been cached.
-    return Promise.resolve(null);
+  if (costume.asset) {
+    // When uploading a sprite from an image file, the asset data will be provided
+    // @todo Cache the asset data somewhere and pull it out here
+    return Promise.resolve(storage.createAsset(costume.asset.assetType, costume.asset.dataFormat, new Uint8Array(Object.keys(costume.asset.data).map(function (key) {
+      return costume.asset.data[key];
+    })), costume.asset.assetId));
   }
 
   if (!zip) {
@@ -26484,7 +26866,7 @@ var deserializeCostume = function deserializeCostume(costume, runtime, zip, asse
   }
 
   return costumeFile.async('uint8array').then(function (data) {
-    storage.builtinHelper.cache(assetType, // TODO eventually we want to map non-png's to their actual file types?
+    return storage.createAsset(assetType, // TODO eventually we want to map non-png's to their actual file types?
     costumeFormat, data, assetId);
   });
 };
@@ -26795,8 +27177,17 @@ var globalBroadcastMsgStateGenerator = function () {
 
 
 var parseMonitorObject = function parseMonitorObject(object, runtime, targets, extensions) {
-  var target = null; // List blocks don't come in with their target name set.
+  var target = null;
+  var opcode = specMap[object.cmd].opcode;
+  var extIndex = opcode.indexOf('_');
+  var extID = opcode.substring(0, extIndex); // All non-core extensions should be added by blocks at this point
+  // We can assume this is an unintended monitor and skip parsing if it belongs to a non-core extension
+
+  if (CORE_EXTENSIONS.indexOf(extID) === -1) {
+    if (extID !== '') return;
+  } // List blocks don't come in with their target name set.
   // Find the target by searching for a target with matching variable name/type.
+
 
   if (!object.hasOwnProperty('target')) {
     var _loop = function _loop(i) {
@@ -26985,7 +27376,8 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
       // the file name of the costume should be the baseLayerID followed by the file ext
 
       var assetFileName = "".concat(costumeSource.baseLayerID, ".").concat(ext);
-      costumePromises.push(deserializeCostume(costume, runtime, zip, assetFileName).then(function () {
+      costumePromises.push(deserializeCostume(costume, runtime, zip, assetFileName).then(function (asset) {
+        costume.asset = asset;
         return loadCostume(costume.md5, costume, runtime, 2
         /* optVersion */
         );
@@ -27028,7 +27420,8 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
       // followed by the file ext
 
       var assetFileName = "".concat(soundSource.soundID, ".").concat(ext);
-      soundPromises.push(deserializeSound(sound, runtime, zip, assetFileName).then(function () {
+      soundPromises.push(deserializeSound(sound, runtime, zip, assetFileName).then(function (asset) {
+        sound.asset = asset;
         return loadSound(sound, runtime, sprite);
       }));
     };
@@ -27046,8 +27439,14 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
 
   if (object.hasOwnProperty('variables')) {
     for (var j = 0; j < object.variables.length; j++) {
-      var variable = object.variables[j];
-      var newVariable = new Variable(getVariableId(variable.name, Variable.SCALAR_TYPE), variable.name, Variable.SCALAR_TYPE, variable.isPersistent);
+      var variable = object.variables[j]; // A variable is a cloud variable if:
+      // - the project says it's a cloud variable, and
+      // - it's a stage variable, and
+      // - the runtime can support another cloud variable
+
+      var isCloud = variable.isPersistent && topLevel && runtime.canAddCloudVariable();
+      var newVariable = new Variable(getVariableId(variable.name, Variable.SCALAR_TYPE), variable.name, Variable.SCALAR_TYPE, isCloud);
+      if (isCloud) runtime.addCloudVariable();
       newVariable.value = variable.value;
       target.variables[newVariable.id] = newVariable;
     }
@@ -27539,6 +27938,12 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
 
         if (shadowObscured) {
           fieldValue = '';
+        }
+      } else if (expectedArg.inputOp === 'sensing_of_object_menu') {
+        if (shadowObscured) {
+          fieldValue = '_stage_';
+        } else if (fieldValue === 'Stage') {
+          fieldValue = '_stage_';
         }
       } else if (expectedArg.inputOp === 'music.menu.DRUM') {
         if (shadowObscured) {
@@ -29667,7 +30072,7 @@ var serializeVariables = function serializeVariables(variables) {
 
     obj.variables[varId] = [v.name, v.value]; // only scalar vars have the potential to be cloud vars
 
-    if (v.isPersistent) obj.variables[varId].push(true);
+    if (v.isCloud) obj.variables[varId].push(true);
   }
 
   return obj;
@@ -30136,13 +30541,14 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     for (var blockId in object.blocks) {
       if (!object.blocks.hasOwnProperty(blockId)) continue;
       var blockJSON = object.blocks[blockId];
-      blocks.createBlock(blockJSON);
-      console.log('xxxxxxx'); // If the block is from an extension, record it.
-      // const index = blockJSON.opcode.indexOf('_');
-      // const prefix = blockJSON.opcode.substring(0, index);
-      // if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
-      //     if (prefix !== '') extensions.extensionIDs.add(prefix);
-      // }
+      blocks.createBlock(blockJSON); // If the block is from an extension, record it.
+
+      var index = blockJSON.opcode.indexOf('_');
+      var prefix = blockJSON.opcode.substring(0, index);
+
+      if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
+        if (prefix !== '') extensions.extensionIDs.add(prefix);
+      }
     }
   } // Costumes from JSON.
 
@@ -30150,6 +30556,9 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
   var costumePromises = (object.costumes || []).map(function (costumeSource) {
     // @todo: Make sure all the relevant metadata is being pulled out.
     var costume = {
+      // costumeSource only has an asset if an image is being uploaded as
+      // a sprite
+      asset: costumeSource.asset,
       assetId: costumeSource.assetId,
       skinId: null,
       name: costumeSource.name,
@@ -30168,7 +30577,8 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     // any translation that needs to happen will happen in the process
     // of building up the costume object into an sb3 format
 
-    return deserializeCostume(costume, runtime, zip).then(function () {
+    return deserializeCostume(costume, runtime, zip).then(function (asset) {
+      costume.asset = asset;
       return loadCostume(costumeMd5Ext, costume, runtime);
     }); // Only attempt to load the costume after the deserialization
     // process has been completed
@@ -30193,7 +30603,8 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     // any translation that needs to happen will happen in the process
     // of building up the costume object into an sb3 format
 
-    return deserializeSound(sound, runtime, zip).then(function () {
+    return deserializeSound(sound, runtime, zip).then(function (asset) {
+      sound.asset = asset;
       return loadSound(sound, runtime, sprite);
     }); // Only attempt to load the sound after the deserialization
     // process has been completed.
@@ -30228,12 +30639,17 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
 
   if (object.hasOwnProperty('variables')) {
     for (var varId in object.variables) {
-      var variable = object.variables[varId];
+      var variable = object.variables[varId]; // A variable is a cloud variable if:
+      // - the project says it's a cloud variable, and
+      // - it's a stage variable, and
+      // - the runtime can support another cloud variable
+
+      var isCloud = variable.length === 3 && variable[2] && object.isStage && runtime.canAddCloudVariable();
       var newVariable = new Variable(varId, // var id is the index of the variable desc array in the variables obj
       variable[0], // name of the variable
       Variable.SCALAR_TYPE, // type of the variable
-      variable.length === 3 ? variable[2] : false // isPersistent/isCloud
-      );
+      isCloud);
+      if (isCloud) runtime.addCloudVariable();
       newVariable.value = variable[1];
       target.variables[newVariable.id] = newVariable;
     }
@@ -30413,12 +30829,10 @@ var serializeAssets = function serializeAssets(runtime, assetType, optTargetId) 
 
     for (var j = 0; j < currAssets.length; j++) {
       var currAsset = currAssets[j];
-      var assetId = currAsset.assetId;
-      var storage = runtime.storage;
-      var storedAsset = storage.get(assetId);
+      var asset = currAsset.asset;
       assetDescs.push({
-        fileName: "".concat(assetId, ".").concat(storedAsset.dataFormat),
-        fileContent: storedAsset.data
+        fileName: "".concat(asset.assetId, ".").concat(asset.dataFormat),
+        fileContent: asset.data
       });
     }
   }
@@ -30959,6 +31373,7 @@ function (_Target) {
     value: function setCostume(index) {
       // Keep the costume index within possible values.
       index = Math.round(index);
+      if ([Infinity, -Infinity, NaN].includes(index)) index = 0;
       this.currentCostume = MathUtil.wrapClamp(index, 0, this.sprite.costumes.length - 1);
 
       if (this.renderer) {
@@ -32000,6 +32415,7 @@ function (_RenderedTarget) {
     value: function setCostume(index) {
       // Keep the costume index within possible values.
       index = Math.round(index);
+      if ([Infinity, -Infinity, NaN].includes(index)) index = 0;
       this.currentCostume = MathUtil.wrapClamp(index, 0, this.sprite.costumes.length - 1);
 
       if (this.renderer) {
@@ -32273,17 +32689,13 @@ function () {
       var assetPromises = [];
       newSprite.costumes = this.costumes_.map(function (costume) {
         var newCostume = Object.assign({}, costume);
-
-        var costumeAsset = _this.runtime.storage.get(costume.assetId);
-
+        var costumeAsset = costume.asset;
         assetPromises.push(loadCostumeFromAsset(newCostume, costumeAsset, _this.runtime));
         return newCostume;
       });
       newSprite.sounds = this.sounds.map(function (sound) {
         var newSound = Object.assign({}, sound);
-
-        var soundAsset = _this.runtime.storage.get(sound.assetId);
-
+        var soundAsset = sound.asset;
         assetPromises.push(loadSoundFromAsset(newSound, soundAsset, _this.runtime, newSprite));
         return newSound;
       });
@@ -32443,6 +32855,15 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 var Color = __webpack_require__(/*! ../util/color */ "./src/util/color.js");
 /**
+ * Store and possibly polyfill Number.isNaN. Number.isNaN can save time over
+ * self.isNaN by not coercing its input. We need to polyfill it to support
+ * Internet Explorer.
+ * @const
+ */
+
+
+var _NumberIsNaN = Number.isNaN || isNaN;
+/**
  * @fileoverview
  * Utilities for casting and comparing Scratch data-types.
  * Scratch behaves slightly differently from JavaScript in many respects,
@@ -32472,9 +32893,21 @@ function () {
      * @return {number} The Scratch-casted number value.
      */
     value: function toNumber(value) {
+      // If value is already a number we don't need to coerce it with
+      // Number().
+      if (typeof value === 'number') {
+        // Scratch treats NaN as 0, when needed as a number.
+        // E.g., 0 + NaN -> 0.
+        if (_NumberIsNaN(value)) {
+          return 0;
+        }
+
+        return value;
+      }
+
       var n = Number(value);
 
-      if (isNaN(n)) {
+      if (_NumberIsNaN(n)) {
         // Scratch treats NaN as 0, when needed as a number.
         // E.g., 0 + NaN -> 0.
         return 0;
@@ -33988,8 +34421,8 @@ function (_EventEmitter) {
       _this.emit(Runtime.BLOCK_DRAG_UPDATE, areBlocksOverGui);
     });
 
-    _this.runtime.on(Runtime.BLOCK_DRAG_END, function (blocks) {
-      _this.emit(Runtime.BLOCK_DRAG_END, blocks);
+    _this.runtime.on(Runtime.BLOCK_DRAG_END, function (blocks, topBlockId) {
+      _this.emit(Runtime.BLOCK_DRAG_END, blocks, topBlockId);
     });
 
     _this.runtime.on(Runtime.EXTENSION_ADDED, function (blocksInfo) {
@@ -34138,6 +34571,11 @@ function (_EventEmitter) {
     value: function setVideoProvider(videoProvider) {
       this.runtime.ioDevices.video.setProvider(videoProvider);
     }
+  }, {
+    key: "setCloudProvider",
+    value: function setCloudProvider(cloudProvider) {
+      this.runtime.ioDevices.cloud.setProvider(cloudProvider);
+    }
     /**
      * Tell the specified extension to scan for a peripheral.
      * @param {string} extensionId - the id of the extension.
@@ -34211,6 +34649,8 @@ function (_EventEmitter) {
       });
       return validationPromise.then(function (validatedInput) {
         return _this2.deserializeProject(validatedInput[0], validatedInput[1]);
+      }).then(function () {
+        return _this2.runtime.emitProjectLoaded();
       }).catch(function (error) {
         // Intentionally rejecting here (want errors to be handled by caller)
         if (error.hasOwnProperty('validationError')) {
@@ -34426,6 +34866,8 @@ function (_EventEmitter) {
         _this4.emitWorkspaceUpdate();
 
         _this4.runtime.setEditingTarget(_this4.editingTarget);
+
+        _this4.runtime.ioDevices.cloud.setStage(_this4.runtime.getTargetForStage());
       });
     }
     /**
@@ -34705,7 +35147,9 @@ function (_EventEmitter) {
         // is updated as below.
         sound.format = '';
         var storage = this.runtime.storage;
-        sound.assetId = storage.builtinHelper.cache(storage.AssetType.Sound, storage.DataFormat.WAV, soundEncoding);
+        sound.asset = storage.createAsset(storage.AssetType.Sound, storage.DataFormat.WAV, soundEncoding, null, true // generate md5
+        );
+        sound.assetId = sound.asset.assetId;
         sound.dataFormat = storage.DataFormat.WAV;
         sound.md5 = "".concat(sound.assetId, ".").concat(sound.dataFormat);
       } // If soundEncoding is null, it's because gui had a problem
@@ -34752,17 +35196,17 @@ function (_EventEmitter) {
   }, {
     key: "getCostume",
     value: function getCostume(costumeIndex) {
-      var id = this.editingTarget.getCostumes()[costumeIndex].assetId;
-      if (!id || !this.runtime || !this.runtime.storage) return null;
-      var format = this.runtime.storage.get(id).dataFormat;
+      var asset = this.editingTarget.getCostumes()[costumeIndex].asset;
+      if (!asset || !this.runtime || !this.runtime.storage) return null;
+      var format = asset.dataFormat;
 
       if (format === this.runtime.storage.DataFormat.SVG) {
-        return this.runtime.storage.get(id).decodeText();
+        return asset.decodeText();
       } else if (format === this.runtime.storage.DataFormat.PNG || format === this.runtime.storage.DataFormat.JPG) {
-        return this.runtime.storage.get(id).encodeDataURI();
+        return asset.encodeDataURI();
       }
 
-      log.error("Unhandled format: ".concat(this.runtime.storage.get(id).dataFormat));
+      log.error("Unhandled format: ".concat(asset.dataFormat));
       return null;
     }
     /**
@@ -34798,10 +35242,13 @@ function (_EventEmitter) {
         var reader = new FileReader();
         reader.addEventListener('loadend', function () {
           var storage = _this13.runtime.storage;
-          costume.assetId = storage.builtinHelper.cache(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, Buffer.from(reader.result));
           costume.dataFormat = storage.DataFormat.PNG;
           costume.bitmapResolution = bitmapResolution;
           costume.size = [bitmap.width, bitmap.height];
+          costume.asset = storage.createAsset(storage.AssetType.ImageBitmap, costume.dataFormat, Buffer.from(reader.result), null, // id
+          true // generate md5
+          );
+          costume.assetId = costume.asset.assetId;
           costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
 
           _this13.emitTargetsUpdate();
@@ -34829,13 +35276,15 @@ function (_EventEmitter) {
         costume.size = this.runtime.renderer.getSkinSize(costume.skinId);
       }
 
-      var storage = this.runtime.storage;
-      costume.assetId = storage.builtinHelper.cache(storage.AssetType.ImageVector, storage.DataFormat.SVG, new TextEncoder().encode(svg)); // If we're in here, we've edited an svg in the vector editor,
+      var storage = this.runtime.storage; // If we're in here, we've edited an svg in the vector editor,
       // so the dataFormat should be 'svg'
 
       costume.dataFormat = storage.DataFormat.SVG;
-      costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
       costume.bitmapResolution = 1;
+      costume.asset = storage.createAsset(storage.AssetType.ImageVector, costume.dataFormat, new TextEncoder().encode(svg), null, true // generate md5
+      );
+      costume.assetId = costume.asset.assetId;
+      costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
       this.emitTargetsUpdate();
     }
     /**
