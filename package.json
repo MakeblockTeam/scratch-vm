@@ -27,7 +27,7 @@
     "test": "npm run lint && npm run docs && npm run tap",
     "watch": "webpack --progress --colors --watch",
     "version": "json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"",
-    "cp": "cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/"
+    "cp": "cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/ && cp -rf src/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/src/"
   },
   "dependencies": {
     "arraybuffer-loader": "^1.0.6",
@@ -43,7 +43,7 @@
     "jszip": "^3.1.5",
     "minilog": "3.1.0",
     "nets": "3.2.0",
-    "scratch-parser": "4.3.2",
+    "scratch-parser": "^0.0.2",
     "scratch-svg-renderer": "^0.1.0-prerelease.1515800444",
     "scratch-translate-extension-languages": "0.0.20180521154850",
     "socket.io-client": "2.0.4",
