@@ -13,7 +13,6 @@ class IRenderedTarget extends RenderedTarget {
         super(sprite, runtime); // 继承
 
         /**
-         * 
          * 设备角色 Id，一般是用设备名作为此 id
          * @type {string}
          */
@@ -28,8 +27,9 @@ class IRenderedTarget extends RenderedTarget {
 
     /**
      * 设备角色特有的方法，判断是否为设备
+     * @return {boolean}
      */
-    isDevice() {
+    isDevice () {
         return this.deviceId && this.isOriginal;
     }
     /**
@@ -38,9 +38,9 @@ class IRenderedTarget extends RenderedTarget {
      * @return {RenderedTarget} New clone.
      */
     // override
-    makeClone() {
-        let newClone = super.makeClone();
-        if(newClone) {
+    makeClone () {
+        const newClone = super.makeClone();
+        if (newClone) {
             // 增加 deviceId 属性
             newClone.deviceId = this.deviceId;
         }
@@ -52,36 +52,24 @@ class IRenderedTarget extends RenderedTarget {
      * @return {RenderedTarget} New clone.
      */
     // override
-    duplicate() {
+    duplicate () {
         return super.duplicate().then(newTarget => {
             newTarget.deviceId = this.deviceId;
-            return newTarget
-        })
+            return newTarget;
+        });
     }
 
     /**
      * Initialize the audio player for this sprite or clone.
-     * TODO: 新vm已经置空来该方法，以观后效
      */
     initAudio () {
-        // this.audioPlayer = null;
-        // if (this.runtime && this.runtime.audioEngine) {
-        //     this.audioPlayer = this.runtime.audioEngine.createPlayer();
-        //     // If this is a clone, it gets a reference to its parent's activeSoundPlayers object.
-        //     if (!this.isOriginal) {
-        //         const parent = this.sprite.clones[0];
-        //         if (parent && parent.audioPlayer) {
-        //             this.audioPlayer.activeSoundPlayers = parent.audioPlayer.activeSoundPlayers;
-        //         }
-        //     }
-        // }
     }
 
     /**
      * Set the current costume.
      * @param {number} index New index of costume.
      */
-    setCostume(index) {
+    setCostume (index) {
         // Keep the costume index within possible values.
         index = Math.round(index);
         if ([Infinity, -Infinity, NaN].includes(index)) index = 0;
@@ -119,7 +107,7 @@ class IRenderedTarget extends RenderedTarget {
      * Use when a batch has changed, e.g., when the drawable is first created.
      */
     // override
-    updateAllDrawableProperties() {
+    updateAllDrawableProperties () {
         if (this.renderer) {
             // 设备角色可能没有造型
             if (!this.sprite.costumes || this.sprite.costumes.length === 0) return;
@@ -128,25 +116,12 @@ class IRenderedTarget extends RenderedTarget {
     }
 
     /**
-     * Called when the project receives a "stop all"
-     * Stop all sounds and clear graphic effects.
-     * TODO: 该方法是否需要改写，有待验证。暂时先不改写
-     */
-    // onStopAll() {
-    //     this.clearEffects();
-    //     if (this.audioPlayer) {
-    //         this.audioPlayer.stopAllSounds();
-    //         this.audioPlayer.clearEffects();
-    //     }
-    // }
-
-    /**
      * Serialize sprite info, used when emitting events about the sprite
      * @returns {object} Sprite data as a simple object
      */
     // override
-    toJSON() {
-        let json = super.toJSON();
+    toJSON () {
+        const json = super.toJSON();
         json.deviceId = this.deviceId;
         json.isEditing = this.runtime._editingTarget === this;
         return json;
@@ -156,14 +131,13 @@ class IRenderedTarget extends RenderedTarget {
      * Dispose, destroying any run-time properties.
      */
     // override
-    dispose() {
+    dispose () {
         // fix: 删除变量
-        for (let key in this.variables) {
+        for (const key in this.variables) {
             this.deleteVariable(key);
         }
         super.dispose();
         // TODO: fix 关闭声音
-        // super.onStopAll();
     }
 }
 

@@ -322,7 +322,7 @@ class Runtime extends EventEmitter {
         /** @type {Object.<string, Object>} */
         this.ioDevices = {
             clock: new Clock(),
-            cloud: new Cloud(),
+            cloud: new Cloud(this),
             deviceManager: new DeviceManager(),
             keyboard: new Keyboard(this),
             mouse: new Mouse(this),
@@ -671,6 +671,10 @@ class Runtime extends EventEmitter {
                 }
             }
         }
+    }
+
+    getMonitorState () {
+        return this._monitorState;
     }
 
     /**

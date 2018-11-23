@@ -3971,6 +3971,8 @@ var RenderedTarget = __webpack_require__(/*! ../sprites/rendered-target */ "./sr
 var uid = __webpack_require__(/*! ../util/uid */ "./src/util/uid.js");
 
 var StageLayering = __webpack_require__(/*! ../engine/stage-layering */ "./src/engine/stage-layering.js");
+
+var getMonitorIdForBlockWithArgs = __webpack_require__(/*! ../util/get-monitor-id */ "./src/util/get-monitor-id.js");
 /**
  * @typedef {object} BubbleState - the bubble state associated with a particular target.
  * @property {Boolean} onSpriteRight - tracks whether the bubble is right or left of the sprite.
@@ -4250,13 +4252,13 @@ function () {
         },
         looks_costumenumbername: {
           isSpriteSpecific: true,
-          getId: function getId(targetId) {
-            return "".concat(targetId, "_costumenumbername");
+          getId: function getId(targetId, fields) {
+            return getMonitorIdForBlockWithArgs("".concat(targetId, "_costumenumbername"), fields);
           }
         },
         looks_backdropnumbername: {
-          getId: function getId() {
-            return 'backdropnumbername';
+          getId: function getId(_, fields) {
+            return getMonitorIdForBlockWithArgs('backdropnumbername', fields);
           }
         }
       };
@@ -4768,6 +4770,9 @@ function () {
       if (args.TOWARDS === '_mouse_') {
         targetX = util.ioQuery('mouse', 'getScratchX');
         targetY = util.ioQuery('mouse', 'getScratchY');
+      } else if (args.TOWARDS === '_random_') {
+        util.target.setDirection(Math.round(Math.random() * 360) - 180);
+        return;
       } else {
         var pointTarget = this.runtime.getSpriteTargetByName(args.TOWARDS);
         if (!pointTarget) return;
@@ -4928,17 +4933,26 @@ function () {
   }, {
     key: "getX",
     value: function getX(args, util) {
-      return util.target.x;
+      return this.limitPrecision(util.target.x);
     }
   }, {
     key: "getY",
     value: function getY(args, util) {
-      return util.target.y;
+      return this.limitPrecision(util.target.y);
     }
   }, {
     key: "getDirection",
     value: function getDirection(args, util) {
       return util.target.direction;
+    } // This corresponds to snapToInteger in Scratch 2
+
+  }, {
+    key: "limitPrecision",
+    value: function limitPrecision(coordinate) {
+      var rounded = Math.round(coordinate);
+      var delta = coordinate - rounded;
+      var limitedCoord = Math.abs(delta) < 1e-9 ? rounded : coordinate;
+      return limitedCoord;
     }
   }]);
 
@@ -5323,6 +5337,8 @@ var Cast = __webpack_require__(/*! ../util/cast */ "./src/util/cast.js");
 
 var Timer = __webpack_require__(/*! ../util/timer */ "./src/util/timer.js");
 
+var getMonitorIdForBlockWithArgs = __webpack_require__(/*! ../util/get-monitor-id */ "./src/util/get-monitor-id.js");
+
 var Scratch3SensingBlocks =
 /*#__PURE__*/
 function () {
@@ -5425,9 +5441,10 @@ function () {
           // This is different from the default toolbox xml id in order to support
           // importing multiple monitors from the same opcode from sb2 files,
           // something that is not currently supported in scratch 3.
-          getId: function getId(_, param) {
-            return "current_".concat(param);
-          }
+          getId: function getId(_, fields) {
+            return getMonitorIdForBlockWithArgs('current', fields);
+          } // _${param}`
+
         }
       };
     }
@@ -7261,6 +7278,8 @@ var BlocksExecuteCache = __webpack_require__(/*! ./blocks-execute-cache */ "./sr
 var log = __webpack_require__(/*! ../util/log */ "./src/util/log.js");
 
 var Variable = __webpack_require__(/*! ./variable */ "./src/engine/variable.js");
+
+var getMonitorIdForBlockWithArgs = __webpack_require__(/*! ../util/get-monitor-id */ "./src/util/get-monitor-id.js");
 /**
  * @fileoverview
  * Store and mutate the VM block representation,
@@ -7327,7 +7346,14 @@ function () {
        * execute.
        * @type {object.<string, object>}
        */
-      _executeCached: {}
+      _executeCached: {},
+
+      /**
+       * A cache of block IDs and targets to start threads on as they are
+       * actively monitored.
+       * @type {Array<{blockId: string, target: Target}>}
+       */
+      _monitored: null
     };
     /**
      * Flag which indicates that blocks in this container should not glow.
@@ -7676,7 +7702,7 @@ function () {
           // into a state where a local var was requested for the stage,
           // create a stage (global) var after checking for name conflicts
           // on all the sprites.
-          if (e.isLocal && editingTarget && !editingTarget.isStage) {
+          if (e.isLocal && editingTarget && !editingTarget.isStage && !e.isCloud) {
             if (!editingTarget.lookupVariableById(e.varId)) {
               editingTarget.createVariable(e.varId, e.varName, e.varType);
             }
@@ -7712,7 +7738,7 @@ function () {
               }
             }
 
-            stage.createVariable(e.varId, e.varName, e.varType);
+            stage.createVariable(e.varId, e.varName, e.varType, e.isCloud);
           }
 
           break;
@@ -7853,6 +7879,7 @@ function () {
       this._cache.procedureParamNames = {};
       this._cache.procedureDefinitions = {};
       this._cache._executeCached = {};
+      this._cache._monitored = null;
     }
     /**
      * Block management: create blocks and scripts from a `create` event
@@ -7892,10 +7919,17 @@ function () {
       if (['field', 'mutation', 'checkbox'].indexOf(args.element) === -1) return;
       var block = this._blocks[args.id];
       if (typeof block === 'undefined') return;
-      var wasMonitored = block.isMonitored;
 
       switch (args.element) {
         case 'field':
+          // TODO when the field of a monitored block changes,
+          // update the checkbox in the flyout based on whether
+          // a monitor for that current combination of selected parameters exists
+          // e.g.
+          // 1. check (current [v year])
+          // 2. switch dropdown in flyout block to (current [v minute])
+          // 3. the checkbox should become unchecked if we're not already
+          //    monitoring current minute
           // Update block value
           if (!block.fields[args.name]) return;
 
@@ -7933,12 +7967,33 @@ function () {
 
         case 'checkbox':
           {
-            block.isMonitored = args.value;
-
             if (!optRuntime) {
               break;
-            } // Variable blocks may be sprite specific depending on the owner of the variable
+            } // A checkbox usually has a one to one correspondence with the monitor
+            // block but in the case of monitored reporters that have arguments,
+            // map the old id to a new id, creating a new monitor block if necessary
 
+
+            if (block.fields && Object.keys(block.fields).length > 0 && block.opcode !== 'data_variable' && block.opcode !== 'data_listcontents') {
+              // This block has an argument which needs to get separated out into
+              // multiple monitor blocks with ids based on the selected argument
+              var newId = getMonitorIdForBlockWithArgs(block.id, block.fields); // Note: we're not just constantly creating a longer and longer id everytime we check
+              // the checkbox because we're using the id of the block in the flyout as the base
+              // check if a block with the new id already exists, otherwise create
+
+              var newBlock = optRuntime.monitorBlocks.getBlock(newId);
+
+              if (!newBlock) {
+                newBlock = JSON.parse(JSON.stringify(block));
+                newBlock.id = newId;
+                optRuntime.monitorBlocks.createBlock(newBlock);
+              }
+
+              block = newBlock; // Carry on through the rest of this code with newBlock
+            }
+
+            var wasMonitored = block.isMonitored;
+            block.isMonitored = args.value; // Variable blocks may be sprite specific depending on the owner of the variable
 
             var isSpriteLocalVariable = false;
             var isVariable = false;
@@ -8055,13 +8110,27 @@ function () {
     value: function runAllMonitored(runtime) {
       var _this = this;
 
-      Object.keys(this._blocks).forEach(function (blockId) {
-        if (_this.getBlock(blockId).isMonitored) {
+      if (this._cache._monitored === null) {
+        this._cache._monitored = Object.keys(this._blocks).filter(function (blockId) {
+          return _this.getBlock(blockId).isMonitored;
+        }).map(function (blockId) {
           var targetId = _this.getBlock(blockId).targetId;
 
-          runtime.addMonitorScript(blockId, targetId ? runtime.getTargetById(targetId) : null);
-        }
-      });
+          return {
+            blockId: blockId,
+            target: targetId ? runtime.getTargetById(targetId) : null
+          };
+        });
+      }
+
+      var monitored = this._cache._monitored;
+
+      for (var i = 0; i < monitored.length; i++) {
+        var _monitored$i = monitored[i],
+            blockId = _monitored$i.blockId,
+            target = _monitored$i.target;
+        runtime.addMonitorScript(blockId, target);
+      }
     }
     /**
      * Block management: delete blocks and their associated scripts. Does nothing if a block
@@ -9419,8 +9488,9 @@ var MonitorRecord = Record({
   mode: 'default',
   sliderMin: 0,
   sliderMax: 100,
-  x: 0,
-  y: 0,
+  x: null,
+  // (x: null, y: null) Indicates that the monitor should be auto-positioned
+  y: null,
   width: 0,
   height: 0,
   visible: true
@@ -10241,7 +10311,7 @@ function (_EventEmitter) {
 
     _this.ioDevices = {
       clock: new Clock(),
-      cloud: new Cloud(),
+      cloud: new Cloud(_assertThisInitialized(_assertThisInitialized(_this))),
       deviceManager: new DeviceManager(),
       keyboard: new Keyboard(_assertThisInitialized(_assertThisInitialized(_this))),
       mouse: new Mouse(_assertThisInitialized(_assertThisInitialized(_this))),
@@ -10343,6 +10413,11 @@ function (_EventEmitter) {
           }
         }
       }
+    }
+  }, {
+    key: "getMonitorState",
+    value: function getMonitorState() {
+      return this._monitorState;
     }
     /**
      * Generate an extension-specific menu ID.
@@ -12100,10 +12175,11 @@ function (_EventEmitter) {
       var block = categoryInfo.blocks.find(function (b) {
         return b.info.opcode === opcode;
       });
-      if (!block) return; // TODO: should this use some other category? Also, we may want to format the label in a locale-specific way.
+      if (!block) return; // TODO: we may want to format the label in a locale-specific way.
 
       return {
-        category: 'data',
+        category: 'extension',
+        // This assumes that all extensions have the same monitor color.
         label: "".concat(categoryInfo.name, ": ").concat(block.info.text)
       };
     }
@@ -13310,14 +13386,20 @@ function (_EventEmitter) {
      * @param {string} id Id of variable
      * @param {string} name Name of variable.
      * @param {string} type Type of variable, '', 'broadcast_msg', or 'list'
+     * @param {boolean} isCloud Whether the variable to create has the isCloud flag set.
+     * Additional checks are made that the variable can be created as a cloud variable.
      */
 
   }, {
     key: "createVariable",
-    value: function createVariable(id, name, type) {
+    value: function createVariable(id, name, type, isCloud) {
       if (!this.variables.hasOwnProperty(id)) {
         var newVariable = new Variable(id, name, type, false);
         this.variables[id] = newVariable;
+
+        if (isCloud && this.isStage) {
+          this.runtime.ioDevices.cloud.requestCreateVariable(newVariable);
+        }
       }
     }
     /**
@@ -13366,9 +13448,14 @@ function (_EventEmitter) {
         var variable = this.variables[id];
 
         if (variable.id === id) {
+          var oldName = variable.name;
           variable.name = newName;
 
           if (this.runtime) {
+            if (variable.isCloud && this.isStage) {
+              this.runtime.ioDevices.cloud.requestRenameVariable(oldName, newName);
+            }
+
             var blocks = this.runtime.monitorBlocks;
             blocks.changeBlock({
               id: id,
@@ -13397,9 +13484,16 @@ function (_EventEmitter) {
     key: "deleteVariable",
     value: function deleteVariable(id) {
       if (this.variables.hasOwnProperty(id)) {
+        // Get info about the variable before deleting it
+        var deletedVariableName = this.variables[id].name;
+        var deletedVariableWasCloud = this.variables[id].isCloud;
         delete this.variables[id];
 
         if (this.runtime) {
+          if (deletedVariableWasCloud && this.isStage) {
+            this.runtime.ioDevices.cloud.requestDeleteVariable(deletedVariableName);
+          }
+
           this.runtime.monitorBlocks.deleteBlock(id);
           this.runtime.requestRemoveMonitor(id);
         }
@@ -15609,6 +15703,10 @@ function () {
   }, {
     key: "scan",
     value: function scan() {
+      if (this._bt) {
+        this._bt.disconnect();
+      }
+
       this._bt = new BT(this._runtime, this._extensionId, {
         majorDeviceClass: 8,
         minorDeviceClass: 1
@@ -15622,7 +15720,9 @@ function () {
   }, {
     key: "connect",
     value: function connect(id) {
-      this._bt.connectPeripheral(id);
+      if (this._bt) {
+        this._bt.connectPeripheral(id);
+      }
     }
     /**
      * Called by the runtime when user wants to disconnect from the EV3 peripheral.
@@ -15631,12 +15731,14 @@ function () {
   }, {
     key: "disconnect",
     value: function disconnect() {
-      this._bt.disconnect();
-
       this._clearSensorsAndMotors();
 
       window.clearInterval(this._pollingIntervalID);
       this._pollingIntervalID = null;
+
+      if (this._bt) {
+        this._bt.disconnect();
+      }
     }
     /**
      * Called by the runtime to detect whether the EV3 peripheral is connected.
@@ -16661,6 +16763,10 @@ function () {
      * Called by the runtime when user wants to scan for a peripheral.
      */
     value: function scan() {
+      if (this._ble) {
+        this._ble.disconnect();
+      }
+
       this._ble = new BLE(this._runtime, this._extensionId, {
         filters: [{
           services: [BLEUUID.service]
@@ -16675,7 +16781,9 @@ function () {
   }, {
     key: "connect",
     value: function connect(id) {
-      this._ble.connectPeripheral(id);
+      if (this._ble) {
+        this._ble.connectPeripheral(id);
+      }
     }
     /**
      * Disconnect from the micro:bit.
@@ -16686,7 +16794,9 @@ function () {
     value: function disconnect() {
       window.clearInterval(this._timeoutID);
 
-      this._ble.disconnect();
+      if (this._ble) {
+        this._ble.disconnect();
+      }
     }
     /**
      * Return true if connected to the micro:bit.
@@ -23107,6 +23217,10 @@ function () {
   }, {
     key: "scan",
     value: function scan() {
+      if (this._ble) {
+        this._ble.disconnect();
+      }
+
       this._ble = new BLE(this._runtime, this._extensionId, {
         filters: [{
           services: [BLEService.DEVICE_SERVICE]
@@ -23122,7 +23236,9 @@ function () {
   }, {
     key: "connect",
     value: function connect(id) {
-      this._ble.connectPeripheral(id);
+      if (this._ble) {
+        this._ble.connectPeripheral(id);
+      }
     }
     /**
      * Disconnects from the current BLE socket.
@@ -23139,7 +23255,9 @@ function () {
         distance: 0
       };
 
-      this._ble.disconnect();
+      if (this._ble) {
+        this._ble.disconnect();
+      }
     }
     /**
      * Called by the runtime to detect whether the WeDo 2.0 peripheral is connected.
@@ -24197,12 +24315,20 @@ module.exports = Scratch3WeDo2Blocks;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 var StringUtil = __webpack_require__(/*! ../util/string-util */ "./src/util/string-util.js");
 
 var log = __webpack_require__(/*! ../util/log */ "./src/util/log.js");
 
-var loadVector_ = function loadVector_(costume, costumeAsset, runtime, rotationCenter, optVersion) {
-  var svgString = costumeAsset.decodeText(); // SVG Renderer load fixes "quirks" associated with Scratch 2 projects
+var loadVector_ = function loadVector_(costume, runtime, rotationCenter, optVersion) {
+  var svgString = costume.asset.decodeText(); // SVG Renderer load fixes "quirks" associated with Scratch 2 projects
 
   if (optVersion && optVersion === 2 && !runtime.v2SvgAdapter) {
     log.error('No V2 SVG adapter present; SVGs may not render correctly.');
@@ -24232,67 +24358,145 @@ var loadVector_ = function loadVector_(costume, costumeAsset, runtime, rotationC
 
   return Promise.resolve(costume);
 };
+/**
+ * Return a promise to fetch a bitmap from storage and return it as a canvas
+ * If the costume has bitmapResolution 1, it will be converted to bitmapResolution 2 here (the standard for Scratch 3)
+ * If the costume has a text layer asset, which is a text part from Scratch 1.4, then this function
+ * will merge the two image assets. See the issue LLK/scratch-vm#672 for more information.
+ * @param {!object} costume - the Scratch costume object.
+ * @param {!Runtime} runtime - Scratch runtime, used to access the v2BitmapAdapter
+ * @param {?object} rotationCenter - optionally passed in coordinates for the center of rotation for the image. If
+ *     none is given, the rotation center of the costume will be set to the middle of the costume later on.
+ * @property {number} costume.bitmapResolution - the resolution scale for a bitmap costume.
+ * @returns {?Promise} - a promise which will resolve to an object {canvas, rotationCenter, assetMatchesBase},
+ *     or reject on error.
+ *     assetMatchesBase is true if the asset matches the base layer; false if it required adjustment
+ */
 
-var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationCenter) {
+
+var fetchBitmapCanvas_ = function fetchBitmapCanvas_(costume, runtime, rotationCenter) {
+  if (!costume || !costume.asset) {
+    return Promise.reject('Costume load failed. Assets were missing.');
+  }
+
+  if (!runtime.v2BitmapAdapter) {
+    return Promise.reject('No V2 Bitmap adapter present.');
+  }
+
   return new Promise(function (resolve, reject) {
-    var imageElement = new Image();
+    var baseImageElement = new Image();
+    var textImageElement; // We need to wait for 2 images total to load. loadedOne will be true when one
+    // is done, and we are just waiting for one more.
+
+    var loadedOne = false;
 
     var onError = function onError() {
       // eslint-disable-next-line no-use-before-define
       removeEventListeners();
-      reject('Image load failed');
+      reject('Costume load failed. Asset could not be read.');
     };
 
     var onLoad = function onLoad() {
-      // eslint-disable-next-line no-use-before-define
-      removeEventListeners();
-      resolve(imageElement);
+      if (loadedOne) {
+        // eslint-disable-next-line no-use-before-define
+        removeEventListeners();
+        resolve([baseImageElement, textImageElement]);
+      } else {
+        loadedOne = true;
+      }
     };
 
     var removeEventListeners = function removeEventListeners() {
-      imageElement.removeEventListener('error', onError);
-      imageElement.removeEventListener('load', onLoad);
+      baseImageElement.removeEventListener('error', onError);
+      baseImageElement.removeEventListener('load', onLoad);
+
+      if (textImageElement) {
+        textImageElement.removeEventListener('error', onError);
+        textImageElement.removeEventListener('load', onLoad);
+      }
     };
 
-    imageElement.addEventListener('error', onError);
-    imageElement.addEventListener('load', onLoad);
-    var src = costumeAsset.encodeDataURI();
+    baseImageElement.addEventListener('load', onLoad);
+    baseImageElement.addEventListener('error', onError);
 
-    if (costume.bitmapResolution === 1 && !runtime.v2BitmapAdapter) {
-      log.error('No V2 bitmap adapter present; bitmaps may not render correctly.');
-    } else if (costume.bitmapResolution === 1) {
-      runtime.v2BitmapAdapter.convertResolution1Bitmap(src, function (error, dataURI) {
-        if (error) {
-          log.error(error);
-        } else if (dataURI) {
-          // Put back into storage
-          var storage = runtime.storage;
-          costume.asset = storage.createAsset(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI), null, true // generate md5
-          );
-          costume.assetId = costume.asset.assetId;
-          costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
-        } // Regardless of if conversion succeeds, convert it to bitmap resolution 2,
-        // since all code from here on will assume that.
+    if (costume.textLayerAsset) {
+      textImageElement = new Image();
+      textImageElement.addEventListener('load', onLoad);
+      textImageElement.addEventListener('error', onError);
+      textImageElement.src = costume.textLayerAsset.encodeDataURI();
+    } else {
+      loadedOne = true;
+    }
+
+    baseImageElement.src = costume.asset.encodeDataURI();
+  }).then(function (imageElements) {
+    var _imageElements = _slicedToArray(imageElements, 2),
+        baseImageElement = _imageElements[0],
+        textImageElement = _imageElements[1];
+
+    var canvas = document.createElement('canvas');
+    var scale = costume.bitmapResolution === 1 ? 2 : 1;
+    canvas.width = baseImageElement.width;
+    canvas.height = baseImageElement.height;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(baseImageElement, 0, 0);
+
+    if (textImageElement) {
+      ctx.drawImage(textImageElement, 0, 0);
+    }
+
+    if (scale !== 1) {
+      canvas = runtime.v2BitmapAdapter.resize(canvas, canvas.width * scale, canvas.height * scale);
+    } // By scaling, we've converted it to bitmap resolution 2
 
 
-        if (rotationCenter) {
-          rotationCenter[0] = rotationCenter[0] * 2;
-          rotationCenter[1] = rotationCenter[1] * 2;
-          costume.rotationCenterX = rotationCenter[0];
-          costume.rotationCenterY = rotationCenter[1];
+    if (rotationCenter) {
+      rotationCenter[0] = rotationCenter[0] * scale;
+      rotationCenter[1] = rotationCenter[1] * scale;
+      costume.rotationCenterX = rotationCenter[0];
+      costume.rotationCenterY = rotationCenter[1];
+    }
+
+    costume.bitmapResolution = 2;
+    return {
+      canvas: canvas,
+      rotationCenter: rotationCenter,
+      // True if the asset matches the base layer; false if it required adjustment
+      assetMatchesBase: scale === 1 && !textImageElement
+    };
+  }).finally(function () {
+    // Clean up the costume object
+    delete costume.textLayerMD5;
+    delete costume.textLayerAsset;
+  });
+};
+
+var loadBitmap_ = function loadBitmap_(costume, runtime, rotationCenter) {
+  return fetchBitmapCanvas_(costume, runtime, rotationCenter).then(function (fetched) {
+    return new Promise(function (resolve) {
+      rotationCenter = fetched.rotationCenter;
+
+      var updateCostumeAsset = function updateCostumeAsset(dataURI) {
+        if (!runtime.v2BitmapAdapter) {
+          return Promise.reject('No V2 Bitmap adapter present.');
         }
 
-        costume.bitmapResolution = 2; // Use original src if conversion fails.
-        // The image will appear half-sized.
+        var storage = runtime.storage;
+        costume.asset = storage.createAsset(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI), null, true // generate md5
+        );
+        costume.assetId = costume.asset.assetId;
+        costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
+      };
 
-        imageElement.src = dataURI ? dataURI : src;
-      });
-    } else {
-      imageElement.src = src;
-    }
-  }).then(function (imageElement) {
+      if (!fetched.assetMatchesBase) {
+        updateCostumeAsset(fetched.canvas.toDataURL());
+      }
+
+      resolve(fetched.canvas);
+    });
+  }).then(function (canvas) {
     // createBitmapSkin does the right thing if costume.bitmapResolution or rotationCenter are undefined...
-    costume.skinId = runtime.renderer.createBitmapSkin(imageElement, costume.bitmapResolution, rotationCenter);
+    costume.skinId = runtime.renderer.createBitmapSkin(canvas, costume.bitmapResolution, rotationCenter);
     var renderSize = runtime.renderer.getSkinSize(costume.skinId);
     costume.size = [renderSize[0] * 2, renderSize[1] * 2]; // Actual size, since all bitmaps are resolution 2
 
@@ -24315,7 +24519,7 @@ var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationC
  * @property {number} rotationCenterX - the X component of the costume's origin.
  * @property {number} rotationCenterY - the Y component of the costume's origin.
  * @property {number} [bitmapResolution] - the resolution scale for a bitmap costume.
- * @param {!Asset} costumeAsset - the asset of the costume loaded from storage.
+ * @property {!Asset} costume.asset - the asset of the costume loaded from storage.
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @param {?int} optVersion - Version of Scratch that the costume comes from. If this is set
  *     to 2, scratch 3 will perform an upgrade step to handle quirks in SVGs from Scratch 2.0.
@@ -24323,8 +24527,8 @@ var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationC
  */
 
 
-var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion) {
-  costume.assetId = costumeAsset.assetId;
+var loadCostumeFromAsset = function loadCostumeFromAsset(costume, runtime, optVersion) {
+  costume.assetId = costume.asset.assetId;
   var renderer = runtime.renderer;
 
   if (!renderer) {
@@ -24340,16 +24544,16 @@ var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, 
     rotationCenter = [costume.rotationCenterX, costume.rotationCenterY];
   }
 
-  if (costumeAsset.assetType === AssetType.ImageVector) {
-    return loadVector_(costume, costumeAsset, runtime, rotationCenter, optVersion);
+  if (costume.asset.assetType === AssetType.ImageVector) {
+    return loadVector_(costume, runtime, rotationCenter, optVersion);
   }
 
-  return loadBitmap_(costume, costumeAsset, runtime, rotationCenter, optVersion);
+  return loadBitmap_(costume, runtime, rotationCenter, optVersion);
 };
 /**
  * Load a costume's asset into memory asynchronously.
  * Do not call this unless there is a renderer attached.
- * @param {string} md5ext - the MD5 and extension of the costume to be loaded.
+ * @param {!string} md5ext - the MD5 and extension of the costume to be loaded.
  * @param {!object} costume - the Scratch costume object.
  * @property {int} skinId - the ID of the costume's render skin, once installed.
  * @property {number} rotationCenterX - the X component of the costume's origin.
@@ -24363,20 +24567,47 @@ var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, 
 
 
 var loadCostume = function loadCostume(md5ext, costume, runtime, optVersion) {
+  var idParts = StringUtil.splitFirst(md5ext, '.');
+  var md5 = idParts[0];
+  var ext = idParts[1].toLowerCase();
+  costume.dataFormat = ext;
+
+  if (costume.asset) {
+    // Costume comes with asset. It could be coming from camera, image upload, drag and drop, or file
+    return loadCostumeFromAsset(costume, runtime, optVersion);
+  } // Need to load the costume from storage. The server should have a reference to this md5.
+
+
   if (!runtime.storage) {
     log.error('No storage module present; cannot load costume asset: ', md5ext);
     return Promise.resolve(costume);
   }
 
   var AssetType = runtime.storage.AssetType;
-  var idParts = StringUtil.splitFirst(md5ext, '.');
-  var md5 = idParts[0];
-  var ext = idParts[1].toLowerCase();
   var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
-  costume.dataFormat = ext;
-  return (costume.asset && Promise.resolve(costume.asset) || runtime.storage.load(assetType, md5, ext)).then(function (costumeAsset) {
-    costume.asset = costumeAsset;
-    return loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion);
+  var costumePromise = runtime.storage.load(assetType, md5, ext);
+
+  if (!costumePromise) {
+    log.error("Couldn't fetch costume asset: ".concat(md5ext));
+    return;
+  }
+
+  var textLayerPromise;
+
+  if (costume.textLayerMD5) {
+    textLayerPromise = runtime.storage.load(AssetType.ImageBitmap, costume.textLayerMD5, 'png');
+  } else {
+    textLayerPromise = Promise.resolve(null);
+  }
+
+  return Promise.all([costumePromise, textLayerPromise]).then(function (assetArray) {
+    costume.asset = assetArray[0];
+
+    if (assetArray[1]) {
+      costume.textLayerAsset = assetArray[1];
+    }
+
+    return loadCostumeFromAsset(costume, runtime, optVersion);
   }).catch(function (e) {
     log.error(e);
   });
@@ -24396,6 +24627,14 @@ module.exports = {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 var StringUtil = __webpack_require__(/*! ../util/string-util */ "./src/util/string-util.js");
 
 var log = __webpack_require__(/*! ../util/log */ "./src/util/log.js");
@@ -24403,14 +24642,14 @@ var log = __webpack_require__(/*! ../util/log */ "./src/util/log.js");
 var DEFAULT_SVG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg width=\"1\" height=\"1\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><rect width=\"1\" height=\"1\" fill=\"none\" stroke=\"none\"></rect></svg>";
 var DEFAULT_SVG_DATA = new TextEncoder().encode(DEFAULT_SVG);
 
-var loadVector_ = function loadVector_(costume, costumeAsset, runtime, rotationCenter, optVersion) {
+var loadVector_ = function loadVector_(costume, runtime, rotationCenter, optVersion) {
   // 兼容处理 by jeremy
-  if (!costumeAsset) {
-    log.error('No costumeAsset; SVGs may not render correctly.');
+  if (!costume.asset) {
+    log.error('No costume asset; SVGs may not render correctly.');
     return Promise.resolve(costume);
   }
 
-  var svgString = costumeAsset.decodeText(); // modified by Kane: 找不到图片处理
+  var svgString = costume.asset.decodeText(); // modified by Kane: 找不到图片处理
 
   if (!svgString || svgString.indexOf('</html>') !== -1) {
     costumeAsset.data = DEFAULT_SVG_DATA;
@@ -24446,67 +24685,145 @@ var loadVector_ = function loadVector_(costume, costumeAsset, runtime, rotationC
 
   return Promise.resolve(costume);
 };
+/**
+ * Return a promise to fetch a bitmap from storage and return it as a canvas
+ * If the costume has bitmapResolution 1, it will be converted to bitmapResolution 2 here (the standard for Scratch 3)
+ * If the costume has a text layer asset, which is a text part from Scratch 1.4, then this function
+ * will merge the two image assets. See the issue LLK/scratch-vm#672 for more information.
+ * @param {!object} costume - the Scratch costume object.
+ * @param {!Runtime} runtime - Scratch runtime, used to access the v2BitmapAdapter
+ * @param {?object} rotationCenter - optionally passed in coordinates for the center of rotation for the image. If
+ *     none is given, the rotation center of the costume will be set to the middle of the costume later on.
+ * @property {number} costume.bitmapResolution - the resolution scale for a bitmap costume.
+ * @returns {?Promise} - a promise which will resolve to an object {canvas, rotationCenter, assetMatchesBase},
+ *     or reject on error.
+ *     assetMatchesBase is true if the asset matches the base layer; false if it required adjustment
+ */
 
-var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationCenter) {
+
+var fetchBitmapCanvas_ = function fetchBitmapCanvas_(costume, runtime, rotationCenter) {
+  if (!costume || !costume.asset) {
+    return Promise.reject('Costume load failed. Assets were missing.');
+  }
+
+  if (!runtime.v2BitmapAdapter) {
+    return Promise.reject('No V2 Bitmap adapter present.');
+  }
+
   return new Promise(function (resolve, reject) {
-    var imageElement = new Image();
+    var baseImageElement = new Image();
+    var textImageElement; // We need to wait for 2 images total to load. loadedOne will be true when one
+    // is done, and we are just waiting for one more.
+
+    var loadedOne = false;
 
     var onError = function onError() {
       // eslint-disable-next-line no-use-before-define
       removeEventListeners();
-      reject('Image load failed');
+      reject('Costume load failed. Asset could not be read.');
     };
 
     var onLoad = function onLoad() {
-      // eslint-disable-next-line no-use-before-define
-      removeEventListeners();
-      resolve(imageElement);
+      if (loadedOne) {
+        // eslint-disable-next-line no-use-before-define
+        removeEventListeners();
+        resolve([baseImageElement, textImageElement]);
+      } else {
+        loadedOne = true;
+      }
     };
 
     var removeEventListeners = function removeEventListeners() {
-      imageElement.removeEventListener('error', onError);
-      imageElement.removeEventListener('load', onLoad);
+      baseImageElement.removeEventListener('error', onError);
+      baseImageElement.removeEventListener('load', onLoad);
+
+      if (textImageElement) {
+        textImageElement.removeEventListener('error', onError);
+        textImageElement.removeEventListener('load', onLoad);
+      }
     };
 
-    imageElement.addEventListener('error', onError);
-    imageElement.addEventListener('load', onLoad);
-    var src = costumeAsset.encodeDataURI();
+    baseImageElement.addEventListener('load', onLoad);
+    baseImageElement.addEventListener('error', onError);
 
-    if (costume.bitmapResolution === 1 && !runtime.v2BitmapAdapter) {
-      log.error('No V2 bitmap adapter present; bitmaps may not render correctly.');
-    } else if (costume.bitmapResolution === 1) {
-      runtime.v2BitmapAdapter.convertResolution1Bitmap(src, function (error, dataURI) {
-        if (error) {
-          log.error(error);
-        } else if (dataURI) {
-          // Put back into storage
-          var storage = runtime.storage;
-          costume.asset = storage.createAsset(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI), null, true // generate md5
-          );
-          costume.assetId = costume.asset.assetId;
-          costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
-        } // Regardless of if conversion succeeds, convert it to bitmap resolution 2,
-        // since all code from here on will assume that.
+    if (costume.textLayerAsset) {
+      textImageElement = new Image();
+      textImageElement.addEventListener('load', onLoad);
+      textImageElement.addEventListener('error', onError);
+      textImageElement.src = costume.textLayerAsset.encodeDataURI();
+    } else {
+      loadedOne = true;
+    }
+
+    baseImageElement.src = costume.asset.encodeDataURI();
+  }).then(function (imageElements) {
+    var _imageElements = _slicedToArray(imageElements, 2),
+        baseImageElement = _imageElements[0],
+        textImageElement = _imageElements[1];
+
+    var canvas = document.createElement('canvas');
+    var scale = costume.bitmapResolution === 1 ? 2 : 1;
+    canvas.width = baseImageElement.width;
+    canvas.height = baseImageElement.height;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(baseImageElement, 0, 0);
+
+    if (textImageElement) {
+      ctx.drawImage(textImageElement, 0, 0);
+    }
+
+    if (scale !== 1) {
+      canvas = runtime.v2BitmapAdapter.resize(canvas, canvas.width * scale, canvas.height * scale);
+    } // By scaling, we've converted it to bitmap resolution 2
 
 
-        if (rotationCenter) {
-          rotationCenter[0] = rotationCenter[0] * 2;
-          rotationCenter[1] = rotationCenter[1] * 2;
-          costume.rotationCenterX = rotationCenter[0];
-          costume.rotationCenterY = rotationCenter[1];
+    if (rotationCenter) {
+      rotationCenter[0] = rotationCenter[0] * scale;
+      rotationCenter[1] = rotationCenter[1] * scale;
+      costume.rotationCenterX = rotationCenter[0];
+      costume.rotationCenterY = rotationCenter[1];
+    }
+
+    costume.bitmapResolution = 2;
+    return {
+      canvas: canvas,
+      rotationCenter: rotationCenter,
+      // True if the asset matches the base layer; false if it required adjustment
+      assetMatchesBase: scale === 1 && !textImageElement
+    };
+  }).finally(function () {
+    // Clean up the costume object
+    delete costume.textLayerMD5;
+    delete costume.textLayerAsset;
+  });
+};
+
+var loadBitmap_ = function loadBitmap_(costume, runtime, rotationCenter) {
+  return fetchBitmapCanvas_(costume, runtime, rotationCenter).then(function (fetched) {
+    return new Promise(function (resolve) {
+      rotationCenter = fetched.rotationCenter;
+
+      var updateCostumeAsset = function updateCostumeAsset(dataURI) {
+        if (!runtime.v2BitmapAdapter) {
+          return Promise.reject('No V2 Bitmap adapter present.');
         }
 
-        costume.bitmapResolution = 2; // Use original src if conversion fails.
-        // The image will appear half-sized.
+        var storage = runtime.storage;
+        costume.asset = storage.createAsset(storage.AssetType.ImageBitmap, storage.DataFormat.PNG, runtime.v2BitmapAdapter.convertDataURIToBinary(dataURI), null, true // generate md5
+        );
+        costume.assetId = costume.asset.assetId;
+        costume.md5 = "".concat(costume.assetId, ".").concat(costume.dataFormat);
+      };
 
-        imageElement.src = dataURI ? dataURI : src;
-      });
-    } else {
-      imageElement.src = src;
-    }
-  }).then(function (imageElement) {
+      if (!fetched.assetMatchesBase) {
+        updateCostumeAsset(fetched.canvas.toDataURL());
+      }
+
+      resolve(fetched.canvas);
+    });
+  }).then(function (canvas) {
     // createBitmapSkin does the right thing if costume.bitmapResolution or rotationCenter are undefined...
-    costume.skinId = runtime.renderer.createBitmapSkin(imageElement, costume.bitmapResolution, rotationCenter);
+    costume.skinId = runtime.renderer.createBitmapSkin(canvas, costume.bitmapResolution, rotationCenter);
     var renderSize = runtime.renderer.getSkinSize(costume.skinId);
     costume.size = [renderSize[0] * 2, renderSize[1] * 2]; // Actual size, since all bitmaps are resolution 2
 
@@ -24529,7 +24846,7 @@ var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationC
  * @property {number} rotationCenterX - the X component of the costume's origin.
  * @property {number} rotationCenterY - the Y component of the costume's origin.
  * @property {number} [bitmapResolution] - the resolution scale for a bitmap costume.
- * @param {!Asset} costumeAsset - the asset of the costume loaded from storage.
+ * @property {!Asset} costume.asset - the asset of the costume loaded from storage.
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @param {?int} optVersion - Version of Scratch that the costume comes from. If this is set
  *     to 2, scratch 3 will perform an upgrade step to handle quirks in SVGs from Scratch 2.0.
@@ -24537,8 +24854,8 @@ var loadBitmap_ = function loadBitmap_(costume, costumeAsset, runtime, rotationC
  */
 
 
-var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion) {
-  costume.assetId = costumeAsset.assetId;
+var loadCostumeFromAsset = function loadCostumeFromAsset(costume, runtime, optVersion) {
+  costume.assetId = costume.asset.assetId;
   var renderer = runtime.renderer;
 
   if (!renderer) {
@@ -24554,16 +24871,16 @@ var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, 
     rotationCenter = [costume.rotationCenterX, costume.rotationCenterY];
   }
 
-  if (costumeAsset.assetType === AssetType.ImageVector) {
-    return loadVector_(costume, costumeAsset, runtime, rotationCenter, optVersion);
+  if (costume.asset.assetType === AssetType.ImageVector) {
+    return loadVector_(costume, runtime, rotationCenter, optVersion);
   }
 
-  return loadBitmap_(costume, costumeAsset, runtime, rotationCenter, optVersion);
+  return loadBitmap_(costume, runtime, rotationCenter, optVersion);
 };
 /**
  * Load a costume's asset into memory asynchronously.
  * Do not call this unless there is a renderer attached.
- * @param {string} md5ext - the MD5 and extension of the costume to be loaded.
+ * @param {!string} md5ext - the MD5 and extension of the costume to be loaded.
  * @param {!object} costume - the Scratch costume object.
  * @property {int} skinId - the ID of the costume's render skin, once installed.
  * @property {number} rotationCenterX - the X component of the costume's origin.
@@ -24577,20 +24894,47 @@ var loadCostumeFromAsset = function loadCostumeFromAsset(costume, costumeAsset, 
 
 
 var loadCostume = function loadCostume(md5ext, costume, runtime, optVersion) {
+  var idParts = StringUtil.splitFirst(md5ext, '.');
+  var md5 = idParts[0];
+  var ext = idParts[1].toLowerCase();
+  costume.dataFormat = ext;
+
+  if (costume.asset) {
+    // Costume comes with asset. It could be coming from camera, image upload, drag and drop, or file
+    return loadCostumeFromAsset(costume, runtime, optVersion);
+  } // Need to load the costume from storage. The server should have a reference to this md5.
+
+
   if (!runtime.storage) {
     log.error('No storage module present; cannot load costume asset: ', md5ext);
     return Promise.resolve(costume);
   }
 
   var AssetType = runtime.storage.AssetType;
-  var idParts = StringUtil.splitFirst(md5ext, '.');
-  var md5 = idParts[0];
-  var ext = idParts[1].toLowerCase();
   var assetType = ext === 'svg' ? AssetType.ImageVector : AssetType.ImageBitmap;
-  costume.dataFormat = ext;
-  return (costume.asset && Promise.resolve(costume.asset) || runtime.storage.load(assetType, md5, ext)).then(function (costumeAsset) {
-    costume.asset = costumeAsset;
-    return loadCostumeFromAsset(costume, costumeAsset, runtime, optVersion);
+  var costumePromise = runtime.storage.load(assetType, md5, ext);
+
+  if (!costumePromise) {
+    log.error("Couldn't fetch costume asset: ".concat(md5ext));
+    return;
+  }
+
+  var textLayerPromise;
+
+  if (costume.textLayerMD5) {
+    textLayerPromise = runtime.storage.load(AssetType.ImageBitmap, costume.textLayerMD5, 'png');
+  } else {
+    textLayerPromise = Promise.resolve(null);
+  }
+
+  return Promise.all([costumePromise, textLayerPromise]).then(function (assetArray) {
+    costume.asset = assetArray[0];
+
+    if (assetArray[1]) {
+      costume.textLayerAsset = assetArray[1];
+    }
+
+    return loadCostumeFromAsset(costume, runtime, optVersion);
   }).catch(function (e) {
     log.error(e);
   });
@@ -24864,10 +25208,15 @@ function (_JSONRPCWebSocket) {
       if (this._ws.readyState === 1) {
         // is this needed since it's only called on ws.onopen?
         this._availablePeripherals = {};
+
+        if (this._discoverTimeoutID) {
+          window.clearTimeout(this._discoverTimeoutID);
+        }
+
         this._discoverTimeoutID = window.setTimeout(this._sendDiscoverTimeout.bind(this), 15000);
         this.sendRemoteRequest('discover', this._peripheralOptions).catch(function (e) {
           _this2._sendRequestError(e);
-        }); // never reached?
+        });
       } // TODO: else?
 
     }
@@ -24902,6 +25251,10 @@ function (_JSONRPCWebSocket) {
     key: "disconnect",
     value: function disconnect() {
       this._ws.close();
+
+      if (this._discoverTimeoutID) {
+        window.clearTimeout(this._discoverTimeoutID);
+      }
     }
     /**
      * @return {bool} whether the peripheral is connected.
@@ -25017,7 +25370,6 @@ function (_JSONRPCWebSocket) {
           this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._availablePeripherals);
 
           if (this._discoverTimeoutID) {
-            // TODO: window?
             window.clearTimeout(this._discoverTimeoutID);
           }
 
@@ -25060,6 +25412,10 @@ function (_JSONRPCWebSocket) {
   }, {
     key: "_sendDiscoverTimeout",
     value: function _sendDiscoverTimeout() {
+      if (this._discoverTimeoutID) {
+        window.clearTimeout(this._discoverTimeoutID);
+      }
+
       this._runtime.emit(this._runtime.constructor.PERIPHERAL_SCAN_TIMEOUT);
     }
   }]);
@@ -25151,10 +25507,15 @@ function (_JSONRPCWebSocket) {
       if (this._ws.readyState === 1) {
         // is this needed since it's only called on ws.onopen?
         this._availablePeripherals = {};
+
+        if (this._discoverTimeoutID) {
+          window.clearTimeout(this._discoverTimeoutID);
+        }
+
         this._discoverTimeoutID = window.setTimeout(this._sendDiscoverTimeout.bind(this), 15000);
         this.sendRemoteRequest('discover', this._peripheralOptions).catch(function (e) {
           return _this2._sendRequestError(e);
-        }); // never reached?
+        });
       } // TODO: else?
 
     }
@@ -25189,6 +25550,10 @@ function (_JSONRPCWebSocket) {
     key: "disconnect",
     value: function disconnect() {
       this._ws.close();
+
+      if (this._discoverTimeoutID) {
+        window.clearTimeout(this._discoverTimeoutID);
+      }
     }
     /**
      * @return {bool} whether the peripheral is connected.
@@ -25226,7 +25591,6 @@ function (_JSONRPCWebSocket) {
           this._runtime.emit(this._runtime.constructor.PERIPHERAL_LIST_UPDATE, this._availablePeripherals);
 
           if (this._discoverTimeoutID) {
-            // TODO: window?
             window.clearTimeout(this._discoverTimeoutID);
           }
 
@@ -25270,6 +25634,10 @@ function (_JSONRPCWebSocket) {
   }, {
     key: "_sendDiscoverTimeout",
     value: function _sendDiscoverTimeout() {
+      if (this._discoverTimeoutID) {
+        window.clearTimeout(this._discoverTimeoutID);
+      }
+
       this._runtime.emit(this._runtime.constructor.PERIPHERAL_SCAN_TIMEOUT);
     }
   }]);
@@ -25399,6 +25767,13 @@ function () {
    */
 
   /**
+   * Part of a cloud io data post indicating a cloud variable was successfully
+   * created.
+   * @typedef {object} VarCreateData
+   * @property {string} name The name of the variable to create
+   */
+
+  /**
    * A cloud io data post message.
    * @typedef {object} CloudIOData
    * @property {VarUpdateData} varUpdate A {@link VarUpdateData} message indicating
@@ -25409,8 +25784,9 @@ function () {
    * Cloud IO Device responsible for sending and receiving messages from
    * cloud provider (mananging the cloud server connection) and interacting
    * with cloud variables in the current project.
+   * @param {Runtime} runtime The runtime context for this cloud io device.
    */
-  function Cloud() {
+  function Cloud(runtime) {
     _classCallCheck(this, Cloud);
 
     /**
@@ -25419,6 +25795,12 @@ function () {
      * @type {?CloudProvider}
      */
     this.provider = null;
+    /**
+     * Reference to the runtime that owns this cloud io device.
+     * @type {!Runtime}
+     */
+
+    this.runtime = runtime;
     /**
      * Reference to the stage target which owns the cloud variables
      * in the project.
@@ -25460,6 +25842,21 @@ function () {
       if (data.varUpdate) {
         this.updateCloudVariable(data.varUpdate);
       }
+
+      if (data.varCreate) {
+        this.createCloudVariable(data.varCreate);
+      }
+    }
+  }, {
+    key: "requestCreateVariable",
+    value: function requestCreateVariable(variable) {
+      if (this.runtime.canAddCloudVariable()) {
+        if (this.provider) {
+          this.provider.createVariable(variable.name, variable.value); // We'll set the cloud flag and update the
+          // cloud variable limit when we actually
+          // get a confirmation from the cloud data server
+        }
+      }
     }
     /**
      * Request the cloud data provider to update the given variable with
@@ -25476,9 +25873,57 @@ function () {
       }
     }
     /**
+     * Request the cloud data provider to rename the variable with the given name
+     * to the given new name. Does nothing if this io device does not have a provider set.
+     * @param {string} oldName The name of the variable to rename
+     * @param {string | number} newName The new name for the variable
+     */
+
+  }, {
+    key: "requestRenameVariable",
+    value: function requestRenameVariable(oldName, newName) {
+      if (this.provider) {
+        this.provider.renameVariable(oldName, newName);
+      }
+    }
+    /**
+     * Request the cloud data provider to delete the variable with the given name
+     * Does nothing if this io device does not have a provider set.
+     * @param {string} name The name of the variable to delete
+     */
+
+  }, {
+    key: "requestDeleteVariable",
+    value: function requestDeleteVariable(name) {
+      if (this.provider) {
+        this.provider.deleteVariable(name);
+      }
+    }
+    /**
+     * Create a cloud variable based on the message
+     * received from the cloud provider.
+     * @param {VarCreateData} varCreate A {@link VarCreateData} object received from the
+     * cloud data provider confirming the creation of a cloud variable,
+     * providing its name and value.
+     */
+
+  }, {
+    key: "createCloudVariable",
+    value: function createCloudVariable(varCreate) {
+      var varName = varCreate.name;
+      var variable = this.stage.lookupVariableByNameAndType(varName, Variable.SCALAR_TYPE);
+
+      if (!variable) {
+        log.error("Could not find cloud variable with name: ".concat(varName));
+      }
+
+      variable.isCloud = true;
+      this.runtime.addCloudVariable();
+    }
+    /**
      * Update a cloud variable in the runtime based on the message received
      * from the cloud provider.
-     * @param {VarUpdateData} varUpdate A {@link VarUpdateData} object describing
+     * @param {VarData} varUpdate A {@link VarData} object describing
      * a cloud variable update received from the cloud data provider.
      */
 
@@ -26813,13 +27258,15 @@ var deserializeSound = function deserializeSound(sound, runtime, zip, assetFileN
  * @param {string} assetFileName Optional file name for the given asset
  * (sb2 files have filenames of the form [int].[ext],
  * sb3 files have filenames of the form [md5].[ext])
+ * @param {string} textLayerFileName Optional file name for the given asset's text layer
+ * (sb2 only; files have filenames of the form [int].png)
  * @return {Promise} Promise that resolves after the described costume has been stored
  * into the runtime storage cache, the costume was already stored, or an error has
  * occurred.
  */
 
 
-var deserializeCostume = function deserializeCostume(costume, runtime, zip, assetFileName) {
+var deserializeCostume = function deserializeCostume(costume, runtime, zip, assetFileName, textLayerFileName) {
   var storage = runtime.storage;
   var assetId = costume.assetId;
   var fileName = assetFileName ? assetFileName : "".concat(assetId, ".").concat(costume.dataFormat);
@@ -26834,7 +27281,9 @@ var deserializeCostume = function deserializeCostume(costume, runtime, zip, asse
     // @todo Cache the asset data somewhere and pull it out here
     return Promise.resolve(storage.createAsset(costume.asset.assetType, costume.asset.dataFormat, new Uint8Array(Object.keys(costume.asset.data).map(function (key) {
       return costume.asset.data[key];
-    })), costume.asset.assetId));
+    })), costume.asset.assetId)).then(function (asset) {
+      costume.asset = asset;
+    });
   }
 
   if (!zip) {
@@ -26863,12 +27312,35 @@ var deserializeCostume = function deserializeCostume(costume, runtime, zip, asse
   if (!JSZip.support.uint8array) {
     log.error('JSZip uint8array is not supported in this browser.');
     return Promise.resolve(null);
+  } // textLayerMD5 exists if there is a text layer, which is a png of text from Scratch 1.4
+  // that was opened in Scratch 2.0. In this case, set costume.textLayerAsset.
+
+
+  var textLayerFilePromise;
+
+  if (costume.textLayerMD5) {
+    var textLayerFile = zip.file(textLayerFileName);
+
+    if (!textLayerFile) {
+      log.error("Could not find text layer file associated with the ".concat(costume.name, " costume."));
+      return Promise.resolve(null);
+    }
+
+    textLayerFilePromise = textLayerFile.async('uint8array').then(function (data) {
+      return storage.createAsset(storage.AssetType.ImageBitmap, 'png', data, costume.textLayerMD5);
+    }).then(function (asset) {
+      costume.textLayerAsset = asset;
+    });
+  } else {
+    textLayerFilePromise = Promise.resolve(null);
   }
 
-  return costumeFile.async('uint8array').then(function (data) {
+  return Promise.all([textLayerFilePromise, costumeFile.async('uint8array').then(function (data) {
     return storage.createAsset(assetType, // TODO eventually we want to map non-png's to their actual file types?
     costumeFormat, data, assetId);
-  });
+  }).then(function (asset) {
+    costume.asset = asset;
+  })]);
 };
 
 module.exports = {
@@ -27169,6 +27641,16 @@ var globalBroadcastMsgStateGenerator = function () {
 }();
 /**
  * Parse a single monitor object and create all its in-memory VM objects.
+ *
+ * It is important that monitors are parsed last,
+ * - after all sprite targets have finished parsing, and
+ * - after the rest of the stage has finished parsing.
+ *
+ * It is specifically important that all the scripts in the project
+ * have been parsed and all the relevant targets exist, have uids,
+ * and have their variables initialized.
+ * Calling this function before these things are true, will result in
+ * undefined behavior.
  * @param {!object} object - From-JSON "Monitor object"
  * @param {!Runtime} runtime - (in/out) Runtime object to load monitor info into.
  * @param {!Array.<Target>} targets - Targets have already been parsed.
@@ -27177,17 +27659,27 @@ var globalBroadcastMsgStateGenerator = function () {
 
 
 var parseMonitorObject = function parseMonitorObject(object, runtime, targets, extensions) {
-  var target = null;
+  // In scratch 2.0, there are two monitors that now correspond to extension
+  // blocks (tempo and video motion/direction). In the case of the
+  // video motion/direction block, this reporter is not monitorable in Scratch 3.0.
+  // In the case of the tempo block, we should import it and load the music extension
+  // only when the monitor is actually visible.
   var opcode = specMap[object.cmd].opcode;
   var extIndex = opcode.indexOf('_');
-  var extID = opcode.substring(0, extIndex); // All non-core extensions should be added by blocks at this point
-  // We can assume this is an unintended monitor and skip parsing if it belongs to a non-core extension
+  var extID = opcode.substring(0, extIndex);
 
-  if (CORE_EXTENSIONS.indexOf(extID) === -1) {
-    if (extID !== '') return;
-  } // List blocks don't come in with their target name set.
+  if (extID === 'videoSensing') {
+    return;
+  } else if (CORE_EXTENSIONS.indexOf(extID) === -1 && extID !== '' && !extensions.extensionIDs.has(extID) && !object.visible) {
+    // Don't import this monitor if it refers to a non-core extension that
+    // doesn't exist anywhere else in the project and it isn't visible.
+    // This should only apply to the tempo block at this point since
+    // there are no other sb2 blocks that are now extension monitors.
+    return;
+  }
+
+  var target = null; // List blocks don't come in with their target name set.
   // Find the target by searching for a target with matching variable name/type.
-
 
   if (!object.hasOwnProperty('target')) {
     var _loop = function _loop(i) {
@@ -27234,18 +27726,34 @@ var parseMonitorObject = function parseMonitorObject(object, runtime, targets, e
   } else if (object.cmd === 'contentsOfList:') {
     block.id = getVariableId(object.param, Variable.LIST_TYPE);
   } else if (runtime.monitorBlockInfo.hasOwnProperty(block.opcode)) {
-    block.id = runtime.monitorBlockInfo[block.opcode].getId(target.id, object.param);
+    block.id = runtime.monitorBlockInfo[block.opcode].getId(target.id, block.fields);
+  } else {
+    // If the opcode can't be found in the runtime monitorBlockInfo,
+    // then default to using the block opcode as the id instead.
+    // This is for extension monitors, and assumes that extension monitors
+    // cannot be sprite specific.
+    block.id = block.opcode;
   } // Block needs a targetId if it is targetting something other than the stage
 
 
   block.targetId = target.isStage ? null : target.id; // Property required for running monitored blocks.
 
-  block.isMonitored = object.visible; // Blocks can be created with children, flatten and add to monitorBlocks.
+  block.isMonitored = object.visible;
+  var existingMonitorBlock = runtime.monitorBlocks._blocks[block.id];
 
-  var newBlocks = flatten([block]);
+  if (existingMonitorBlock) {
+    // A monitor block already exists if the toolbox has been loaded and
+    // the monitor block is not target specific (because the block gets recycled).
+    // Update the existing block with the relevant monitor information.
+    existingMonitorBlock.isMonitored = object.visible;
+    existingMonitorBlock.targetId = block.targetId;
+  } else {
+    // Blocks can be created with children, flatten and add to monitorBlocks.
+    var newBlocks = flatten([block]);
 
-  for (var i = 0; i < newBlocks.length; i++) {
-    runtime.monitorBlocks.createBlock(newBlocks[i]);
+    for (var i = 0; i < newBlocks.length; i++) {
+      runtime.monitorBlocks.createBlock(newBlocks[i]);
+    }
   } // Convert numbered mode into strings for better understandability.
 
 
@@ -27371,13 +27879,18 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
       var md5 = idParts[0];
       var ext = idParts[1].toLowerCase();
       costume.dataFormat = ext;
-      costume.assetId = md5; // If there is no internet connection, or if the asset is not in storage
+      costume.assetId = md5;
+
+      if (costumeSource.textLayerMD5) {
+        costume.textLayerMD5 = StringUtil.splitFirst(costumeSource.textLayerMD5, '.')[0];
+      } // If there is no internet connection, or if the asset is not in storage
       // for some reason, and we are doing a local .sb2 import, (e.g. zip is provided)
       // the file name of the costume should be the baseLayerID followed by the file ext
 
+
       var assetFileName = "".concat(costumeSource.baseLayerID, ".").concat(ext);
-      costumePromises.push(deserializeCostume(costume, runtime, zip, assetFileName).then(function (asset) {
-        costume.asset = asset;
+      var textLayerFileName = costumeSource.textLayerID ? "".concat(costumeSource.textLayerID, ".png") : null;
+      costumePromises.push(deserializeCostume(costume, runtime, zip, assetFileName, textLayerFileName).then(function () {
         return loadCostume(costume.md5, costume, runtime, 2
         /* optVersion */
         );
@@ -27680,7 +28193,13 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
             targets = targets.concat(children[n]);
           }
         }
-      }
+      } // It is important that monitors are parsed last
+      // - after all sprite targets have finished parsing
+      // - and this is the last thing that happens in the stage parsing
+      // It is specifically important that all the scripts in the project
+      // have been parsed and all the relevant targets exist, have uids,
+      // and have their variables initialized.
+
 
       for (var _n2 = 0; _n2 < deferredMonitors.length; _n2++) {
         parseMonitorObject(deferredMonitors[_n2], runtime, targets, extensions);
@@ -27867,32 +28386,34 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
         } else {
           // Single block occupies the input.
           var parsedBlockDesc = parseBlock(providedArg, addBroadcastMsg, getVariableId, extensions, parseState, comments, commentIndex);
-          innerBlocks = [parsedBlockDesc[0]]; // Update commentIndex
+          innerBlocks = parsedBlockDesc[0] ? [parsedBlockDesc[0]] : []; // Update commentIndex
 
           commentIndex = parsedBlockDesc[1];
         }
 
-        parseState.expectedArg = parentExpectedArg; // Check if innerBlocks is an empty list.
-        // This indicates that all the inner blocks from the sb2 have
+        parseState.expectedArg = parentExpectedArg; // Check if innerBlocks is not an empty list.
+        // An empty list indicates that all the inner blocks from the sb2 have
         // unknown opcodes and have been skipped.
 
-        if (innerBlocks.length === 0) continue;
-        var previousBlock = null;
+        if (innerBlocks.length > 0) {
+          var previousBlock = null;
 
-        for (var j = 0; j < innerBlocks.length; j++) {
-          if (j === 0) {
-            innerBlocks[j].parent = activeBlock.id;
-          } else {
-            innerBlocks[j].parent = previousBlock;
+          for (var j = 0; j < innerBlocks.length; j++) {
+            if (j === 0) {
+              innerBlocks[j].parent = activeBlock.id;
+            } else {
+              innerBlocks[j].parent = previousBlock;
+            }
+
+            previousBlock = innerBlocks[j].id;
           }
 
-          previousBlock = innerBlocks[j].id;
+          activeBlock.inputs[expectedArg.inputName].block = innerBlocks[0].id;
+          activeBlock.children = activeBlock.children.concat(innerBlocks);
         } // Obscures any shadow.
 
 
         shadowObscured = true;
-        activeBlock.inputs[expectedArg.inputName].block = innerBlocks[0].id;
-        activeBlock.children = activeBlock.children.concat(innerBlocks);
       } // Generate a shadow block to occupy the input.
 
 
@@ -27944,6 +28465,10 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
           fieldValue = '_stage_';
         } else if (fieldValue === 'Stage') {
           fieldValue = '_stage_';
+        }
+      } else if (expectedArg.inputOp === 'note') {
+        if (shadowObscured) {
+          fieldValue = 60;
         }
       } else if (expectedArg.inputOp === 'music.menu.DRUM') {
         if (shadowObscured) {
@@ -28012,6 +28537,16 @@ var parseBlock = function parseBlock(sb2block, addBroadcastMsg, getVariableId, e
         name: expectedArg.fieldName,
         value: providedArg
       };
+
+      if (expectedArg.fieldName === 'CURRENTMENU') {
+        // In 3.0, the field value of the `sensing_current` block
+        // is in all caps.
+        activeBlock.fields[expectedArg.fieldName].value = providedArg.toUpperCase();
+
+        if (providedArg === 'day of week') {
+          activeBlock.fields[expectedArg.fieldName].value = 'DAYOFWEEK';
+        }
+      }
 
       if (expectedArg.fieldName === 'VARIABLE') {
         // Add `id` property to variable fields
@@ -28607,7 +29142,7 @@ var specMap = {
     opcode: 'music_playNoteForBeats',
     argMap: [{
       type: 'input',
-      inputOp: 'math_number',
+      inputOp: 'note',
       inputName: 'NOTE'
     }, {
       type: 'input',
@@ -29940,6 +30475,21 @@ var compressInputTree = function compressInputTree(block, blocks) {
   return block;
 };
 /**
+ * Get non-core extension ID for a given sb3 opcode.
+ * @param {!string} opcode The opcode to examine for extension.
+ * @return {?string} The extension ID, if it exists and is not a core extension.
+ */
+
+
+var getExtensionIdForOpcode = function getExtensionIdForOpcode(opcode) {
+  var index = opcode.indexOf('_');
+  var prefix = opcode.substring(0, index);
+
+  if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
+    if (prefix !== '') return prefix;
+  }
+};
+/**
  * Serialize the given blocks object (representing all the blocks for the target
  * currently being serialized.)
  * @param {object} blocks The blocks to be serialized
@@ -29956,11 +30506,10 @@ var serializeBlocks = function serializeBlocks(blocks) {
   for (var blockID in blocks) {
     if (!blocks.hasOwnProperty(blockID)) continue;
     obj[blockID] = serializeBlock(blocks[blockID], blocks);
-    var index = blocks[blockID].opcode.indexOf('_');
-    var prefix = blocks[blockID].opcode.substring(0, index);
+    var extensionID = getExtensionIdForOpcode(blocks[blockID].opcode);
 
-    if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
-      if (prefix !== '') extensionIDs.add(prefix);
+    if (extensionID) {
+      extensionIDs.add(extensionID);
     }
   } // once we have completed a first pass, do a second pass on block inputs
 
@@ -30162,6 +30711,31 @@ var getSimplifiedLayerOrdering = function getSimplifiedLayerOrdering(targets) {
   });
   return MathUtil.reducedSortOrdering(layerOrders);
 };
+
+var serializeMonitors = function serializeMonitors(monitors) {
+  return monitors.valueSeq().map(function (monitorData) {
+    var serializedMonitor = {
+      id: monitorData.id,
+      mode: monitorData.mode,
+      opcode: monitorData.opcode,
+      params: monitorData.params,
+      spriteName: monitorData.spriteName,
+      value: monitorData.value,
+      width: monitorData.width,
+      height: monitorData.height,
+      x: monitorData.x,
+      y: monitorData.y,
+      visible: monitorData.visible
+    };
+
+    if (monitorData.mode !== 'list') {
+      serializedMonitor.min = monitorData.sliderMin;
+      serializedMonitor.max = monitorData.sliderMax;
+    }
+
+    return serializedMonitor;
+  });
+};
 /**
  * Serializes the specified VM runtime.
  * @param {!Runtime} runtime VM runtime instance to be serialized.
@@ -30196,8 +30770,8 @@ var serialize = function serialize(runtime, targetId) {
     return serializedTargets[0];
   }
 
-  obj.targets = serializedTargets; // TODO Serialize monitors
-  // Assemble extension list
+  obj.targets = serializedTargets;
+  obj.monitors = serializeMonitors(runtime.getMonitorState()); // Assemble extension list
 
   obj.extensions = Array.from(extensions); // Assemble metadata
 
@@ -30543,11 +31117,10 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
       var blockJSON = object.blocks[blockId];
       blocks.createBlock(blockJSON); // If the block is from an extension, record it.
 
-      var index = blockJSON.opcode.indexOf('_');
-      var prefix = blockJSON.opcode.substring(0, index);
+      var extensionID = getExtensionIdForOpcode(blockJSON.opcode);
 
-      if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
-        if (prefix !== '') extensions.extensionIDs.add(prefix);
+      if (extensionID) {
+        extensions.extensionIDs.add(extensionID);
       }
     }
   } // Costumes from JSON.
@@ -30577,8 +31150,7 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     // any translation that needs to happen will happen in the process
     // of building up the costume object into an sb3 format
 
-    return deserializeCostume(costume, runtime, zip).then(function (asset) {
-      costume.asset = asset;
+    return deserializeCostume(costume, runtime, zip).then(function () {
       return loadCostume(costumeMd5Ext, costume, runtime);
     }); // Only attempt to load the costume after the deserialization
     // process has been completed
@@ -30746,6 +31318,95 @@ var parseScratchObject = function parseScratchObject(object, runtime, extensions
     return target;
   });
 };
+
+var deserializeMonitor = function deserializeMonitor(monitorData, runtime, targets, extensions) {
+  // If the serialized monitor has spriteName defined, look up the sprite
+  // by name in the given list of targets and update the monitor's targetId
+  // to match the sprite's id.
+  if (monitorData.spriteName) {
+    var filteredTargets = targets.filter(function (t) {
+      return t.sprite.name === monitorData.spriteName;
+    });
+
+    if (filteredTargets && filteredTargets.length > 0) {
+      monitorData.targetId = filteredTargets[0].id;
+    } else {
+      log.warn("Tried to deserialize sprite specific monitor ".concat(monitorData.opcode, " but could not find sprite ").concat(monitorData.spriteName, "."));
+    }
+  } // Get information about this monitor, if it exists, given the monitor's opcode.
+  // This will be undefined for extension blocks
+
+
+  var monitorBlockInfo = runtime.monitorBlockInfo[monitorData.opcode]; // Convert the serialized monitorData params into the block fields structure
+
+  var fields = {};
+
+  for (var paramKey in monitorData.params) {
+    var field = {
+      name: paramKey,
+      value: monitorData.params[paramKey]
+    };
+    fields[paramKey] = field;
+  } // Variables, lists, and non-sprite-specific monitors, including any extension
+  // monitors should already have the correct monitor ID serialized in the monitorData,
+  // find the correct id for all other monitors.
+
+
+  if (monitorData.opcode !== 'data_variable' && monitorData.opcode !== 'data_listcontents' && monitorBlockInfo && monitorBlockInfo.isSpriteSpecific) {
+    monitorData.id = monitorBlockInfo.getId(monitorData.targetId, fields);
+  } // If the runtime already has a monitor block for this monitor's id,
+  // update the existing block with the relevant monitor information.
+
+
+  var existingMonitorBlock = runtime.monitorBlocks._blocks[monitorData.id];
+
+  if (existingMonitorBlock) {
+    // A monitor block already exists if the toolbox has been loaded and
+    // the monitor block is not target specific (because the block gets recycled).
+    existingMonitorBlock.isMonitored = monitorData.visible;
+    existingMonitorBlock.targetId = monitorData.targetId;
+  } else {
+    // If a monitor block doesn't already exist for this monitor,
+    // construct a monitor block to add to the monitor blocks container
+    var monitorBlock = {
+      id: monitorData.id,
+      opcode: monitorData.opcode,
+      inputs: {},
+      // Assuming that monitor blocks don't have droppable fields
+      fields: fields,
+      topLevel: true,
+      next: null,
+      parent: null,
+      shadow: false,
+      x: 0,
+      y: 0,
+      isMonitored: monitorData.visible,
+      targetId: monitorData.targetId
+    }; // Variables and lists have additional properties
+    // stored in their fields, update this info in the
+    // monitor block fields
+
+    if (monitorData.opcode === 'data_variable') {
+      var _field = monitorBlock.fields.VARIABLE;
+      _field.id = monitorData.id;
+      _field.variableType = Variable.SCALAR_TYPE;
+    } else if (monitorData.opcode === 'data_listcontents') {
+      var _field2 = monitorBlock.fields.LIST;
+      _field2.id = monitorData.id;
+      _field2.variableType = Variable.LIST_TYPE;
+    }
+
+    runtime.monitorBlocks.createBlock(monitorBlock); // If the block is from an extension, record it.
+
+    var extensionID = getExtensionIdForOpcode(monitorBlock.opcode);
+
+    if (extensionID) {
+      extensions.extensionIDs.add(extensionID);
+    }
+  }
+
+  runtime.requestAddMonitor(MonitorRecord(monitorData));
+};
 /**
  * Deserialize the specified representation of a VM runtime and loads it into the provided runtime instance.
  * @param  {object} json - JSON representation of a VM runtime.
@@ -30772,6 +31433,7 @@ var deserialize = function deserialize(json, runtime, zip, isSingleSprite) {
   }).sort(function (a, b) {
     return a.layerOrder - b.layerOrder;
   });
+  var monitorObjects = json.monitors || [];
   return Promise.all(targetObjects.map(function (target) {
     return parseScratchObject(target, runtime, extensions, zip);
   })).then(function (targets) {
@@ -30786,6 +31448,11 @@ var deserialize = function deserialize(json, runtime, zip, isSingleSprite) {
       return t;
     });
   }).then(function (targets) {
+    monitorObjects.map(function (monitorDesc) {
+      return deserializeMonitor(monitorDesc, runtime, targets, extensions);
+    });
+    return targets;
+  }).then(function (targets) {
     return {
       targets: targets,
       extensions: extensions
@@ -30797,7 +31464,8 @@ module.exports = {
   serialize: serialize,
   deserialize: deserialize,
   deserializeBlocks: deserializeBlocks,
-  serializeBlocks: serializeBlocks
+  serializeBlocks: serializeBlocks,
+  getExtensionIdForOpcode: getExtensionIdForOpcode
 };
 
 /***/ }),
@@ -31111,27 +31779,14 @@ function (_Target) {
      */
 
   }, {
-    key: "_roundCoord",
+    key: "setXY",
 
-    /**
-     * Round a number to n digits
-     * @param {number} value The number to be rounded
-     * @param {number} places The number of decimal places to round to
-     * @return {number} The rounded number
-     */
-    value: function _roundCoord(value, places) {
-      var power = Math.pow(10, places);
-      return Math.round(value * power) / power;
-    }
     /**
      * Set the X and Y coordinates.
      * @param {!number} x New X coordinate, in Scratch coordinates.
      * @param {!number} y New Y coordinate, in Scratch coordinates.
      * @param {?boolean} force Force setting X/Y, in case of dragging
      */
-
-  }, {
-    key: "setXY",
     value: function setXY(x, y, force) {
       if (this.isStage) return;
       if (this.dragging && !force) return;
@@ -31140,8 +31795,6 @@ function (_Target) {
 
       if (this.renderer) {
         var position = this.renderer.getFencedPositionOfDrawable(this.drawableID, [x, y]);
-        position[0] = this._roundCoord(position[0], 8);
-        position[1] = this._roundCoord(position[1], 8);
         this.x = position[0];
         this.y = position[1];
         this.renderer.updateDrawableProperties(this.drawableID, {
@@ -31153,8 +31806,8 @@ function (_Target) {
           this.runtime.requestRedraw();
         }
       } else {
-        this.x = this._roundCoord(x, 8);
-        this.y = this._roundCoord(y, 8);
+        this.x = x;
+        this.y = y;
       }
 
       this.emit(RenderedTarget.EVENT_TARGET_MOVED, this, oldX, oldY, force);
@@ -33443,6 +34096,53 @@ module.exports = Color;
 
 /***/ }),
 
+/***/ "./src/util/get-monitor-id.js":
+/*!************************************!*\
+  !*** ./src/util/get-monitor-id.js ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/**
+ * Returns a string representing a unique id for a monitored block
+ * where a single reporter block can have more than one monitor
+ * (and therefore more than one monitor block) associated
+ * with it (e.g. when reporter blocks have inputs).
+ * @param {string} baseId The base id to use for the different monitor blocks
+ * @param {object} fields The monitor block's fields object.
+ */
+// TODO this function should eventually be the single place where all monitor
+// IDs are obtained given an opcode for the reporter block and the list of
+// selected parameters.
+var getMonitorIdForBlockWithArgs = function getMonitorIdForBlockWithArgs(id, fields) {
+  var fieldString = '';
+
+  for (var fieldKey in fields) {
+    var fieldValue = fields[fieldKey].value;
+
+    if (fieldKey === 'CURRENTMENU') {
+      // The 'sensing_current' block has field values in all caps.
+      // However, when importing from scratch 2.0, these
+      // could have gotten imported as lower case field values.
+      // Normalize the field value here so that we don't ever
+      // end up with a different monitor ID representing the same
+      // block configuration
+      // Note: we are not doing this for every block field that comes into
+      // this function so as not to make the faulty assumption that block
+      // field values coming in would be unique after being made lower case
+      fieldValue = fieldValue.toLowerCase();
+    }
+
+    fieldString += "_".concat(fieldValue);
+  }
+
+  return "".concat(id).concat(fieldString);
+};
+
+module.exports = getMonitorIdForBlockWithArgs;
+
+/***/ }),
+
 /***/ "./src/util/jsonrpc-web-socket.js":
 /*!****************************************!*\
   !*** ./src/util/jsonrpc-web-socket.js ***!
@@ -34708,6 +35408,10 @@ function (_EventEmitter) {
         }
       });
     }
+    /*
+     * @type {Array<object>} Array of all costumes and sounds currently in the runtime
+     */
+
   }, {
     key: "_addFileDescsToZip",
     value: function _addFileDescsToZip(fileDescs, zip) {
@@ -35643,11 +36347,14 @@ function (_EventEmitter) {
      * @param {!string} targetId Id of target to add blocks to.
      * @param {?string} optFromTargetId Optional target id indicating that blocks are being
      * shared from that target. This is needed for resolving any potential variable conflicts.
+     * @return {!Promise} Promise that resolves when the extensions and blocks have been added.
      */
 
   }, {
     key: "shareBlocksToTarget",
     value: function shareBlocksToTarget(blocks, targetId, optFromTargetId) {
+      var _this17 = this;
+
       var copiedBlocks = JSON.parse(JSON.stringify(blocks));
       var target = this.runtime.getTargetById(targetId);
 
@@ -35656,13 +36363,28 @@ function (_EventEmitter) {
         // resolve any possible variable conflicts that may arise.
         var fromTarget = this.runtime.getTargetById(optFromTargetId);
         fromTarget.resolveVariableSharingConflictsWithTarget(copiedBlocks, target);
-      }
+      } // Create a unique set of extensionIds that are not yet loaded
 
-      for (var i = 0; i < copiedBlocks.length; i++) {
-        target.blocks.createBlock(copiedBlocks[i]);
-      }
 
-      target.blocks.updateTargetSpecificBlocks(target.isStage);
+      var extensionIDs = new Set(copiedBlocks.map(function (b) {
+        return sb3.getExtensionIdForOpcode(b.opcode);
+      }).filter(function (id) {
+        return !!id;
+      }) // Remove ids that do not exist
+      .filter(function (id) {
+        return !_this17.extensionManager.isExtensionLoaded(id);
+      }) // and remove loaded extensions
+      ); // Create an array promises for extensions to load
+
+      var extensionPromises = Array.from(extensionIDs, function (id) {
+        return _this17.extensionManager.loadExtensionURL(id);
+      });
+      return Promise.all(extensionPromises).then(function () {
+        copiedBlocks.forEach(function (block) {
+          target.blocks.createBlock(block);
+        });
+        target.blocks.updateTargetSpecificBlocks(target.isStage);
+      });
     }
     /**
      * Called when costumes are dragged from editing target to another target.
@@ -35675,13 +36397,13 @@ function (_EventEmitter) {
   }, {
     key: "shareCostumeToTarget",
     value: function shareCostumeToTarget(costumeIndex, targetId) {
-      var _this17 = this;
+      var _this18 = this;
 
       var originalCostume = this.editingTarget.getCostumes()[costumeIndex];
       var clone = Object.assign({}, originalCostume);
       var md5ext = "".concat(clone.assetId, ".").concat(clone.dataFormat);
       return loadCostume(md5ext, clone, this.runtime).then(function () {
-        var target = _this17.runtime.getTargetById(targetId);
+        var target = _this18.runtime.getTargetById(targetId);
 
         if (target) {
           target.addCostume(clone);
@@ -35699,7 +36421,7 @@ function (_EventEmitter) {
   }, {
     key: "shareSoundToTarget",
     value: function shareSoundToTarget(soundIndex, targetId) {
-      var _this18 = this;
+      var _this19 = this;
 
       var originalSound = this.editingTarget.getSounds()[soundIndex];
       var clone = Object.assign({}, originalSound);
@@ -35708,7 +36430,7 @@ function (_EventEmitter) {
         if (target) {
           target.addSound(clone);
 
-          _this18.emitTargetsUpdate();
+          _this19.emitTargetsUpdate();
         }
       });
     }
@@ -35754,7 +36476,7 @@ function (_EventEmitter) {
   }, {
     key: "emitWorkspaceUpdate",
     value: function emitWorkspaceUpdate() {
-      var _this19 = this;
+      var _this20 = this;
 
       // Create a list of broadcast message Ids according to the stage variables
       var stageVariables = this.runtime.getTargetForStage().variables;
@@ -35799,7 +36521,7 @@ function (_EventEmitter) {
         return localVarMap[k];
       });
       var workspaceComments = Object.keys(this.editingTarget.comments).map(function (k) {
-        return _this19.editingTarget.comments[k];
+        return _this20.editingTarget.comments[k];
       }).filter(function (c) {
         return c.blockId === null;
       });
@@ -35981,6 +36703,17 @@ function (_EventEmitter) {
       }
 
       return null;
+    }
+  }, {
+    key: "assets",
+    get: function get() {
+      return this.runtime.targets.reduce(function (acc, target) {
+        return acc.concat(target.sprite.sounds.map(function (sound) {
+          return sound.asset;
+        })).concat(target.sprite.costumes.map(function (costume) {
+          return costume.asset;
+        }));
+      }, []);
     }
   }, {
     key: "renderer",
