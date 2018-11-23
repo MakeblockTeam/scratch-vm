@@ -336,6 +336,17 @@ class VirtualMachine extends EventEmitter {
         });
     }
 
+    /*
+     * @type {Array<object>} Array of all costumes and sounds currently in the runtime
+     */
+    get assets () {
+        return this.runtime.targets.reduce((acc, target) => (
+            acc
+                .concat(target.sprite.sounds.map(sound => sound.asset))
+                .concat(target.sprite.costumes.map(costume => costume.asset))
+        ), []);
+    }
+
     _addFileDescsToZip (fileDescs, zip) {
         for (let i = 0; i < fileDescs.length; i++) {
             const currFileDesc = fileDescs[i];
@@ -1107,6 +1118,7 @@ class VirtualMachine extends EventEmitter {
      * @param {!string} targetId Id of target to add blocks to.
      * @param {?string} optFromTargetId Optional target id indicating that blocks are being
      * shared from that target. This is needed for resolving any potential variable conflicts.
+     * @return {!Promise} Promise that resolves when the extensions and blocks have been added.
      */
     shareBlocksToTarget (blocks, targetId, optFromTargetId) {
         const copiedBlocks = JSON.parse(JSON.stringify(blocks));
@@ -1119,10 +1131,24 @@ class VirtualMachine extends EventEmitter {
             fromTarget.resolveVariableSharingConflictsWithTarget(copiedBlocks, target);
         }
 
-        for (let i = 0; i < copiedBlocks.length; i++) {
-            target.blocks.createBlock(copiedBlocks[i]);
-        }
-        target.blocks.updateTargetSpecificBlocks(target.isStage);
+        // Create a unique set of extensionIds that are not yet loaded
+        const extensionIDs = new Set(copiedBlocks
+            .map(b => sb3.getExtensionIdForOpcode(b.opcode))
+            .filter(id => !!id) // Remove ids that do not exist
+            .filter(id => !this.extensionManager.isExtensionLoaded(id)) // and remove loaded extensions
+        );
+
+        // Create an array promises for extensions to load
+        const extensionPromises = Array.from(extensionIDs,
+            id => this.extensionManager.loadExtensionURL(id)
+        );
+
+        return Promise.all(extensionPromises).then(() => {
+            copiedBlocks.forEach(block => {
+                target.blocks.createBlock(block);
+            });
+            target.blocks.updateTargetSpecificBlocks(target.isStage);
+        });
     }
 
     /**

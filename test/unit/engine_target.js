@@ -71,6 +71,58 @@ test('createListVariable creates a list', t => {
     t.end();
 });
 
+test('createVariable calls cloud io device\'s requestCreateVariable', t => {
+    const runtime = new Runtime();
+    // Mock the requestCreateVariable function
+    let requestCreateCloudWasCalled = false;
+    runtime.ioDevices.cloud.requestCreateVariable = () => {
+        requestCreateCloudWasCalled = true;
+    };
+
+    const target = new Target(runtime);
+    target.isStage = true;
+    target.createVariable('foo', 'bar', Variable.SCALAR_TYPE, true /* isCloud */);
+
+    const variables = target.variables;
+    t.equal(Object.keys(variables).length, 1);
+    const variable = variables[Object.keys(variables)[0]];
+    t.equal(variable.id, 'foo');
+    t.equal(variable.name, 'bar');
+    t.equal(variable.type, Variable.SCALAR_TYPE);
+    t.equal(variable.value, 0);
+    // isCloud flag doesn't get set by the target createVariable function
+    t.equal(variable.isCloud, false);
+    t.equal(requestCreateCloudWasCalled, true);
+
+    t.end();
+});
+
+test('createVariable does not call cloud io device\'s requestCreateVariable if target is not stage', t => {
+    const runtime = new Runtime();
+    // Mock the requestCreateVariable function
+    let requestCreateCloudWasCalled = false;
+    runtime.ioDevices.cloud.requestCreateVariable = () => {
+        requestCreateCloudWasCalled = true;
+    };
+
+    const target = new Target(runtime);
+    target.isStage = false;
+    target.createVariable('foo', 'bar', Variable.SCALAR_TYPE, true /* isCloud */);
+
+    const variables = target.variables;
+    t.equal(Object.keys(variables).length, 1);
+    const variable = variables[Object.keys(variables)[0]];
+    t.equal(variable.id, 'foo');
+    t.equal(variable.name, 'bar');
+    t.equal(variable.type, Variable.SCALAR_TYPE);
+    t.equal(variable.value, 0);
+    // isCloud flag doesn't get set by the target createVariable function
+    t.equal(variable.isCloud, false);
+    t.equal(requestCreateCloudWasCalled, false);
+
+    t.end();
+});
+
 test('createVariable throws when given invalid type', t => {
     const target = new Target();
     t.throws(
@@ -125,6 +177,61 @@ test('renameVariable3', t => {
     t.end();
 });
 
+test('renameVariable calls cloud io device\'s requestRenameVariable function', t => {
+    const runtime = new Runtime();
+
+    let requestRenameVariableWasCalled = false;
+    runtime.ioDevices.cloud.requestRenameVariable = () => {
+        requestRenameVariableWasCalled = true;
+    };
+
+    const target = new Target(runtime);
+    target.isStage = true;
+    const mockCloudVar = new Variable('foo', 'bar', Variable.SCALAR_TYPE, true);
+    target.variables[mockCloudVar.id] = mockCloudVar;
+    runtime.targets.push(target);
+
+    target.renameVariable('foo', 'bar2');
+
+    const variables = target.variables;
+    t.equal(Object.keys(variables).length, 1);
+    const variable = variables[Object.keys(variables)[0]];
+    t.equal(variable.id, 'foo');
+    t.equal(variable.name, 'bar2');
+    t.equal(variable.value, 0);
+    t.equal(variable.isCloud, true);
+    t.equal(requestRenameVariableWasCalled, true);
+
+    t.end();
+});
+
+test('renameVariable does not call cloud io device\'s requestRenameVariable function if target is not stage', t => {
+    const runtime = new Runtime();
+
+    let requestRenameVariableWasCalled = false;
+    runtime.ioDevices.cloud.requestRenameVariable = () => {
+        requestRenameVariableWasCalled = true;
+    };
+
+    const target = new Target(runtime);
+    const mockCloudVar = new Variable('foo', 'bar', Variable.SCALAR_TYPE, true);
+    target.variables[mockCloudVar.id] = mockCloudVar;
+    runtime.targets.push(target);
+
+    target.renameVariable('foo', 'bar2');
+
+    const variables = target.variables;
+    t.equal(Object.keys(variables).length, 1);
+    const variable = variables[Object.keys(variables)[0]];
+    t.equal(variable.id, 'foo');
+    t.equal(variable.name, 'bar2');
+    t.equal(variable.value, 0);
+    t.equal(variable.isCloud, true);
+    t.equal(requestRenameVariableWasCalled, false);
+
+    t.end();
+});
+
 // Delete Variable tests.
 test('deleteVariable', t => {
     const target = new Target();
@@ -144,6 +251,51 @@ test('deleteVariable2', t => {
 
     const variables = target.variables;
     t.equal(Object.keys(variables).length, 0);
+
+    t.end();
+});
+
+test('deleteVariable calls cloud io device\'s requestRenameVariable function', t => {
+    const runtime = new Runtime();
+
+    let requestDeleteVariableWasCalled = false;
+    runtime.ioDevices.cloud.requestDeleteVariable = () => {
+        requestDeleteVariableWasCalled = true;
+    };
+
+    const target = new Target(runtime);
+    target.isStage = true;
+    const mockCloudVar = new Variable('foo', 'bar', Variable.SCALAR_TYPE, true);
+    target.variables[mockCloudVar.id] = mockCloudVar;
+    runtime.targets.push(target);
+
+    target.deleteVariable('foo');
+
+    const variables = target.variables;
+    t.equal(Object.keys(variables).length, 0);
+    t.equal(requestDeleteVariableWasCalled, true);
+
+    t.end();
+});
+
+test('deleteVariable calls cloud io device\'s requestRenameVariable function', t => {
+    const runtime = new Runtime();
+
+    let requestDeleteVariableWasCalled = false;
+    runtime.ioDevices.cloud.requestDeleteVariable = () => {
+        requestDeleteVariableWasCalled = true;
+    };
+
+    const target = new Target(runtime);
+    const mockCloudVar = new Variable('foo', 'bar', Variable.SCALAR_TYPE, true);
+    target.variables[mockCloudVar.id] = mockCloudVar;
+    runtime.targets.push(target);
+
+    target.deleteVariable('foo');
+
+    const variables = target.variables;
+    t.equal(Object.keys(variables).length, 0);
+    t.equal(requestDeleteVariableWasCalled, false);
 
     t.end();
 });
