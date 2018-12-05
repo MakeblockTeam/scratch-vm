@@ -1,6 +1,6 @@
 {
   "name": "scratch-vm-mobile",
-  "version": "0.2.0-beta.0.3",
+  "version": "0.2.0-beta.0.4",
   "description": "Virtual Machine for Scratch 3.0",
   "author": "jeremy.yang@makeblock.com",
   "license": "BSD-3-Clause",
@@ -79,6 +79,7 @@
     "stats.js": "^0.17.0",
     "tap": "^12.0.1",
     "tiny-worker": "^2.1.1",
+    "uglifyjs-webpack-plugin": "^2.0.1",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"

@@ -322,7 +322,7 @@ class Runtime extends EventEmitter {
         /** @type {Object.<string, Object>} */
         this.ioDevices = {
             clock: new Clock(),
-            cloud: new Cloud(this),
+            cloud: new Cloud(),
             deviceManager: new DeviceManager(),
             keyboard: new Keyboard(this),
             mouse: new Mouse(this),
@@ -619,6 +619,13 @@ class Runtime extends EventEmitter {
         return 300;
     }
 
+    /**
+     * 增加一个 block 脚本被执行 emit 事件
+     */
+    static get BLOCK_SCRIPT_RAN() {
+        return 'BLOCK_SCRIPT_RAN';
+    }
+
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
 
@@ -657,10 +664,6 @@ class Runtime extends EventEmitter {
                 }
             }
         }
-    }
-
-    getMonitorState () {
-        return this._monitorState;
     }
 
     /**
@@ -1405,7 +1408,8 @@ class Runtime extends EventEmitter {
 
         for (const opts in optMatchFields) {
             if (!optMatchFields.hasOwnProperty(opts)) continue;
-            optMatchFields[opts] = optMatchFields[opts].toUpperCase();
+            optMatchFields[opts] = typeof optMatchFields[opts] === 'string' ?
+                optMatchFields[opts].toUpperCase() : optMatchFields[opts];
         }
 
         // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
@@ -1426,23 +1430,47 @@ class Runtime extends EventEmitter {
             let hatFields = blocks.getFields(block);
 
             // If no fields are present, check inputs (horizontal blocks)
-            if (Object.keys(hatFields).length === 0) {
-                hatFields = {}; // don't overwrite the block's actual fields list
-                const hatInputs = blocks.getInputs(block);
-                for (const input in hatInputs) {
-                    if (!hatInputs.hasOwnProperty(input)) continue;
-                    const id = hatInputs[input].block;
-                    const inpBlock = blocks.getBlock(id);
-                    const fields = blocks.getFields(inpBlock);
-                    Object.assign(hatFields, fields);
-                }
+            // if (Object.keys(hatFields).length === 0) {
+            //     hatFields = {}; // don't overwrite the block's actual fields list
+            //     const hatInputs = blocks.getInputs(block);
+            //     for (const input in hatInputs) {
+            //         if (!hatInputs.hasOwnProperty(input)) continue;
+            //         const id = hatInputs[input].block;
+            //         const inpBlock = blocks.getBlock(id);
+            //         const fields = blocks.getFields(inpBlock);
+            //         Object.assign(hatFields, fields);
+            //     }
+            // }
+
+            const hatInputs = blocks.getInputs(block);
+            for (const input in hatInputs) {
+                if (!hatInputs.hasOwnProperty(input)) continue;
+                const id = hatInputs[input].block;
+                const inpBlock = blocks.getBlock(id);
+                const fields = blocks.getFields(inpBlock);
+                Object.assign(hatFields, fields);
             }
 
             if (optMatchFields) {
                 for (const matchField in optMatchFields) {
-                    if (hatFields[matchField].value.toUpperCase() !==
-                        optMatchFields[matchField]) {
-                        // Field mismatch.
+                    // if (hatFields[matchField].value.toUpperCase() !==
+                    //     optMatchFields[matchField]) {
+                    //     // Field mismatch.
+                    //     return;
+                    // }
+                    var val;
+                    if (!hatFields[matchField]) { // 不存在此字段则跳过
+                        continue;
+                    } else {
+                        val = (hatFields[matchField].value || '').toUpperCase();
+                    }
+                    // Modify: 此处定制逻辑
+                    if (!optMatchFields.matchFunc && val !== optMatchFields[matchField]) {
+                        // Field 匹配失败.
+                        return;
+                    }
+                    else if (optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField], hatFields)) {
+                        // Field 匹配失败.
                         return;
                     }
                 }
@@ -2102,9 +2130,9 @@ class Runtime extends EventEmitter {
         const block = categoryInfo.blocks.find(b => b.info.opcode === opcode);
         if (!block) return;
 
-        // TODO: we may want to format the label in a locale-specific way.
+        // TODO: should this use some other category? Also, we may want to format the label in a locale-specific way.
         return {
-            category: 'extension', // This assumes that all extensions have the same monitor color.
+            category: 'data',
             label: `${categoryInfo.name}: ${block.info.text}`
         };
     }

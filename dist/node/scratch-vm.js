@@ -3210,7 +3210,7 @@ module.exports = function() {
 /*! exports provided: name, version, description, author, license, homepage, repository, main, browser, scripts, dependencies, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = {"name":"scratch-vm-mobile","version":"0.2.0-beta.0.3","description":"Virtual Machine for Scratch 3.0","author":"jeremy.yang@makeblock.com","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./src/index.js","scripts":{"build":"npm run docs && webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","docs":"jsdoc -c .jsdoc.json","extract:core":"mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js","i18n:src":"npm run extract:core","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run docs && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/ && cp -rf src/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/src/"},"dependencies":{"arraybuffer-loader":"^1.0.6","atob":"2.1.2","btoa":"1.2.1","canvas-toBlob":"1.0.0","decode-html":"2.0.0","diff-match-patch":"1.0.4","escape-html":"1.0.3","format-message":"6.2.1","htmlparser2":"3.10.0","immutable":"3.8.1","jszip":"^3.1.5","minilog":"3.1.0","nets":"3.2.0","scratch-parser":"^0.0.2","scratch-svg-renderer":"^0.1.0-prerelease.1515800444","scratch-translate-extension-languages":"0.0.20180521154850","socket.io-client":"2.0.4","text-encoding":"0.6.4","worker-loader":"^1.1.1"},"devDependencies":{"@babel/core":"^7.1.2","@babel/plugin-transform-classes":"^7.1.0","@babel/preset-env":"^7.1.0","adm-zip":"0.4.11","babel-eslint":"^10.0.1","babel-loader":"^8.0.4","copy-webpack-plugin":"^4.5.4","docdash":"^1.0.0","eslint":"^5.3.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.5","file-loader":"^2.0.0","format-message-cli":"6.2.0","gh-pages":"^1.2.0","in-publish":"^2.0.0","jsdoc":"^3.5.5","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","pngjs":"^3.3.2","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^1.1.0","scratch-svg-renderer":"latest","script-loader":"0.7.2","stats.js":"^0.17.0","tap":"^12.0.1","tiny-worker":"^2.1.1","webpack":"^4.16.5","webpack-cli":"^3.1.0","webpack-dev-server":"^3.1.5"}};
+module.exports = {"name":"scratch-vm-mobile","version":"0.2.0-beta.0.4","description":"Virtual Machine for Scratch 3.0","author":"jeremy.yang@makeblock.com","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./src/index.js","scripts":{"build":"npm run docs && webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","docs":"jsdoc -c .jsdoc.json","extract:core":"mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js","i18n:src":"npm run extract:core","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run docs && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/ && cp -rf src/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/src/"},"dependencies":{"arraybuffer-loader":"^1.0.6","atob":"2.1.2","btoa":"1.2.1","canvas-toBlob":"1.0.0","decode-html":"2.0.0","diff-match-patch":"1.0.4","escape-html":"1.0.3","format-message":"6.2.1","htmlparser2":"3.10.0","immutable":"3.8.1","jszip":"^3.1.5","minilog":"3.1.0","nets":"3.2.0","scratch-parser":"^0.0.2","scratch-svg-renderer":"^0.1.0-prerelease.1515800444","scratch-translate-extension-languages":"0.0.20180521154850","socket.io-client":"2.0.4","text-encoding":"0.6.4","worker-loader":"^1.1.1"},"devDependencies":{"@babel/core":"^7.1.2","@babel/plugin-transform-classes":"^7.1.0","@babel/preset-env":"^7.1.0","adm-zip":"0.4.11","babel-eslint":"^10.0.1","babel-loader":"^8.0.4","copy-webpack-plugin":"^4.5.4","docdash":"^1.0.0","eslint":"^5.3.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.5","file-loader":"^2.0.0","format-message-cli":"6.2.0","gh-pages":"^1.2.0","in-publish":"^2.0.0","jsdoc":"^3.5.5","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","pngjs":"^3.3.2","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^1.1.0","scratch-svg-renderer":"latest","script-loader":"0.7.2","stats.js":"^0.17.0","tap":"^12.0.1","tiny-worker":"^2.1.1","uglifyjs-webpack-plugin":"^2.0.1","webpack":"^4.16.5","webpack-cli":"^3.1.0","webpack-dev-server":"^3.1.5"}};
 
 /***/ }),
 
@@ -9282,6 +9282,17 @@ var execute = function execute(sequencer, thread) {
   var blockContainer = thread.blockContainer;
   var blockCached = BlocksExecuteCache.getCached(blockContainer, currentBlockId, BlockCached);
 
+  if (blockCached && blockCached._isHat) {
+    // add by jeremy: 上报脚本执行事件
+    runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({
+      blockId: blockCached.id,
+      opcode: blockCached.opcode
+    }, {
+      /*参数暂时缺省*/
+    }));
+    thread.requestScriptGlowInFrame = true;
+  }
+
   if (blockCached === null) {
     blockContainer = runtime.flyoutBlocks;
     blockCached = BlocksExecuteCache.getCached(blockContainer, currentBlockId, BlockCached); // Stop if block or target no longer exists.
@@ -9390,7 +9401,12 @@ var execute = function execute(sequencer, thread) {
     var primitiveReportedValue = null;
 
     if (runtime.profiler === null) {
-      primitiveReportedValue = blockFunction(_argValues2, blockUtility);
+      primitiveReportedValue = blockFunction(_argValues2, blockUtility); // add by jeremy: 上报脚本执行事件
+
+      runtime.emit(runtime.constructor.BLOCK_SCRIPT_RAN, Object.assign({
+        blockId: currentBlockId,
+        opcode: blockCached.opcode
+      }, _argValues2));
     } else {
       var opcode = _opCached.opcode;
 
@@ -10311,7 +10327,7 @@ function (_EventEmitter) {
 
     _this.ioDevices = {
       clock: new Clock(),
-      cloud: new Cloud(_assertThisInitialized(_assertThisInitialized(_this))),
+      cloud: new Cloud(),
       deviceManager: new DeviceManager(),
       keyboard: new Keyboard(_assertThisInitialized(_assertThisInitialized(_this))),
       mouse: new Mouse(_assertThisInitialized(_assertThisInitialized(_this))),
@@ -10413,11 +10429,6 @@ function (_EventEmitter) {
           }
         }
       }
-    }
-  }, {
-    key: "getMonitorState",
-    value: function getMonitorState() {
-      return this._monitorState;
     }
     /**
      * Generate an extension-specific menu ID.
@@ -11320,7 +11331,7 @@ function (_EventEmitter) {
 
       for (var opts in optMatchFields) {
         if (!optMatchFields.hasOwnProperty(opts)) continue;
-        optMatchFields[opts] = optMatchFields[opts].toUpperCase();
+        optMatchFields[opts] = typeof optMatchFields[opts] === 'string' ? optMatchFields[opts].toUpperCase() : optMatchFields[opts];
       } // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
 
 
@@ -11340,25 +11351,50 @@ function (_EventEmitter) {
 
 
         var hatFields = blocks.getFields(block); // If no fields are present, check inputs (horizontal blocks)
+        // if (Object.keys(hatFields).length === 0) {
+        //     hatFields = {}; // don't overwrite the block's actual fields list
+        //     const hatInputs = blocks.getInputs(block);
+        //     for (const input in hatInputs) {
+        //         if (!hatInputs.hasOwnProperty(input)) continue;
+        //         const id = hatInputs[input].block;
+        //         const inpBlock = blocks.getBlock(id);
+        //         const fields = blocks.getFields(inpBlock);
+        //         Object.assign(hatFields, fields);
+        //     }
+        // }
 
-        if (Object.keys(hatFields).length === 0) {
-          hatFields = {}; // don't overwrite the block's actual fields list
+        var hatInputs = blocks.getInputs(block);
 
-          var hatInputs = blocks.getInputs(block);
-
-          for (var input in hatInputs) {
-            if (!hatInputs.hasOwnProperty(input)) continue;
-            var id = hatInputs[input].block;
-            var inpBlock = blocks.getBlock(id);
-            var fields = blocks.getFields(inpBlock);
-            Object.assign(hatFields, fields);
-          }
+        for (var input in hatInputs) {
+          if (!hatInputs.hasOwnProperty(input)) continue;
+          var id = hatInputs[input].block;
+          var inpBlock = blocks.getBlock(id);
+          var fields = blocks.getFields(inpBlock);
+          Object.assign(hatFields, fields);
         }
 
         if (optMatchFields) {
           for (var matchField in optMatchFields) {
-            if (hatFields[matchField].value.toUpperCase() !== optMatchFields[matchField]) {
-              // Field mismatch.
+            // if (hatFields[matchField].value.toUpperCase() !==
+            //     optMatchFields[matchField]) {
+            //     // Field mismatch.
+            //     return;
+            // }
+            var val;
+
+            if (!hatFields[matchField]) {
+              // 不存在此字段则跳过
+              continue;
+            } else {
+              val = (hatFields[matchField].value || '').toUpperCase();
+            } // Modify: 此处定制逻辑
+
+
+            if (!optMatchFields.matchFunc && val !== optMatchFields[matchField]) {
+              // Field 匹配失败.
+              return;
+            } else if (optMatchFields.matchFunc && !optMatchFields.matchFunc(val, optMatchFields[matchField], hatFields)) {
+              // Field 匹配失败.
               return;
             }
           }
@@ -12175,11 +12211,10 @@ function (_EventEmitter) {
       var block = categoryInfo.blocks.find(function (b) {
         return b.info.opcode === opcode;
       });
-      if (!block) return; // TODO: we may want to format the label in a locale-specific way.
+      if (!block) return; // TODO: should this use some other category? Also, we may want to format the label in a locale-specific way.
 
       return {
-        category: 'extension',
-        // This assumes that all extensions have the same monitor color.
+        category: 'data',
         label: "".concat(categoryInfo.name, ": ").concat(block.info.text)
       };
     }
@@ -12565,6 +12600,15 @@ function (_EventEmitter) {
     key: "MAX_CLONES",
     get: function get() {
       return 300;
+    }
+    /**
+     * 增加一个 block 脚本被执行 emit 事件
+     */
+
+  }, {
+    key: "BLOCK_SCRIPT_RAN",
+    get: function get() {
+      return 'BLOCK_SCRIPT_RAN';
     }
   }]);
 
@@ -32980,7 +33024,6 @@ function (_RenderedTarget) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(IRenderedTarget).call(this, sprite, runtime)); // 继承
 
     /**
-     * 
      * 设备角色 Id，一般是用设备名作为此 id
      * @type {string}
      */
@@ -32996,6 +33039,7 @@ function (_RenderedTarget) {
   }
   /**
    * 设备角色特有的方法，判断是否为设备
+   * @return {boolean}
    */
 
 
@@ -33041,23 +33085,11 @@ function (_RenderedTarget) {
     }
     /**
      * Initialize the audio player for this sprite or clone.
-     * TODO: 新vm已经置空来该方法，以观后效
      */
 
   }, {
     key: "initAudio",
-    value: function initAudio() {} // this.audioPlayer = null;
-    // if (this.runtime && this.runtime.audioEngine) {
-    //     this.audioPlayer = this.runtime.audioEngine.createPlayer();
-    //     // If this is a clone, it gets a reference to its parent's activeSoundPlayers object.
-    //     if (!this.isOriginal) {
-    //         const parent = this.sprite.clones[0];
-    //         if (parent && parent.audioPlayer) {
-    //             this.audioPlayer.activeSoundPlayers = parent.audioPlayer.activeSoundPlayers;
-    //         }
-    //     }
-    // }
-
+    value: function initAudio() {}
     /**
      * Set the current costume.
      * @param {number} index New index of costume.
@@ -33111,19 +33143,6 @@ function (_RenderedTarget) {
       }
     }
     /**
-     * Called when the project receives a "stop all"
-     * Stop all sounds and clear graphic effects.
-     * TODO: 该方法是否需要改写，有待验证。暂时先不改写
-     */
-    // onStopAll() {
-    //     this.clearEffects();
-    //     if (this.audioPlayer) {
-    //         this.audioPlayer.stopAllSounds();
-    //         this.audioPlayer.clearEffects();
-    //     }
-    // }
-
-    /**
      * Serialize sprite info, used when emitting events about the sprite
      * @returns {object} Sprite data as a simple object
      */
@@ -33152,7 +33171,6 @@ function (_RenderedTarget) {
       }
 
       _get(_getPrototypeOf(IRenderedTarget.prototype), "dispose", this).call(this); // TODO: fix 关闭声音
-      // super.onStopAll();
 
     }
   }]);
