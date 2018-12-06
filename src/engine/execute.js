@@ -419,7 +419,7 @@ const execute = function (sequencer, thread) {
 
             if (opCached) {
                 const inputName = opCached._parentKey;
-                const argValues = opCached._parentValues;
+                const argValues = opCached._parentValues || {};
 
                 if (inputName === 'BROADCAST_INPUT') {
                     // Something is plugged into the broadcast input.
@@ -453,7 +453,7 @@ const execute = function (sequencer, thread) {
             thread.justReported = null;
 
             const inputName = opCached._parentKey;
-            const argValues = opCached._parentValues;
+            const argValues = opCached._parentValues || {};
 
             if (inputName === 'BROADCAST_INPUT') {
                 // Something is plugged into the broadcast input.
