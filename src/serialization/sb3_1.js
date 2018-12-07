@@ -9,6 +9,7 @@ const Blocks = require('../engine/blocks_1');
 const Sprite = require('../sprites/sprite');
 const Variable = require('../engine/variable');
 const Comment = require('../engine/comment');
+const MonitorRecord = require('../engine/monitor-record');
 const StageLayering = require('../engine/stage-layering');
 const log = require('../util/log');
 const uid = require('../util/uid');
