@@ -317,14 +317,18 @@ class VirtualMachine extends EventEmitter {
     saveProjectSb3 () {
         const soundDescs = serializeSounds(this.runtime);
         const costumeDescs = serializeCostumes(this.runtime);
-        const projectJson = this.toJSON();
-
+        // add by Lcina
+        // 解决移动端保存项目没有过滤掉monitors，从而导致报错白屏问题，后期继续优化，等scratch支持保存勾选状态，现在默认清空
+        const projectJson = JSON.parse(this.toJSON());
+        if(projectJson.monitors.length) {
+            projectJson.monitors = [];
+        }
         // TODO want to eventually move zip creation out of here, and perhaps
         // into scratch-storage
         const zip = new JSZip();
 
         // Put everything in a zip file
-        zip.file('project.json', projectJson);
+        zip.file('project.json', JSON.stringify(projectJson));
         this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
 
         return zip.generateAsync({
