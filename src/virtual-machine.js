@@ -278,6 +278,12 @@ class VirtualMachine extends EventEmitter {
             // input should be parsed/validated as an entire project (and not a single sprite)
             validate(input, false, (error, res) => {
                 if (error) return reject(error);
+                // add by Lcina
+                // 对旧项目进行兼容处理，将monitors置为空，避免报错白屏
+                const projectJson = res[0];
+                if (projectJson.monitors, length) {
+                    projectJson.monitors = [];
+                }
                 resolve(res);
             });
         });
