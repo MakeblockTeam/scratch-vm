@@ -3210,7 +3210,7 @@ module.exports = function() {
 /*! exports provided: name, version, description, author, license, homepage, repository, main, browser, scripts, dependencies, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = {"name":"scratch-vm-mobile","version":"0.2.0-beta.0.7.2","description":"Virtual Machine for Scratch 3.0","author":"jeremy.yang@makeblock.com","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./src/index.js","scripts":{"build":"npm run docs && webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","docs":"jsdoc -c .jsdoc.json","extract:core":"mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js","i18n:src":"npm run extract:core","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run docs && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/ && cp -rf src/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/src/"},"dependencies":{"arraybuffer-loader":"^1.0.6","atob":"2.1.2","btoa":"1.2.1","canvas-toBlob":"1.0.0","decode-html":"2.0.0","diff-match-patch":"1.0.4","escape-html":"1.0.3","format-message":"6.2.1","htmlparser2":"3.10.0","immutable":"3.8.1","jszip":"^3.1.5","minilog":"3.1.0","nets":"3.2.0","scratch-parser":"^0.0.2","scratch-svg-renderer":"^0.1.0-prerelease.1515800444","scratch-translate-extension-languages":"0.0.20180521154850","socket.io-client":"2.0.4","text-encoding":"0.6.4","worker-loader":"^1.1.1"},"devDependencies":{"@babel/core":"^7.1.2","@babel/plugin-transform-classes":"^7.1.0","@babel/preset-env":"^7.1.0","adm-zip":"0.4.11","babel-eslint":"^10.0.1","babel-loader":"^8.0.4","copy-webpack-plugin":"^4.5.4","docdash":"^1.0.0","eslint":"^5.3.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.5","file-loader":"^2.0.0","format-message-cli":"6.2.0","gh-pages":"^1.2.0","in-publish":"^2.0.0","jsdoc":"^3.5.5","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","pngjs":"^3.3.2","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^1.1.0","scratch-svg-renderer":"latest","script-loader":"0.7.2","stats.js":"^0.17.0","tap":"^12.0.1","tiny-worker":"^2.1.1","uglifyjs-webpack-plugin":"^2.0.1","webpack":"^4.16.5","webpack-cli":"^3.1.0","webpack-dev-server":"^3.1.5"}};
+module.exports = {"name":"scratch-vm-mobile","version":"0.2.0-beta.0.7.3","description":"Virtual Machine for Scratch 3.0","author":"jeremy.yang@makeblock.com","license":"BSD-3-Clause","homepage":"https://github.com/LLK/scratch-vm#readme","repository":{"type":"git","url":"git+ssh://git@github.com/LLK/scratch-vm.git"},"main":"./dist/node/scratch-vm.js","browser":"./src/index.js","scripts":{"build":"npm run docs && webpack --progress --colors --bail","coverage":"tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov","deploy":"touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"","docs":"jsdoc -c .jsdoc.json","extract:core":"mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js","i18n:src":"npm run extract:core","lint":"eslint . && format-message lint src/**/*.js","prepublish":"in-publish && npm run build || not-in-publish","start":"webpack-dev-server","tap":"tap ./test/{unit,integration}/*.js","tap:unit":"tap ./test/unit/*.js","tap:integration":"tap ./test/integration/*.js","test":"npm run lint && npm run docs && npm run tap","watch":"webpack --progress --colors --watch","version":"json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"","cp":"cp -rf dist/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/dist/ && cp -rf src/* ../../ide/mscratch-mobile/node_modules/scratch-vm-mobile/src/"},"dependencies":{"arraybuffer-loader":"^1.0.6","atob":"2.1.2","btoa":"1.2.1","canvas-toBlob":"1.0.0","decode-html":"2.0.0","diff-match-patch":"1.0.4","escape-html":"1.0.3","format-message":"6.2.1","htmlparser2":"3.10.0","immutable":"3.8.1","jszip":"^3.1.5","minilog":"3.1.0","nets":"3.2.0","scratch-parser":"^0.0.2","scratch-svg-renderer":"^0.1.0-prerelease.1515800444","scratch-translate-extension-languages":"0.0.20180521154850","socket.io-client":"2.0.4","text-encoding":"0.6.4","worker-loader":"^1.1.1"},"devDependencies":{"@babel/core":"^7.1.2","@babel/plugin-transform-classes":"^7.1.0","@babel/preset-env":"^7.1.0","adm-zip":"0.4.11","babel-eslint":"^10.0.1","babel-loader":"^8.0.4","copy-webpack-plugin":"^4.5.4","docdash":"^1.0.0","eslint":"^5.3.0","eslint-config-scratch":"^5.0.0","expose-loader":"0.7.5","file-loader":"^2.0.0","format-message-cli":"6.2.0","gh-pages":"^1.2.0","in-publish":"^2.0.0","jsdoc":"^3.5.5","json":"^9.0.4","lodash.defaultsdeep":"4.6.0","pngjs":"^3.3.2","scratch-audio":"latest","scratch-blocks":"latest","scratch-render":"latest","scratch-storage":"^1.1.0","scratch-svg-renderer":"latest","script-loader":"0.7.2","stats.js":"^0.17.0","tap":"^12.0.1","tiny-worker":"^2.1.1","uglifyjs-webpack-plugin":"^2.0.1","webpack":"^4.16.5","webpack-cli":"^3.1.0","webpack-dev-server":"^3.1.5"}};
 
 /***/ }),
 
@@ -34602,6 +34602,53 @@ module.exports = maybeFormatMessage;
 
 /***/ }),
 
+/***/ "./src/util/project-compliant.js":
+/*!***************************************!*\
+  !*** ./src/util/project-compliant.js ***!
+  \***************************************/
+/*! exports provided: handleDeleteMonitors, handleBlocksParamsCase */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "handleDeleteMonitors", function() { return handleDeleteMonitors; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "handleBlocksParamsCase", function() { return handleBlocksParamsCase; });
+function handleDeleteMonitors(projectJson) {
+  if (projectJson.monitors, length) {
+    projectJson.monitors = [];
+  }
+} // 处理积木块参数大小写问题
+
+
+function handleBlocksParamsCase(targets, name, opcode, fieldsParams) {
+  if (!targets instanceof Array || !targets.length) return null;
+
+  for (var i = 0; i < targets.length; i += 1) {
+    var currentTargets = targets[i];
+
+    if (targets[i].name === name) {
+      (function () {
+        var blocks = currentTargets.blocks;
+        Object.keys(blocks).forEach(function (key) {
+          var currentBlockContent = blocks[key];
+
+          if (currentBlockContent.opcode === opcode) {
+            var fields = currentBlockContent.fields;
+            if (!Object.keys(fields).length) return null;
+            fields[fieldsParams][0] = fields[fieldsParams][0].toUpperCase();
+          }
+        });
+      })();
+    }
+  }
+
+  return targets;
+}
+
+
+
+/***/ }),
+
 /***/ "./src/util/rateLimiter.js":
 /*!*********************************!*\
   !*** ./src/util/rateLimiter.js ***!
@@ -35039,21 +35086,25 @@ var sb3 = __webpack_require__(/*! ./serialization/sb3_1 */ "./src/serialization/
 
 var StringUtil = __webpack_require__(/*! ./util/string-util */ "./src/util/string-util.js");
 
+var _require = __webpack_require__(/*! ./util/project-compliant */ "./src/util/project-compliant.js"),
+    handleDeleteMonitors = _require.handleDeleteMonitors,
+    handleBlocksParamsCase = _require.handleBlocksParamsCase;
+
 var formatMessage = __webpack_require__(/*! format-message */ "format-message");
 
 var validate = __webpack_require__(/*! scratch-parser */ "scratch-parser");
 
 var Variable = __webpack_require__(/*! ./engine/variable */ "./src/engine/variable.js");
 
-var _require = __webpack_require__(/*! ./import/load-costume.js */ "./src/import/load-costume.js"),
-    loadCostume = _require.loadCostume;
+var _require2 = __webpack_require__(/*! ./import/load-costume.js */ "./src/import/load-costume.js"),
+    loadCostume = _require2.loadCostume;
 
-var _require2 = __webpack_require__(/*! ./import/load-sound.js */ "./src/import/load-sound.js"),
-    loadSound = _require2.loadSound;
+var _require3 = __webpack_require__(/*! ./import/load-sound.js */ "./src/import/load-sound.js"),
+    loadSound = _require3.loadSound;
 
-var _require3 = __webpack_require__(/*! ./serialization/serialize-assets */ "./src/serialization/serialize-assets.js"),
-    serializeSounds = _require3.serializeSounds,
-    serializeCostumes = _require3.serializeCostumes;
+var _require4 = __webpack_require__(/*! ./serialization/serialize-assets */ "./src/serialization/serialize-assets.js"),
+    serializeSounds = _require4.serializeSounds,
+    serializeCostumes = _require4.serializeCostumes;
 
 __webpack_require__(/*! canvas-toBlob */ "./node_modules/canvas-toBlob/canvas-toBlob.js");
 
@@ -35373,11 +35424,8 @@ function (_EventEmitter) {
           // 对旧项目进行兼容处理，将monitors置为空，避免报错白屏
 
           var projectJson = res[0];
-
-          if (projectJson.monitors, length) {
-            projectJson.monitors = [];
-          }
-
+          handleDeleteMonitors(projectJson);
+          handleBlocksParamsCase(projectJson.targets, 'codey', 'codey.meos_when_button_press', 'BUTTONS');
           resolve(res);
         });
       });
@@ -35427,12 +35475,8 @@ function (_EventEmitter) {
       // 解决移动端保存项目没有过滤掉monitors，从而导致报错白屏问题，后期继续优化，等scratch支持保存勾选状态，现在默认清空
 
       var projectJson = JSON.parse(this.toJSON());
-
-      if (projectJson.monitors.length) {
-        projectJson.monitors = [];
-      } // TODO want to eventually move zip creation out of here, and perhaps
+      handleDeleteMonitors(projectJson); // TODO want to eventually move zip creation out of here, and perhaps
       // into scratch-storage
-
 
       var zip = new JSZip(); // Put everything in a zip file
 
