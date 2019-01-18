@@ -201,12 +201,11 @@ const serializeBlock = function (block) {
     obj.topLevel = block.topLevel ? block.topLevel : false;
     obj.shadow = block.shadow;
     if (block.topLevel) {
-        if (block.x) {
-            obj.x = Math.round(block.x);
-        }
-        if (block.y) {
-            obj.y = Math.round(block.y);
-        }
+        obj.topLevel = true;
+        obj.x = block.x ? Math.round(block.x) : 0;
+        obj.y = block.y ? Math.round(block.y) : 0;
+    } else {
+        obj.topLevel = false;
     }
     if (block.mutation) {
         obj.mutation = block.mutation;
@@ -769,6 +768,13 @@ const deserializeBlocks = function (blocks) {
             delete block[blockId];
             deserializeInputDesc(block, null, false, blocks);
             continue;
+        }
+        if (block.topLevel) {
+            block.topLevel = true;
+            block.x = block.x ? Math.round(block.x) : 0;
+            block.y = block.y ? Math.round(block.y) : 0;
+        } else {
+            block.topLevel = false;
         }
         block.id = blockId; // add id back to block since it wasn't serialized
         block.inputs = deserializeInputs(block.inputs, blockId, blocks);
