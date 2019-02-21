@@ -7,7 +7,7 @@ const {Map} = require('immutable');
 const BlocksExecuteCache = require('./blocks-execute-cache');
 const log = require('../util/log');
 const Variable = require('./variable');
-
+const uid = require('../util/uid');
 /**
  * @fileoverview
  * Store and mutate the VM block representation,
@@ -260,7 +260,36 @@ class Blocks {
         const newBlocks = new Blocks(this.forceNoGlow);
         newBlocks._blocks = Clone.simple(this._blocks);
         newBlocks._scripts = Clone.simple(this._scripts);
+        this.resetBlockIDs(newBlocks);
         return newBlocks;
+    }
+
+    resetBlockIDs (block) {
+        const idMap = {}
+        let orinBlocks = block._blocks;
+        let newBlocks = {}
+        let newScripts = []
+        for(let id in orinBlocks){
+            let newId = uid();
+            idMap[id] = newId;
+        }
+        for(let id in orinBlocks){
+            let block = orinBlocks[id]
+            block.id = idMap[id];
+            if(block.next) {
+                block.next = idMap[block.next];
+            }
+            if(block.parent) {
+                block.parent = idMap[block.parent];
+            }
+            newBlocks[block.id] = block
+        }
+        block._blocks = newBlocks;
+
+        for(let id of block._scripts){
+            newScripts.push(idMap[id])
+        }
+        block._scripts = newScripts
     }
     // ---------------------------------------------------------------------
 
