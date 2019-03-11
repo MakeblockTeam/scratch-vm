@@ -282,6 +282,19 @@ class Blocks {
             if(block.parent) {
                 block.parent = idMap[block.parent];
             }
+            let inputs = block.inputs;
+            if(inputs){
+                for(let inputBlockId in inputs) {
+                    let inputBlock = inputs[inputBlockId];
+                    if(inputBlock.block) {
+                        inputBlock.block = idMap[inputBlock.block] 
+                    }
+
+                    if(inputBlock.shadow) {
+                        inputBlock.shadow = idMap[inputBlock.shadow]
+                    }
+                }
+            }
             newBlocks[block.id] = block
         }
         block._blocks = newBlocks;
