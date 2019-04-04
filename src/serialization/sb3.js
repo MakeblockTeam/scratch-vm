@@ -467,8 +467,30 @@ const getSimplifiedLayerOrdering = function (targets) {
     return MathUtil.reducedSortOrdering(layerOrders);
 };
 
-const serializeMonitors = function (monitors) {
+// By Kane: 遍历 monitor block 相关的 blockInfo
+const getMonitorBlocksInfo = function (blockId, runtime) {
+    let blocksInfo = [];
+    const block = runtime.monitorBlocks.getBlock(blockId);
+    if (block) {
+        blocksInfo.push(block);
+        if (block.inputs) {
+            for (const inputKey in block.inputs) {
+                const childBlockId = block.inputs[inputKey].block;
+                if (childBlockId) {
+                    blocksInfo = blocksInfo.concat(getMonitorBlocksInfo(childBlockId, runtime));
+                }
+            }
+        }
+    }
+    return blocksInfo;
+}
+
+const serializeMonitors = function (monitors, runtime) {
     return monitors.valueSeq().map(monitorData => {
+        // By Kane: scratch 的侧边栏积木会一次性渲染全部，但我们的只会渲染当前选中分类的，这会导致项目中保存的 monitorBlock 渲染时，真实的 blockInfo 还没有生成，
+        // 就会根据 monitorBlock 创建一份 blockInfo，但会导致和真实 blockInfo 不同。
+        // 将 monitor 原始的 blockInfo 保存到项目中，来避免产生这个问题。
+        const blocksInfo = getMonitorBlocksInfo(monitorData.id, runtime);
         const serializedMonitor = {
             id: monitorData.id,
             mode: monitorData.mode,
@@ -480,7 +502,8 @@ const serializeMonitors = function (monitors) {
             height: monitorData.height,
             x: monitorData.x,
             y: monitorData.y,
-            visible: monitorData.visible
+            visible: monitorData.visible,
+            blocksInfo
         };
         if (monitorData.mode !== 'list') {
             serializedMonitor.min = monitorData.sliderMin;
@@ -526,7 +549,7 @@ const serialize = function (runtime, targetId) {
 
     obj.targets = serializedTargets;
 
-    obj.monitors = serializeMonitors(runtime.getMonitorState());
+    obj.monitors = serializeMonitors(runtime.getMonitorState(), runtime);
 
 
     // TODO Serialize monitors
@@ -1061,6 +1084,10 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         // the monitor block is not target specific (because the block gets recycled).
         existingMonitorBlock.isMonitored = monitorData.visible;
         existingMonitorBlock.targetId = monitorData.targetId;
+    } else if (Array.isArray(monitorData.blocksInfo)) {
+        monitorData.blocksInfo.forEach(blockInfo => {
+            runtime.monitorBlocks.createBlock(blockInfo);
+        });
     } else {
         // If a monitor block doesn't already exist for this monitor,
         // construct a monitor block to add to the monitor blocks container
