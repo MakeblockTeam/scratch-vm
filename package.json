@@ -1,6 +1,6 @@
 {
   "name": "mscratch-vm",
-  "version": "0.3.9",
+  "version": "0.5.1",
   "description": "Virtual Machine for Scratch 3.0",
   "author": "Massachusetts Institute of Technology",
   "license": "BSD-3-Clause",
