@@ -504,7 +504,7 @@ const getMonitorBlocksInfo = function (blockId, runtime) {
         }
     }
     return blocksInfo;
-}
+};
 
 const serializeMonitors = function (monitors, runtime) {
     return monitors.valueSeq().map(monitorData => {

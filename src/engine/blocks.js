@@ -287,44 +287,44 @@ class Blocks {
     }
 
     resetBlockIDs (block) {
-        const idMap = {}
-        let orinBlocks = block._blocks;
-        let newBlocks = {}
-        let newScripts = []
-        for(let id in orinBlocks){
-            let newId = uid();
+        const idMap = {};
+        const orinBlocks = block._blocks;
+        const newBlocks = {};
+        const newScripts = [];
+        for (const id in orinBlocks){
+            const newId = uid();
             idMap[id] = newId;
         }
-        for(let id in orinBlocks){
-            let block = orinBlocks[id]
-            block.id = idMap[id];
-            if(block.next) {
-                block.next = idMap[block.next];
+        for (const id in orinBlocks){
+            const childBlock = orinBlocks[id];
+            childBlock.id = idMap[id];
+            if (childBlock.next) {
+                childBlock.next = idMap[childBlock.next];
             }
-            if(block.parent) {
-                block.parent = idMap[block.parent];
+            if (childBlock.parent) {
+                childBlock.parent = idMap[childBlock.parent];
             }
-            let inputs = block.inputs;
-            if(inputs){
-                for(let inputBlockId in inputs) {
-                    let inputBlock = inputs[inputBlockId];
-                    if(inputBlock.block) {
-                        inputBlock.block = idMap[inputBlock.block] 
+            const inputs = childBlock.inputs;
+            if (inputs){
+                for (const inputBlockId in inputs) {
+                    const inputBlock = inputs[inputBlockId];
+                    if (inputBlock.block) {
+                        inputBlock.block = idMap[inputBlock.block];
                     }
 
-                    if(inputBlock.shadow) {
-                        inputBlock.shadow = idMap[inputBlock.shadow]
+                    if (inputBlock.shadow) {
+                        inputBlock.shadow = idMap[inputBlock.shadow];
                     }
                 }
             }
-            newBlocks[block.id] = block
+            newBlocks[childBlock.id] = childBlock;
         }
         block._blocks = newBlocks;
 
-        for(let id of block._scripts){
-            newScripts.push(idMap[id])
+        for (const id of block._scripts){
+            newScripts.push(idMap[id]);
         }
-        block._scripts = newScripts
+        block._scripts = newScripts;
     }
     // ---------------------------------------------------------------------
 
