@@ -14,6 +14,8 @@ const StageLayering = require('../engine/stage-layering');
 const log = require('../util/log');
 const uid = require('../util/uid');
 const MathUtil = require('../util/math-util');
+const StringUtil = require('../util/string-util');
+const VariableUtil = require('../util/variable-util');
 
 const {loadCostume} = require('../import/load-costume.js');
 const {loadSound} = require('../import/load-sound.js');
@@ -199,7 +201,6 @@ const serializeBlock = function (block) {
     obj.parent = block.parent;
     obj.inputs = serializeInputs(block.inputs);
     obj.fields = serializeFields(block.fields);
-    obj.topLevel = block.topLevel ? block.topLevel : false;
     obj.shadow = block.shadow;
     if (block.topLevel) {
         obj.topLevel = true;
@@ -272,6 +273,19 @@ const compressInputTree = function (block, blocks) {
 };
 
 /**
+ * Get non-core extension ID for a given sb3 opcode.
+ * @param {!string} opcode The opcode to examine for extension.
+ * @return {?string} The extension ID, if it exists and is not a core extension.
+ */
+const getExtensionIdForOpcode = function (opcode) {
+    const index = opcode.indexOf('_');
+    const prefix = opcode.substring(0, index);
+    if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
+        if (prefix !== '') return prefix;
+    }
+};
+
+/**
  * Serialize the given blocks object (representing all the blocks for the target
  * currently being serialized.)
  * @param {object} blocks The blocks to be serialized
@@ -285,10 +299,9 @@ const serializeBlocks = function (blocks) {
     for (const blockID in blocks) {
         if (!blocks.hasOwnProperty(blockID)) continue;
         obj[blockID] = serializeBlock(blocks[blockID], blocks);
-        const index = blocks[blockID].opcode.indexOf('_');
-        const prefix = blocks[blockID].opcode.substring(0, index);
-        if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
-            if (prefix !== '') extensionIDs.add(prefix);
+        const extensionID = getExtensionIdForOpcode(blocks[blockID].opcode);
+        if (extensionID) {
+            extensionIDs.add(extensionID);
         }
     }
     // once we have completed a first pass, do a second pass on block inputs
@@ -312,7 +325,7 @@ const serializeBlocks = function (blocks) {
         // a shadow block, and there are no blocks that reference it, otherwise
         // they would have been compressed in the last pass)
         if (Array.isArray(serializedBlock) &&
-            [VAR_PRIMITIVE, LIST_PRIMITIVE].indexOf(serializedBlock) < 0) {
+            [VAR_PRIMITIVE, LIST_PRIMITIVE].indexOf(serializedBlock[0]) < 0) {
             log.warn(`Found an unexpected top level primitive with block ID: ${
                 blockID}; deleting it from serialized blocks.`);
             delete obj[blockID];
@@ -393,7 +406,7 @@ const serializeVariables = function (variables) {
         // otherwise should be a scalar type
         obj.variables[varId] = [v.name, v.value];
         // only scalar vars have the potential to be cloud vars
-        if (v.isPersistent) obj.variables[varId].push(true);
+        if (v.isCloud) obj.variables[varId].push(true);
     }
     return obj;
 };
@@ -436,6 +449,13 @@ const serializeTarget = function (target, extensions) {
     obj.broadcasts = vars.broadcasts;
     [obj.blocks, targetExtensions] = serializeBlocks(target.blocks);
     obj.comments = serializeComments(target.comments);
+
+    // TODO remove this check/patch when (#1901) is fixed
+    if (target.currentCostume < 0 || target.currentCostume >= target.costumes.length) {
+        log.warn(`currentCostume property for target ${target.name} is out of range`);
+        target.currentCostume = MathUtil.clamp(target.currentCostume, 0, target.costumes.length - 1);
+    }
+
     obj.currentCostume = target.currentCostume;
     obj.costumes = target.costumes.map(serializeCostume);
     obj.sounds = target.sounds.map(serializeSound);
@@ -445,6 +465,7 @@ const serializeTarget = function (target, extensions) {
         if (target.hasOwnProperty('tempo')) obj.tempo = target.tempo;
         if (target.hasOwnProperty('videoTransparency')) obj.videoTransparency = target.videoTransparency;
         if (target.hasOwnProperty('videoState')) obj.videoState = target.videoState;
+        if (target.hasOwnProperty('textToSpeechLanguage')) obj.textToSpeechLanguage = target.textToSpeechLanguage;
     } else { // The stage does not need the following properties, but sprites should
         obj.visible = target.visible;
         obj.x = target.x;
@@ -506,8 +527,9 @@ const serializeMonitors = function (monitors, runtime) {
             blocksInfo
         };
         if (monitorData.mode !== 'list') {
-            serializedMonitor.min = monitorData.sliderMin;
-            serializedMonitor.max = monitorData.sliderMax;
+            serializedMonitor.sliderMin = monitorData.sliderMin;
+            serializedMonitor.sliderMax = monitorData.sliderMax;
+            serializedMonitor.isDiscrete = monitorData.isDiscrete;
         }
         return serializedMonitor;
     });
@@ -531,7 +553,7 @@ const serialize = function (runtime, targetId) {
 
     const layerOrdering = getSimplifiedLayerOrdering(originalTargetsToSerialize);
 
-    const flattenedOriginalTargets = JSON.parse(JSON.stringify(originalTargetsToSerialize));
+    const flattenedOriginalTargets = originalTargetsToSerialize.map(t => t.toJSON());
 
     // If the renderer is attached, and we're serializing a whole project (not a sprite)
     // add a temporary layerOrder property to each target.
@@ -551,9 +573,6 @@ const serialize = function (runtime, targetId) {
 
     obj.monitors = serializeMonitors(runtime.getMonitorState(), runtime);
 
-
-    // TODO Serialize monitors
-
     // Assemble extension list
     obj.extensions = Array.from(extensions);
 
@@ -563,7 +582,7 @@ const serialize = function (runtime, targetId) {
     meta.vm = vmPackage.version;
 
     // Attach full user agent string to metadata if available
-    meta.agent = null;
+    meta.agent = 'none';
     if (typeof navigator !== 'undefined') meta.agent = navigator.userAgent;
 
     // Assemble payload and return
@@ -814,7 +833,7 @@ const deserializeBlocks = function (blocks) {
             // this is one of the primitives
             // delete the old entry in object.blocks and replace it w/the
             // deserialized object
-            delete block[blockId];
+            delete blocks[blockId];
             deserializeInputDesc(block, null, false, blocks);
             continue;
         }
@@ -834,49 +853,37 @@ const deserializeBlocks = function (blocks) {
 
 
 /**
- * Parse a single "Scratch object" and create all its in-memory VM objects.
+ * Parse the assets of a single "Scratch object" and load them. This
+ * preprocesses objects to support loading the data for those assets over a
+ * network while the objects are further processed into Blocks, Sprites, and a
+ * list of needed Extensions.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
  * @param {!Runtime} runtime Runtime object to load all structures into.
- * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
  * @param {JSZip} zip Sb3 file describing this project (to load assets from)
- * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
+ * @return {?{costumePromises:Array.<Promise>,soundPromises:Array.<Promise>,soundBank:SoundBank}}
+ * Object of arrays of promises for asset objects used in Sprites. As well as a
+ * SoundBank for the sound assets. null for unsupported objects.
  */
-const parseScratchObject = function (object, runtime, extensions, zip) {
+const parseScratchAssets = function (object, runtime, zip) {
     if (!object.hasOwnProperty('name')) {
         // Watcher/monitor - skip this object until those are implemented in VM.
         // @todo
         return Promise.resolve(null);
     }
-    // Blocks container for this object.
-    const blocks = new Blocks();
 
-    // @todo: For now, load all Scratch objects (stage/sprites) as a Sprite.
-    const sprite = new Sprite(blocks, runtime);
+    const assets = {
+        costumePromises: null,
+        soundPromises: null,
+        soundBank: runtime.audioEngine && runtime.audioEngine.createBank()
+    };
 
-    // Sprite/stage name from JSON.
-    if (object.hasOwnProperty('name')) {
-        sprite.name = object.name;
-    }
-    if (object.hasOwnProperty('blocks')) {
-        deserializeBlocks(object.blocks);
-        // Take a second pass to create objects and add extensions
-        for (const blockId in object.blocks) {
-            if (!object.blocks.hasOwnProperty(blockId)) continue;
-            const blockJSON = object.blocks[blockId];
-            blocks.createBlock(blockJSON);
-
-            // If the block is from an extension, record it.
-            const index = blockJSON.opcode.indexOf('_');
-            const prefix = blockJSON.opcode.substring(0, index);
-            if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
-                if (prefix !== '') extensions.extensionIDs.add(prefix);
-            }
-        }
-    }
     // Costumes from JSON.
-    const costumePromises = (object.costumes || []).map(costumeSource => {
+    assets.costumePromises = (object.costumes || []).map(costumeSource => {
         // @todo: Make sure all the relevant metadata is being pulled out.
         const costume = {
+            // costumeSource only has an asset if an image is being uploaded as
+            // a sprite
+            asset: costumeSource.asset,
             assetId: costumeSource.assetId,
             skinId: null,
             name: costumeSource.name,
@@ -903,7 +910,7 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // process has been completed
     });
     // Sounds from JSON
-    const soundPromises = (object.sounds || []).map(soundSource => {
+    assets.soundPromises = (object.sounds || []).map(soundSource => {
         const sound = {
             assetId: soundSource.assetId,
             format: soundSource.format,
@@ -923,10 +930,59 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // any translation that needs to happen will happen in the process
         // of building up the costume object into an sb3 format
         return deserializeSound(sound, runtime, zip)
-            .then(() => loadSound(sound, runtime, sprite));
+            .then(() => loadSound(sound, runtime, assets.soundBank));
         // Only attempt to load the sound after the deserialization
         // process has been completed.
     });
+
+    return assets;
+};
+
+/**
+ * Parse a single "Scratch object" and create all its in-memory VM objects.
+ * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
+ * @param {!Runtime} runtime Runtime object to load all structures into.
+ * @param {ImportedExtensionsInfo} extensions - (in/out) parsed extension information will be stored here.
+ * @param {JSZip} zip Sb3 file describing this project (to load assets from)
+ * @param {object} assets - Promises for assets of this scratch object grouped
+ *   into costumes and sounds
+ * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
+ */
+const parseScratchObject = function (object, runtime, extensions, zip, assets) {
+    if (!object.hasOwnProperty('name')) {
+        // Watcher/monitor - skip this object until those are implemented in VM.
+        // @todo
+        return Promise.resolve(null);
+    }
+    // Blocks container for this object.
+    const blocks = new Blocks(runtime);
+
+    // @todo: For now, load all Scratch objects (stage/sprites) as a Sprite.
+    const sprite = new Sprite(blocks, runtime);
+
+    // Sprite/stage name from JSON.
+    if (object.hasOwnProperty('name')) {
+        sprite.name = object.name;
+    }
+    if (object.hasOwnProperty('blocks')) {
+        deserializeBlocks(object.blocks);
+        // Take a second pass to create objects and add extensions
+        for (const blockId in object.blocks) {
+            if (!object.blocks.hasOwnProperty(blockId)) continue;
+            const blockJSON = object.blocks[blockId];
+            blocks.createBlock(blockJSON);
+
+            // If the block is from an extension, record it.
+            const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
+            if (extensionID) {
+                extensions.extensionIDs.add(extensionID);
+            }
+        }
+    }
+    // Costumes from JSON.
+    const {costumePromises} = assets;
+    // Sounds from JSON
+    const {soundBank, soundPromises} = assets;
     // Create the first clone, and load its run-state from JSON.
     const target = sprite.createClone(object.isStage ? StageLayering.BACKGROUND_LAYER : StageLayering.SPRITE_LAYER);
     // Load target properties from JSON.
@@ -942,15 +998,25 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
     if (object.hasOwnProperty('videoState')) {
         target.videoState = object.videoState;
     }
+    if (object.hasOwnProperty('textToSpeechLanguage')) {
+        target.textToSpeechLanguage = object.textToSpeechLanguage;
+    }
     if (object.hasOwnProperty('variables')) {
         for (const varId in object.variables) {
             const variable = object.variables[varId];
+            // A variable is a cloud variable if:
+            // - the project says it's a cloud variable, and
+            // - it's a stage variable, and
+            // - the runtime can support another cloud variable
+            const isCloud = (variable.length === 3) && variable[2] &&
+                object.isStage && runtime.canAddCloudVariable();
             const newVariable = new Variable(
                 varId, // var id is the index of the variable desc array in the variables obj
                 variable[0], // name of the variable
                 Variable.SCALAR_TYPE, // type of the variable
-                (variable.length === 3) ? variable[2] : false // isPersistent/isCloud
+                isCloud
             );
+            if (isCloud) runtime.addCloudVariable();
             newVariable.value = variable[1];
             target.variables[newVariable.id] = newVariable;
         }
@@ -1016,7 +1082,7 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         target.visible = object.visible;
     }
     if (object.hasOwnProperty('currentCostume')) {
-        target.currentCostume = object.currentCostume;
+        target.currentCostume = MathUtil.clamp(object.currentCostume, 0, object.costumes.length - 1);
     }
     if (object.hasOwnProperty('rotationStyle')) {
         target.rotationStyle = object.rotationStyle;
@@ -1030,11 +1096,16 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // This will be deleted after we are done parsing and ordering the targets list.
         target.targetPaneOrder = object.targetPaneOrder;
     }
+    if (object.hasOwnProperty('draggable')) {
+        target.draggable = object.draggable;
+    }
     Promise.all(costumePromises).then(costumes => {
         sprite.costumes = costumes;
     });
     Promise.all(soundPromises).then(sounds => {
         sprite.sounds = sounds;
+        // Make sure if soundBank is undefined, sprite.soundBank is then null.
+        sprite.soundBank = soundBank || null;
     });
     return Promise.all(costumePromises.concat(soundPromises)).then(() => target);
 };
@@ -1074,6 +1145,12 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         monitorBlockInfo && monitorBlockInfo.isSpriteSpecific) {
         monitorData.id = monitorBlockInfo.getId(
             monitorData.targetId, fields);
+    } else {
+        // Replace unsafe characters in monitor ID, if there are any.
+        // These would have come from projects that were originally 2.0 projects
+        // that had unsafe characters in the variable name (and then the name was
+        // used as part of the variable ID when importing the project).
+        monitorData.id = StringUtil.replaceUnsafeChars(monitorData.id);
     }
 
     // If the runtime already has a monitor block for this monitor's id,
@@ -1120,9 +1197,44 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         }
 
         runtime.monitorBlocks.createBlock(monitorBlock);
+
+        // If the block is from an extension, record it.
+        const extensionID = getExtensionIdForOpcode(monitorBlock.opcode);
+        if (extensionID) {
+            extensions.extensionIDs.add(extensionID);
+        }
     }
 
     runtime.requestAddMonitor(MonitorRecord(monitorData));
+};
+
+// Replace variable IDs throughout the project with
+// xml-safe versions.
+// This is to fix up projects imported from 2.0 where xml-unsafe names
+// were getting added to the variable ids.
+const replaceUnsafeCharsInVariableIds = function (targets) {
+    const allVarRefs = VariableUtil.getAllVarRefsForTargets(targets, true);
+    // Re-id the variables in the actual targets
+    targets.forEach(t => {
+        Object.keys(t.variables).forEach(id => {
+            const newId = StringUtil.replaceUnsafeChars(id);
+            if (newId === id) return;
+            t.variables[id].id = newId;
+            t.variables[newId] = t.variables[id];
+            delete t.variables[id];
+        });
+    });
+
+    // Replace the IDs in the blocks refrencing variables or lists
+    for (const id in allVarRefs) {
+        const newId = StringUtil.replaceUnsafeChars(id);
+        if (id === newId) continue; // ID was already safe, skip
+        // We're calling this on the stage target because we need a
+        // target to call on but this shouldn't matter because we're passing
+        // in all the varRefs we want to operate on
+        VariableUtil.updateVariableIdentifiers(allVarRefs[id], newId);
+    }
+    return targets;
 };
 
 /**
@@ -1149,19 +1261,32 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
 
     const monitorObjects = json.monitors || [];
 
-    return Promise.all(
+    return Promise.resolve(
         targetObjects.map(target =>
-            parseScratchObject(target, runtime, extensions, zip))
+            parseScratchAssets(target, runtime, zip))
     )
+        // Force this promise to wait for the next loop in the js tick. Let
+        // storage have some time to send off asset requests.
+        .then(assets => Promise.resolve(assets))
+        .then(assets => Promise.all(targetObjects
+            .map((target, index) =>
+                parseScratchObject(target, runtime, extensions, zip, assets[index]))))
         .then(targets => targets // Re-sort targets back into original sprite-pane ordering
+            .map((t, i) => {
+                // Add layer order property to deserialized targets.
+                // This property is used to initialize executable targets in
+                // the correct order and is deleted in VM's installTargets function
+                t.layerOrder = i;
+                return t;
+            })
             .sort((a, b) => a.targetPaneOrder - b.targetPaneOrder)
             .map(t => {
                 // Delete the temporary properties used for
                 // sprite pane ordering and stage layer ordering
                 delete t.targetPaneOrder;
-                delete t.layerOrder;
                 return t;
             }))
+        .then(targets => replaceUnsafeCharsInVariableIds(targets))
         .then(targets => {
             monitorObjects.map(monitorDesc => deserializeMonitor(monitorDesc, runtime, targets, extensions));
             return targets;
@@ -1176,5 +1301,6 @@ module.exports = {
     serialize: serialize,
     deserialize: deserialize,
     deserializeBlocks: deserializeBlocks,
-    serializeBlocks: serializeBlocks
+    serializeBlocks: serializeBlocks,
+    getExtensionIdForOpcode: getExtensionIdForOpcode
 };
