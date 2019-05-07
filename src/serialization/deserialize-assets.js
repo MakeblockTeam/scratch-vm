@@ -49,7 +49,7 @@ const deserializeSound = function (sound, runtime, zip, assetFileName) {
         storage.AssetType.Sound,
         dataFormat,
         data,
-        null,
+        sound.assetId,
         true
     ))
         .then(asset => {
@@ -92,8 +92,8 @@ const deserializeCostume = function (costume, runtime, zip, assetFileName, textL
             costume.asset.assetType,
             costume.asset.dataFormat,
             new Uint8Array(Object.keys(costume.asset.data).map(key => costume.asset.data[key])),
-            null,
-            true
+            assetId,
+            false
         )).then(asset => {
             costume.asset = asset;
             costume.assetId = asset.assetId;
@@ -161,8 +161,8 @@ const deserializeCostume = function (costume, runtime, zip, assetFileName, textL
                 // TODO eventually we want to map non-png's to their actual file types?
                 costumeFormat,
                 data,
-                null,
-                true
+                assetId,
+                false
             ))
             .then(asset => {
                 costume.asset = asset;

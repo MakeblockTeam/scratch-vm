@@ -12,7 +12,7 @@ const loadVector_ = function (costume, runtime, rotationCenter, optVersion) {
             svgString = runtime.v2SvgAdapter.toString();
             // Put back into storage
             const storage = runtime.storage;
-            costume.asset.encodeTextData(svgString, storage.DataFormat.SVG, true);
+            costume.asset.encodeTextData(svgString, storage.DataFormat.SVG, false);
             costume.assetId = costume.asset.assetId;
             costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
         }
