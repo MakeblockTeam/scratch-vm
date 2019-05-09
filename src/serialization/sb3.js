@@ -1163,8 +1163,10 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         existingMonitorBlock.targetId = monitorData.targetId;
     } else if (Array.isArray(monitorData.blocksInfo)) {
         monitorData.blocksInfo.forEach(blockInfo => {
+            blockInfo.targetId = monitorData.targetId;
             runtime.monitorBlocks.createBlock(blockInfo);
         });
+        delete monitorData.blocksInfo;
     } else {
         // If a monitor block doesn't already exist for this monitor,
         // construct a monitor block to add to the monitor blocks container
