@@ -3,11 +3,15 @@ const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const Clone = require('../../util/clone');
 const Color = require('../../util/color');
-const formatMessage = require('format-message');
+
 const MathUtil = require('../../util/math-util');
 const RenderedTarget = require('../../sprites/rendered-target');
 const log = require('../../util/log');
 const StageLayering = require('../../engine/stage-layering');
+
+let formatMessage = function (obj){
+    return obj.default;
+};
 
 /**
  * Icon svg to be displayed at the left edge of each extension block, encoded as a data URI.
@@ -42,12 +46,14 @@ const ColorParam = {
  * @constructor
  */
 class Scratch3PenBlocks {
-    constructor (runtime) {
+    constructor (runtime, scratchFormatMessage) {
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        formatMessage = scratchFormatMessage;
 
         /**
          * The ID of the renderer Drawable corresponding to the pen layer.

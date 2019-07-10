@@ -1,7 +1,10 @@
-const formatMessage = require('format-message');
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
+
+let formatMessage = function (obj){
+    return obj.default;
+};
 
 /**
  * Icon svg to be displayed at the left edge of each extension block, encoded as a data URI.
@@ -64,12 +67,14 @@ const SCRATCH_KEY_NAME = {
  * @constructor
  */
 class Scratch3MakeyMakeyBlocks {
-    constructor (runtime) {
+    constructor (runtime, scratchFormatMessage) {
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        formatMessage = scratchFormatMessage;
 
         /**
          * A toggle that alternates true and false each frame, so that an

@@ -2,7 +2,7 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
-const formatMessage = require('format-message');
+
 const MathUtil = require('../../util/math-util');
 const Timer = require('../../util/timer');
 
@@ -16,6 +16,10 @@ try {
 } catch (e) {
     // Non-webpack environment, don't worry about assets.
 }
+
+let formatMessage = function (obj){
+    return obj.default;
+};
 
 /**
  * Icon svg to be displayed at the left edge of each extension block, encoded as a data URI.
@@ -37,12 +41,14 @@ const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iM
  * @constructor
  */
 class Scratch3MusicBlocks {
-    constructor (runtime) {
+    constructor (runtime, scratchFormatMessage) {
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        formatMessage = scratchFormatMessage;
 
         /**
          * The number of drum and instrument sounds currently being played simultaneously.

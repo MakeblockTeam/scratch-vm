@@ -26,7 +26,8 @@
     "tap:integration": "tap ./test/integration/*.js",
     "test": "npm run lint && npm run docs && npm run tap",
     "watch": "webpack --progress --colors --watch",
-    "version": "json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\""
+    "version": "json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\"",
+    "ext": "webpack --config webpack.extension.js"
   },
   "dependencies": {
     "@vernier/godirect": "1.5.0",

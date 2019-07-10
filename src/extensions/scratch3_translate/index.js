@@ -4,7 +4,10 @@ const Cast = require('../../util/cast');
 const log = require('../../util/log');
 const nets = require('nets');
 const languageNames = require('scratch-translate-extension-languages');
-const formatMessage = require('format-message');
+
+let formatMessage = function (obj){
+    return obj.default;
+};
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -37,7 +40,8 @@ const serverTimeoutMs = 10000; // 10 seconds (chosen arbitrarily).
  * @constructor
  */
 class Scratch3TranslateBlocks {
-    constructor () {
+    constructor (runtime, scratchFormatMessage) {
+        formatMessage = scratchFormatMessage;
         /**
          * Language code of the viewer, based on their locale.
          * @type {string}

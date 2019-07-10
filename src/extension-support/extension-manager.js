@@ -1,6 +1,7 @@
 const dispatch = require('../dispatch/central-dispatch');
 const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
+const formatMessage = require('format-message');
 
 const BlockType = require('./block-type');
 
@@ -9,22 +10,22 @@ const BlockType = require('./block-type');
 // TODO: change extension spec so that library info, including extension ID, can be collected through static methods
 
 const builtinExtensions = {
-    // This is an example that isn't loaded with the other core blocks,
-    // but serves as a reference for loading core blocks as extensions.
-    coreExample: () => require('../blocks/scratch3_core_example'),
-    // These are the non-core built-in extensions.
-    pen: () => require('../extensions/scratch3_pen'),
-    wedo2: () => require('../extensions/scratch3_wedo2'),
-    music: () => require('../extensions/scratch3_music'),
-    microbit: () => require('../extensions/scratch3_microbit'),
-    text2speech: () => require('../extensions/scratch3_text2speech'),
-    translate: () => require('../extensions/scratch3_translate'),
-    videoSensing: () => require('../extensions/scratch3_video_sensing'),
-    speech2text: () => require('../extensions/scratch3_speech2text'),
-    ev3: () => require('../extensions/scratch3_ev3'),
-    makeymakey: () => require('../extensions/scratch3_makeymakey'),
-    boost: () => require('../extensions/scratch3_boost'),
-    gdxfor: () => require('../extensions/scratch3_gdx_for')
+    // // This is an example that isn't loaded with the other core blocks,
+    // // but serves as a reference for loading core blocks as extensions.
+    // coreExample: () => require('../blocks/scratch3_core_example'),
+    // // These are the non-core built-in extensions.
+    // pen: () => require('../extensions/scratch3_pen'),
+    // wedo2: () => require('../extensions/scratch3_wedo2'),
+    // music: () => require('../extensions/scratch3_music'),
+    // microbit: () => require('../extensions/scratch3_microbit'),
+    // text2speech: () => require('../extensions/scratch3_text2speech'),
+    // translate: () => require('../extensions/scratch3_translate'),
+    // videoSensing: () => require('../extensions/scratch3_video_sensing'),
+    // speech2text: () => require('../extensions/scratch3_speech2text'),
+    // ev3: () => require('../extensions/scratch3_ev3'),
+    // makeymakey: () => require('../extensions/scratch3_makeymakey'),
+    // boost: () => require('../extensions/scratch3_boost'),
+    // gdxfor: () => require('../extensions/scratch3_gdx_for')
 };
 
 /**
@@ -163,6 +164,19 @@ class ExtensionManager {
             this.pendingExtensions.push({extensionURL, resolve, reject});
             dispatch.addWorker(new ExtensionWorker());
         });
+    }
+
+    /**
+     * 加载扩展设计器中的scratch扩展
+     * @param {function} extension - 扩展类
+     * @param {string} id - 扩展id
+     * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
+     */
+    loadExtension (extension, id) {
+        const extensionInstance = new extension(this.runtime, formatMessage);
+        const serviceName = this._registerInternalExtension(extensionInstance);
+        this._loadedExtensions.set(id, serviceName);
+        return Promise.resolve();
     }
 
     /**

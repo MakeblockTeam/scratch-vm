@@ -4,11 +4,13 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
-const formatMessage = require('format-message');
 const Video = require('../../io/video');
 
 const VideoMotion = require('./library');
 
+let formatMessage = function (obj){
+    return obj.default;
+};
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
  * @type {string}
@@ -71,12 +73,14 @@ const VideoState = {
  * @constructor
  */
 class Scratch3VideoSensingBlocks {
-    constructor (runtime) {
+    constructor (runtime, scratchFormatMessage) {
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        formatMessage = scratchFormatMessage;
 
         /**
          * The motion detection algoritm used to power the motion amount and

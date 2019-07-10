@@ -1,4 +1,3 @@
-const formatMessage = require('format-message');
 const nets = require('nets');
 
 const ArgumentType = require('../../extension-support/argument-type');
@@ -8,6 +7,9 @@ const MathUtil = require('../../util/math-util');
 const Clone = require('../../util/clone');
 const log = require('../../util/log');
 
+let formatMessage = function (obj){
+    return obj.default;
+};
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
  * @type {string}
@@ -107,12 +109,14 @@ const WELSH_ID = 'cy';
  * @constructor
  */
 class Scratch3Text2SpeechBlocks {
-    constructor (runtime) {
+    constructor (runtime, scratchFormatMessage) {
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        formatMessage = scratchFormatMessage;
 
         /**
          * Map of soundPlayers by sound id.
