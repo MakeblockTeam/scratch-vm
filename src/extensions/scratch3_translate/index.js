@@ -174,6 +174,10 @@ class Scratch3TranslateBlocks {
      */
     getViewerLanguage () {
         this._viewerLanguageCode = this.getViewerLanguageCode();
+        // 土库曼语scratch没有对应翻译，手动写死
+        if (this._viewerLanguageCode === 'tk'){
+            return 'Тürkmençe';
+        }
         const names = languageNames.menuMap[this._viewerLanguageCode];
         const langNameObj = names.find(obj => obj.code === this._viewerLanguageCode);
         let langName = this._viewerLanguageCode;
@@ -188,7 +192,18 @@ class Scratch3TranslateBlocks {
      * @return {string} the language code.
      */
     getViewerLanguageCode () {
-        const locale = formatMessage.setup().locale;
+        let locale = formatMessage.setup().locale;
+        // scratch与mblock有些语言的key不一致，手动修复
+        if (locale === 'zh-hant'){
+            locale = 'zh-tw';
+        }
+        if (locale === 'ja-jph'){
+            locale = 'ja';
+        }
+        // scratch没有土库曼语，直接返回
+        if (locale === 'tk'){
+            return 'tk';
+        }
         const viewerLanguages = [locale].concat(navigator.languages);
         const languageKeys = Object.keys(languageNames.menuMap);
         // Return the first entry in viewerLanguages that matches
