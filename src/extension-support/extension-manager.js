@@ -167,13 +167,22 @@ class ExtensionManager {
     }
 
     /**
-     * 加载扩展设计器中的scratch扩展
+     * 实例化扩展
      * @param {function} extension - 扩展类
+     * @returns {function} 扩展实例
+     */
+    getExtensionInstance (extension) {
+        const extensionInstance = new extension(this.runtime, formatMessage);
+        return extensionInstance;
+    }
+
+    /**
+     * 加载扩展设计器中的scratch扩展
+     * @param {function} extensionInstance - 扩展类实例
      * @param {string} id - 扩展id
      * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
      */
-    loadExtension (extension, id) {
-        const extensionInstance = new extension(this.runtime, formatMessage);
+    loadExtension (extensionInstance, id) {
         const serviceName = this._registerInternalExtension(extensionInstance);
         this._loadedExtensions.set(id, serviceName);
         return Promise.resolve();
