@@ -78,6 +78,8 @@ const handleReport = function (resolvedValue, sequencer, thread, blockCached, la
             // Not an edge-activated hat: retire the thread
             // if predicate was false.
             sequencer.retireThread(thread);
+        } else {
+            thread.status = Thread.STATUS_RUNNING;
         }
     } else {
         // In a non-hat, report the value visually if necessary if
@@ -113,7 +115,7 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
     primitiveReportedValue.then(resolvedValue => {
         handleReport(resolvedValue, sequencer, thread, blockCached, lastOperation);
         // If it's a command block or a top level reporter in a stackClick.
-        if (lastOperation) {
+        if (lastOperation && (typeof resolvedValue === 'undefined' || (resolvedValue === true && blockCached._isHat))) {
             let stackFrame;
             let nextBlockId;
             do {
