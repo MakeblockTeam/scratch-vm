@@ -917,8 +917,14 @@ class Scratch3MusicBlocks {
                 }
             ],
             menus: {
-                DRUM: this._buildMenu(this.DRUM_INFO),
-                INSTRUMENT: this._buildMenu(this.INSTRUMENT_INFO)
+                DRUM: {
+                    acceptReporters: true,
+                    items: this._buildMenu(this.DRUM_INFO)
+                },
+                INSTRUMENT: {
+                    acceptReporters: true,
+                    items: this._buildMenu(this.INSTRUMENT_INFO)
+                }
             }
         };
     }
