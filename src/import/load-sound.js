@@ -30,7 +30,7 @@ const loadSoundFromAsset = function (sound, soundAsset, runtime, soundBank) {
         sound.rate = soundBuffer.sampleRate;
         sound.sampleCount = soundBuffer.length;
 
-        if (soundBank !== null) {
+        if (soundBank) {
             soundBank.addSoundPlayer(soundPlayer);
         }
 
