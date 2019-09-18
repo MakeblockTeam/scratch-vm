@@ -1143,6 +1143,10 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
     // find the correct id for all other monitors.
     if (monitorData.opcode !== 'data_variable' && monitorData.opcode !== 'data_listcontents' &&
         monitorBlockInfo && monitorBlockInfo.isSpriteSpecific) {
+        if (!monitorData.targetId) {
+            const monitorTarget = targets.find(t => t.sprite.name === monitorBlockInfo.deviceId)
+            monitorData.targetId = monitorTarget.id;
+        }
         monitorData.id = monitorBlockInfo.getId(
             monitorData.targetId, fields);
     } else {

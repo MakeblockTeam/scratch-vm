@@ -150,10 +150,7 @@ class Scratch3TranslateBlocks {
                 }
             ],
             menus: {
-                languages: {
-                    acceptReporters: true,
-                    items: this._supportedLanguages
-                }
+                languages: this._supportedLanguages
             }
         };
     }
@@ -177,10 +174,6 @@ class Scratch3TranslateBlocks {
      */
     getViewerLanguage () {
         this._viewerLanguageCode = this.getViewerLanguageCode();
-        // 土库曼语scratch没有对应翻译，手动写死
-        if (this._viewerLanguageCode === 'tk'){
-            return 'Тürkmençe';
-        }
         const names = languageNames.menuMap[this._viewerLanguageCode];
         let langNameObj = names.find(obj => obj.code === this._viewerLanguageCode);
 
@@ -211,10 +204,10 @@ class Scratch3TranslateBlocks {
         if (locale === 'ja-jph'){
             locale = 'ja';
         }
-        // scratch没有土库曼语，直接返回
-        if (locale === 'tk'){
-            return 'tk';
-        }
+        // // scratch没有土库曼语，直接返回
+        // if (locale === 'tk'){
+        //     return 'tk';
+        // }
         const viewerLanguages = [locale].concat(navigator.languages);
         const languageKeys = Object.keys(languageNames.menuMap);
         // Return the first entry in viewerLanguages that matches
