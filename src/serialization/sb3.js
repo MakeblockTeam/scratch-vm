@@ -1144,8 +1144,9 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
     if (monitorData.opcode !== 'data_variable' && monitorData.opcode !== 'data_listcontents' &&
         monitorBlockInfo && monitorBlockInfo.isSpriteSpecific) {
         if (!monitorData.targetId) {
-            const monitorTarget = targets.find(t => t.sprite.name === monitorBlockInfo.deviceId)
-            monitorData.targetId = monitorTarget.id;
+            const monitorTarget = targets.find(t => t.sprite.name.indexOf(monitorBlockInfo.deviceId) === 0);
+            monitorData.targetId = monitorTarget ? monitorTarget.id : '';
+            monitorData.spriteName = monitorTarget ? monitorTarget.sprite.name : '';
         }
         monitorData.id = monitorBlockInfo.getId(
             monitorData.targetId, fields);
