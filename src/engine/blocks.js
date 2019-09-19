@@ -692,9 +692,12 @@ class Blocks {
                 isSpriteLocalVariable = !(this.runtime.getTargetForStage().variables[block.fields.LIST.id]);
             }
 
-            const isSpriteSpecific = isSpriteLocalVariable ||
-                (this.runtime.monitorBlockInfo.hasOwnProperty(block.opcode) &&
-                this.runtime.monitorBlockInfo[block.opcode].isSpriteSpecific);
+            let isSpecificBlock = this.runtime.monitorBlockInfo.hasOwnProperty(block.opcode) &&
+                this.runtime.monitorBlockInfo[block.opcode].isSpriteSpecific;
+            if (typeof isSpecificBlock === 'function') {
+                isSpecificBlock = isSpecificBlock(block);
+            }
+            const isSpriteSpecific = isSpriteLocalVariable || isSpecificBlock;
             if (isSpriteSpecific) {
                 // If creating a new sprite specific monitor, the only possible target is
                 // the current editing one b/c you cannot dynamically create monitors.
