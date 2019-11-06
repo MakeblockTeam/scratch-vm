@@ -645,10 +645,25 @@ class Blocks {
                     this.runtime.requestBlocksUpdate();
                 }
 
-                const flyoutBlock = block.shadow && block.parent ? this._blocks[block.parent] : block;
-                if (flyoutBlock.isMonitored) {
+                let flyoutBlock;
+                let monitorId;
+                if (block.shadow && block.parent) {
+                    flyoutBlock = this._blocks[block.parent];
+                    const monitorBlock = this.runtime.monitorBlockInfo[flyoutBlock.opcode];
+                    if (monitorBlock && monitorBlock.isSpriteSpecific && monitorBlock.getId) {
+                        flyoutBlock.targetId = flyoutBlock.targetId || this.runtime.getEditingTarget().id;
+                        monitorId = monitorBlock.getId(flyoutBlock.targetId, flyoutBlock.fields);
+                        if (!this.runtime._monitorState.has(monitorId)) {
+                            monitorId = null;
+                        }
+                    }
+                } else if (block.isMonitored) {
+                    flyoutBlock = block;
+                    monitorId = block.id;
+                }
+                if (monitorId) {
                     this.runtime.requestUpdateMonitor(Map({
-                        id: flyoutBlock.id,
+                        id: monitorId,
                         params: this._getBlockParams(flyoutBlock)
                     }));
                 }
@@ -694,6 +709,9 @@ class Blocks {
 
             let isSpecificBlock = this.runtime.monitorBlockInfo.hasOwnProperty(block.opcode) &&
                 this.runtime.monitorBlockInfo[block.opcode].isSpriteSpecific;
+            if (isSpecificBlock && this.runtime.monitorBlockInfo[block.opcode].hasOwnProperty('deviceId')) {
+                isSpecificBlock = !!this.runtime.monitorBlockInfo[block.opcode].deviceId;
+            }
             if (typeof isSpecificBlock === 'function') {
                 isSpecificBlock = isSpecificBlock(block);
             }
