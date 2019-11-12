@@ -1168,6 +1168,9 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         existingMonitorBlock.targetId = monitorData.targetId;
     } else if (Array.isArray(monitorData.blocksInfo)) {
         monitorData.blocksInfo.forEach(blockInfo => {
+            if (blockInfo.opcode === monitorData.opcode) {
+                blockInfo.id = monitorData.id;
+            }
             blockInfo.targetId = monitorData.targetId;
             runtime.monitorBlocks.createBlock(blockInfo);
         });
