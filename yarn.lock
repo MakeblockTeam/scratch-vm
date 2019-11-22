@@ -4850,10 +4850,10 @@ locate-path@^3.0.0:
     p-locate "^3.0.0"
     path-exists "^3.0.0"
 
-lodash.defaultsdeep@4.6.0:
-  version "4.6.0"
-  resolved "http://npm.makeblock.com/lodash.defaultsdeep/-/lodash.defaultsdeep-4.6.0.tgz#bec1024f85b1bd96cbea405b23c14ad6443a6f81"
-  integrity sha1-vsECT4WxvZbL6kBbI8FK1kQ6b4E=
+lodash.defaultsdeep@4.6.1:
+  version "4.6.1"
+  resolved "http://npm.makeblock.com/lodash.defaultsdeep/-/lodash.defaultsdeep-4.6.1.tgz#512e9bd721d272d94e3d3a63653fa17516741ca6"
+  integrity sha1-US6b1yHSctlOPTpjZT+hdRZ0HKY=
 
 lodash.flattendeep@^4.4.0:
   version "4.4.0"
@@ -6736,10 +6736,10 @@ scratch-svg-renderer@0.2.0-prerelease.20190523193400, scratch-svg-renderer@lates
     scratch-render-fonts "1.0.0-prerelease.20180906193204"
     transformation-matrix "1.14.1"
 
-scratch-translate-extension-languages@0.0.20181205140428:
-  version "0.0.20181205140428"
-  resolved "http://npm.makeblock.com/scratch-translate-extension-languages/-/scratch-translate-extension-languages-0.0.20181205140428.tgz#27746e4d628810c7b35f7e8caa5963be5349a8f9"
-  integrity sha1-J3RuTWKIEMezX36MqlljvlNJqPk=
+scratch-translate-extension-languages@0.0.20190416132834:
+  version "0.0.20190416132834"
+  resolved "http://npm.makeblock.com/scratch-translate-extension-languages/-/scratch-translate-extension-languages-0.0.20190416132834.tgz#988eb4a6ee7abcaec8077ad8519a7b4236242d67"
+  integrity sha1-mI60pu56vK7IB3rYUZp7QjYkLWc=
 
 script-loader@0.7.2:
   version "0.7.2"

@@ -1209,10 +1209,12 @@ class Blocks {
         for (const key in block.fields) {
             params[key] = block.fields[key].value;
         }
+        // 这里旧逻辑存在命名冲突
         for (const inputKey in block.inputs) {
             const inputBlock = this._blocks[block.inputs[inputKey].block];
+            params[inputKey] = {};
             for (const key in inputBlock.fields) {
-                params[key] = inputBlock.fields[key].value;
+                params[inputKey][key] = inputBlock.fields[key].value;
             }
         }
         return params;
