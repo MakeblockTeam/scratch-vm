@@ -1149,7 +1149,7 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
             monitorData.spriteName = monitorTarget ? monitorTarget.sprite.name : '';
         }
         monitorData.id = monitorBlockInfo.getId(
-            monitorData.targetId, fields);
+            monitorData.targetId, monitorData.params);
     } else {
         // Replace unsafe characters in monitor ID, if there are any.
         // These would have come from projects that were originally 2.0 projects

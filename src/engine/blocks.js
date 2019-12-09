@@ -652,7 +652,7 @@ class Blocks {
                     const monitorBlock = this.runtime.monitorBlockInfo[flyoutBlock.opcode];
                     if (monitorBlock && monitorBlock.isSpriteSpecific && monitorBlock.getId) {
                         flyoutBlock.targetId = flyoutBlock.targetId || this.runtime.getEditingTarget().id;
-                        monitorId = monitorBlock.getId(flyoutBlock.targetId, flyoutBlock.fields);
+                        monitorId = monitorBlock.getId(flyoutBlock.targetId, this._getBlockParams(flyoutBlock));
                         if (!this.runtime._monitorState.has(monitorId)) {
                             monitorId = null;
                         }
@@ -681,7 +681,7 @@ class Blocks {
 
                 // This block has an argument which needs to get separated out into
                 // multiple monitor blocks with ids based on the selected argument
-                const newId = getMonitorIdForBlockWithArgs(block.id, block.fields);
+                const newId = getMonitorIdForBlockWithArgs(block.id, this._getBlockParams(block));
                 // Note: we're not just constantly creating a longer and longer id everytime we check
                 // the checkbox because we're using the id of the block in the flyout as the base
 
