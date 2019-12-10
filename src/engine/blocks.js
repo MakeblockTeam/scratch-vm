@@ -676,18 +676,20 @@ class Blocks {
             // A checkbox usually has a one to one correspondence with the monitor
             // block but in the case of monitored reporters that have arguments,
             // map the old id to a new id, creating a new monitor block if necessary
-            if (block.fields && Object.keys(block.fields).length > 0 &&
+            const params = this._getBlockParams(block);
+            if (params && Object.keys(params).length > 0 &&
                 block.opcode !== 'data_variable' && block.opcode !== 'data_listcontents') {
 
                 // This block has an argument which needs to get separated out into
                 // multiple monitor blocks with ids based on the selected argument
-                const newId = getMonitorIdForBlockWithArgs(block.id, this._getBlockParams(block));
+                const newId = getMonitorIdForBlockWithArgs(block.id, params);
                 // Note: we're not just constantly creating a longer and longer id everytime we check
                 // the checkbox because we're using the id of the block in the flyout as the base
 
                 // check if a block with the new id already exists, otherwise create
                 let newBlock = this.runtime.monitorBlocks.getBlock(newId);
                 if (!newBlock) {
+                    if (!args.value) return;
                     newBlock = JSON.parse(JSON.stringify(block));
                     newBlock.id = newId;
                     this.runtime.monitorBlocks.createBlock(newBlock);
@@ -1211,10 +1213,14 @@ class Blocks {
         }
         // 这里旧逻辑存在命名冲突
         for (const inputKey in block.inputs) {
-            const inputBlock = this._blocks[block.inputs[inputKey].block];
-            params[inputKey] = {};
-            for (const key in inputBlock.fields) {
-                params[inputKey][key] = inputBlock.fields[key].value;
+            const inputBlockId = block.inputs[inputKey].block;
+            // 从 flyoutBlocks 中才能正确拿到当前积木的参数
+            const inputBlock = this.runtime.flyoutBlocks.getBlock(inputBlockId) || this.getBlock(inputBlockId);
+            if (inputBlock) {
+                params[inputKey] = {};
+                for (const key in inputBlock.fields) {
+                    params[inputKey][key] = inputBlock.fields[key].value;
+                }
             }
         }
         return params;
