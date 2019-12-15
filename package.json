@@ -1,6 +1,6 @@
 {
   "name": "mscratch-vm",
-  "version": "0.6.15",
+  "version": "0.6.16",
   "description": "Virtual Machine for Scratch 3.0",
   "author": "Massachusetts Institute of Technology",
   "license": "BSD-3-Clause",
@@ -47,7 +47,7 @@
     "nets": "3.2.0",
     "scratch-parser": "5.0.0",
     "scratch-sb1-converter": "0.2.7",
-    "scratch-translate-extension-languages": "0.0.20190416132834",
+    "scratch-translate-extension-languages": "0.0.20191118205314",
     "socket.io-client": "2.0.4",
     "text-encoding": "0.7.0",
     "worker-loader": "^1.1.1"
