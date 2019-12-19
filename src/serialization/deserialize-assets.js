@@ -35,6 +35,10 @@ const deserializeSound = function (sound, runtime, zip, assetFileName) {
 
     if (!soundFile) {
         log.error(`Could not find sound file associated with the ${sound.name} sound.`);
+        const asset = storage.EmptySound;
+        sound.asset = asset;
+        sound.assetId = asset.assetId;
+        sound.md5 = `${asset.assetId}.${asset.dataFormat}`;
         return Promise.resolve(null);
     }
 
@@ -115,6 +119,10 @@ const deserializeCostume = function (costume, runtime, zip, assetFileName, textL
 
     if (!costumeFile) {
         log.error(`Could not find costume file associated with the ${costume.name} costume.`);
+        const asset = storage.EmptyCostume;
+        costume.asset = asset;
+        costume.assetId = asset.assetId;
+        costume.md5 = `${asset.assetId}.${asset.dataFormat}`;
         return Promise.resolve(null);
     }
     let assetType = null;
