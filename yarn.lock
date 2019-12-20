@@ -6736,10 +6736,10 @@ scratch-svg-renderer@0.2.0-prerelease.20190523193400, scratch-svg-renderer@lates
     scratch-render-fonts "1.0.0-prerelease.20180906193204"
     transformation-matrix "1.14.1"
 
-scratch-translate-extension-languages@0.0.20190416132834:
-  version "0.0.20190416132834"
-  resolved "http://npm.makeblock.com/scratch-translate-extension-languages/-/scratch-translate-extension-languages-0.0.20190416132834.tgz#988eb4a6ee7abcaec8077ad8519a7b4236242d67"
-  integrity sha1-mI60pu56vK7IB3rYUZp7QjYkLWc=
+scratch-translate-extension-languages@0.0.20191118205314:
+  version "0.0.20191118205314"
+  resolved "https://registry.npm.taobao.org/scratch-translate-extension-languages/download/scratch-translate-extension-languages-0.0.20191118205314.tgz#9f781cc0c89785faba8ae86775a4915225676284"
+  integrity sha1-n3gcwMiXhfq6iuhndaSRUiVnYoQ=
 
 script-loader@0.7.2:
   version "0.7.2"

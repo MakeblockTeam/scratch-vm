@@ -150,7 +150,10 @@ class Scratch3TranslateBlocks {
                 }
             ],
             menus: {
-                languages: this._supportedLanguages
+                languages: {
+                    acceptReporters: true,
+                    items: this._supportedLanguages
+                }
             }
         };
     }
@@ -203,6 +206,9 @@ class Scratch3TranslateBlocks {
         }
         if (locale === 'ja-jph'){
             locale = 'ja';
+        }
+        if (locale === 'zh'){
+            locale = 'zh-cn';
         }
         // // scratch没有土库曼语，直接返回
         // if (locale === 'tk'){
