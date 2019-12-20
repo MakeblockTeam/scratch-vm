@@ -150,7 +150,10 @@ class Scratch3TranslateBlocks {
                 }
             ],
             menus: {
-                languages: this._supportedLanguages
+                languages: {
+                    acceptReporters: true,
+                    items: this._supportedLanguages
+                }
             }
         };
     }
