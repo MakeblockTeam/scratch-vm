@@ -607,8 +607,10 @@ class Scratch3Text2SpeechBlocks {
      * @return {array} the text and value for each menu item.
      */
     getLanguageMenu () {
-        const editorLanguage = this.getEditorLanguage();
-        // Get the array of localized language names
+        let editorLanguage = this.getEditorLanguage(); // Get the array of localized language names
+        if (editorLanguage === 'zh'){
+            editorLanguage = 'zh-cn';
+        }
         const localizedNameMap = {};
         let nameArray = languageNames.menuMap[editorLanguage];
         if (nameArray) {
