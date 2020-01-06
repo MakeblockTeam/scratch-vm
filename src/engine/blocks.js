@@ -642,7 +642,9 @@ class Blocks {
                     } else {
                         this._blocks[block.parent].fields.PROPERTY.value = 'x position';
                     }
-                    this.runtime.requestBlocksUpdate();
+                    if (this.runtime.flyoutBlocks !== this) {
+                        this.runtime.requestBlocksUpdate();
+                    }
                 }
 
                 let flyoutBlock;
