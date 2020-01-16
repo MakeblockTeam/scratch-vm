@@ -458,7 +458,7 @@ const parseScratchAssets = function (object, runtime, topLevel, zip) {
             const assetFileName = `${costumeSource.baseLayerID}.${ext}`;
             const textLayerFileName = costumeSource.textLayerID ? `${costumeSource.textLayerID}.png` : null;
             costumePromises.push(deserializeCostume(costume, runtime, zip, assetFileName, textLayerFileName)
-                .then(() => loadCostume(costume.md5, costume, runtime, 2 /* optVersion */))
+                .then(() => loadCostume(costume.md5, costume, runtime, 2 /* optVersion */, object._storeId))
             );
         }
     }
@@ -494,7 +494,7 @@ const parseScratchAssets = function (object, runtime, topLevel, zip) {
             const assetFileName = `${soundSource.soundID}.${ext}`;
             soundPromises.push(
                 deserializeSound(sound, runtime, zip, assetFileName)
-                    .then(() => loadSound(sound, runtime, soundBank))
+                    .then(() => loadSound(sound, runtime, soundBank, object._storeId))
             );
         }
     }

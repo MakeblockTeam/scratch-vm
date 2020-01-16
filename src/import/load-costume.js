@@ -284,9 +284,10 @@ const loadCostumeFromAsset = function (costume, runtime, optVersion) {
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @param {?int} optVersion - Version of Scratch that the costume comes from. If this is set
  *     to 2, scratch 3 will perform an upgrade step to handle quirks in SVGs from Scratch 2.0.
+ * @param {int} storeId - Scratch runtime, used to access the storage module.
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
-const loadCostume = function (md5ext, costume, runtime, optVersion) {
+const loadCostume = function (md5ext, costume, runtime, optVersion, storeId) {
     const idParts = StringUtil.splitFirst(md5ext, '.');
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
@@ -311,7 +312,7 @@ const loadCostume = function (md5ext, costume, runtime, optVersion) {
     const AssetType = runtime.storage.AssetType;
     const assetType = (ext === 'svg') ? AssetType.ImageVector : AssetType.ImageBitmap;
 
-    const costumePromise = runtime.storage.load(assetType, md5, ext);
+    const costumePromise = runtime.storage.load(assetType, md5, ext, storeId);
     if (!costumePromise) {
         log.error(`Couldn't fetch costume asset: ${md5ext}`);
         return;
@@ -319,7 +320,7 @@ const loadCostume = function (md5ext, costume, runtime, optVersion) {
 
     let textLayerPromise;
     if (costume.textLayerMD5) {
-        textLayerPromise = runtime.storage.load(AssetType.ImageBitmap, costume.textLayerMD5, 'png');
+        textLayerPromise = runtime.storage.load(AssetType.ImageBitmap, costume.textLayerMD5, 'png', storeId);
     } else {
         textLayerPromise = Promise.resolve(null);
     }

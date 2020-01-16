@@ -45,9 +45,10 @@ const loadSoundFromAsset = function (sound, soundAsset, runtime, soundBank) {
  * @property {Buffer} data - sound data will be written here once loaded.
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @param {SoundBank} soundBank - Scratch Audio SoundBank to add sounds to.
+ * @param {int} storeId - Scratch Audio SoundBank to add sounds to.
  * @returns {!Promise} - a promise which will resolve to the sound when ready.
  */
-const loadSound = function (sound, runtime, soundBank) {
+const loadSound = function (sound, runtime, soundBank, storeId) {
     if (!runtime.storage) {
         log.error('No storage module present; cannot load sound asset: ', sound.md5);
         return Promise.resolve(sound);
@@ -58,7 +59,7 @@ const loadSound = function (sound, runtime, soundBank) {
     sound.dataFormat = ext;
     return (
         (sound.asset && Promise.resolve(sound.asset)) ||
-        runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext)
+        runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext, storeId)
     ).then(soundAsset => {
         sound.asset = soundAsset;
         return loadSoundFromAsset(sound, soundAsset, runtime, soundBank);
