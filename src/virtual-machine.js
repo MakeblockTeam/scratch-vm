@@ -641,7 +641,7 @@ class VirtualMachine extends EventEmitter {
         const target = optTargetId ? this.runtime.getTargetById(optTargetId) :
             this.editingTarget;
         if (target) {
-            return loadCostume(md5ext, costumeObject, this.runtime, optVersion).then(() => {
+            return loadCostume(md5ext, costumeObject, this.runtime, optVersion, costumeObject._storeId).then(() => {
                 target.addCostume(costumeObject);
                 target.setCostume(
                     target.getCostumes().length - 1
@@ -737,7 +737,7 @@ class VirtualMachine extends EventEmitter {
         const target = optTargetId ? this.runtime.getTargetById(optTargetId) :
             this.editingTarget;
         if (target) {
-            return loadSound(soundObject, this.runtime, target.sprite.soundBank).then(() => {
+            return loadSound(soundObject, this.runtime, target.sprite.soundBank, soundObject._storeId).then(() => {
                 target.addSound(soundObject);
                 this.emitTargetsUpdate();
             });
@@ -954,7 +954,7 @@ class VirtualMachine extends EventEmitter {
      * @returns {?Promise} - a promise that resolves when the backdrop has been added
      */
     addBackdrop (md5ext, backdropObject) {
-        return loadCostume(md5ext, backdropObject, this.runtime).then(() => {
+        return loadCostume(md5ext, backdropObject, this.runtime, null, backdropObject._storeId).then(() => {
             const stage = this.runtime.getTargetForStage();
             stage.addCostume(backdropObject);
             stage.setCostume(stage.getCostumes().length - 1);
