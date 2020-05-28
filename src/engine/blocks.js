@@ -1051,6 +1051,7 @@ class Blocks {
                 }
             }
         }
+        if (blockUpdated) this.resetCache();
         return blockUpdated;
     }
 
