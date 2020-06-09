@@ -693,6 +693,20 @@ class Blocks {
                 if (!newBlock) {
                     if (!args.value) return;
                     newBlock = JSON.parse(JSON.stringify(block));
+                    try {
+                        // 解决勾选带有椭圆下拉框的积木参数变化问题
+                        for (const key in params) {
+                            if (typeof newBlock.fields[key] === 'undefined') {
+                                newBlock.fields[key] = {
+                                    name: key,
+                                    value: Object.values(params[key])[0]
+                                };
+                            }
+                        }
+                        newBlock.inputs = {};
+                    } catch (err) {
+                        console.log(err);
+                    }
                     newBlock.id = newId;
                     this.runtime.monitorBlocks.createBlock(newBlock);
                 }
