@@ -688,6 +688,14 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Event name for reporting that a block was updated and needs to be rerendered.
+     * @const {string}
+     */
+    static get REPORT_EXECUTE () {
+        return 'REPORT_EXECUTE';
+    }
+
+    /**
      * How rapidly we try to step threads by default, in ms.
      */
     static get THREAD_STEP_INTERVAL () {

@@ -1,4 +1,8 @@
 ## scratch-vm
+> 说明：本仓库 fork 自 scratch 官方，原本依赖的 `scratch-vm` 包，在 mscratch 这里取而代之的是 `mscratch-vm` 包。该依赖包通过对 fork 版本的 develop 分支修改、打包而成。
+
+>只在有必要的时候进行版本同步，方法是：将官方的 develop 分支同步到本 fork 版本的 develop 分支，处理冲突后更新 `mscratch-vm` 版本。
+
 #### Scratch VM is a library for representing, running, and maintaining the state of computer programs written using [Scratch Blocks](https://github.com/LLK/scratch-blocks).
 
 [![Build Status](https://travis-ci.org/LLK/scratch-vm.svg?branch=develop)](https://travis-ci.org/LLK/scratch-vm)

@@ -529,6 +529,7 @@ const execute = function (sequencer, thread) {
 
         // If it's a promise, wait until promise resolves.
         if (isPromise(primitiveReportedValue)) {
+            runtime.emit('REPORT_EXECUTE', {opCached, thread, subOps: ops});
             handlePromise(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
 
             // Store the already reported values. They will be thawed into the
@@ -557,6 +558,7 @@ const execute = function (sequencer, thread) {
             // and continue them later after thawing the reported values.
             break;
         } else if (thread.status === Thread.STATUS_RUNNING) {
+            runtime.emit('REPORT_EXECUTE', {opCached, thread, subOps: ops});
             if (lastOperation) {
                 handleReport(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
             } else {
