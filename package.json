@@ -1,5 +1,5 @@
 {
-  "name": "@mblock/mscratch-vm",
+  "name": "@mblock/scratch-vm",
   "version": "0.7.0-202006091540",
   "description": "Virtual Machine for Scratch 3.0",
   "author": "Massachusetts Institute of Technology",
